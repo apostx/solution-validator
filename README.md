@@ -2,7 +2,7 @@
 
 A deterministic, provider-neutral library that analyzes designed software and infrastructure solutions. It answers two questions: does the solution work, and does it meet a task's requirements?
 
-> **Status: early development (0.x).** The model, pack format, registry and the `model-validity` and `connection-validity` analyses are implemented. Access analysis follows. See the [roadmap](docs/roadmap.md). The API may change before 1.0.
+> **Status: early development (0.x).** The model, pack format, registry and the `model-validity`, `connection-validity` and logical `access` analyses are implemented. Requirement checks and the metadata query follow. See the [roadmap](docs/roadmap.md). The API may change before 1.0.
 
 ## What it does
 

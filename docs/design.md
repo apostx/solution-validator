@@ -294,6 +294,15 @@ These details implement the decisions above. They are not product decisions; ope
 - **Compatibility semantics.** A rule's `actions` must include the intent's action. A rule's `ports`, when listed, must include the intent's port; a rule without `ports` does not restrict the port, because which ports a component listens on belongs to the `endpoint` trait (connectivity). A numeric port matches a port id with that number.
 - **Honest undecidability.** A type that omits `accepts` makes the check `undecidable` (with a warning), while `"accepts": []` accepts nothing (`fail`). Intents whose ends, types or purpose are invalid are `undecidable` without an extra finding, since `model-validity` already reports the cause.
 
+### Implementation notes (Iteration 3)
+
+- **Default policy.** `strict` is the default assumption policy, so a result never relies on a default unless the caller asks for `pack-defaults`. Both policies are covered by the golden files.
+- **Dependencies between analyses.** An analysis can require others; `access` adds `connection-validity`, which reports compatibility failures, so the same failure is not reported twice.
+- **Connectivity without zones.** Until the network traits exist, a component is not inside any private network: a private endpoint is unreachable (`fail`), and placed components are `undecidable`. A component without an endpoint is reached only through a forwarder's route.
+- **Authorization paths.** A forwarder route that `authorizes` (for example an API Gateway integration), a principal's grant, or public access. Authorization is per action, so a port-only intent to an access-controlled target is `undecidable`.
+- **Exposure** is computed for every component with an endpoint, whether or not an intent exists. Components of the core `external` category represent outside parties and are not reported.
+- **Findings** name the decisive problem: failing checks for a failed intent, missing settings for an undecidable one. Evidence carries the full reasoning.
+
 ## 11. Out of scope for the first version
 
 - Scoring, weighting and complexity metrics (consumers build these; see [§7](#7-requirements-metadata-and-facts))
