@@ -119,8 +119,14 @@ Behavior arrives per iteration: `endpoint`, `forwarder`, `principal` and `access
 ## Analysis result
 
 ```ts
-const result = analyze(model, { level: "logical", analyses: ["model-validity"] });
+const result = analyze(model, {
+  level: "logical", // default
+  analyses: ["model-validity", "connection-validity", "access"], // default: all for the level
+  assumptions: "strict", // default; or "pack-defaults"
+});
 ```
+
+`access` always brings `connection-validity` along, which reports compatibility failures. Under `strict`, an unset property that a verdict depends on makes it `undecidable`. Under `pack-defaults`, the property's documented `default` is used, and every such assumption is listed in the access report and in the evidence.
 
 | Field | Meaning |
 |---|---|
@@ -138,6 +144,7 @@ Findings and evidence codes are described in [finding-codes.md](finding-codes.md
 |---|---|
 | `model-validity` | `valid` (no error findings), `findings` |
 | `connection-validity` | `intents` (one verdict per intent, sorted by id), `summary` (count per verdict), `findings` |
+| `access` | `intents` (with every check that applies), `summary`, `exposure` (one fact per component with an endpoint, sorted by id), `assumptions` (pack defaults used), `findings` |
 
 An intent verdict has the shape below. A verdict is never a boolean: `pass` is proven from the data, `fail` is disproven, and `undecidable` means the data, the packs or the supported analyses are not enough. A check's evidence says why.
 
@@ -162,3 +169,20 @@ An intent verdict has the shape below. A verdict is never a boolean: `pass` is p
 ```
 
 `connection-validity` runs the compatibility check. It is `undecidable` when an end of the intent, a type, the action, the port or the purpose is missing (the `model-validity` findings say why), or when the target's type declares no `accepts` rules.
+
+### Access checks (logical level)
+
+`access` runs the checks that apply to an intent from A to B and combines them: `fail` if any fails, otherwise `undecidable` if any is, otherwise `pass`.
+
+| Check | Applies when | Decides |
+|---|---|---|
+| `compatibility` | always | B's type accepts the intent from A's type. |
+| `forwarding` | A is a `forwarder` | One of A's routes targets B. |
+| `connectivity` | B has an `endpoint` | `public`: reachable from anywhere. `private`: only from inside a private network; components are not in one until zones are analyzed, so this fails, and placed components are `undecidable`. `none`: only through a forwarder whose routes target B. If B lists `ports`, the intent's port must be one of them. |
+| `authorization` | B is `access-controlled` | Allowed if A is a forwarder that `authorizes` its routes and routes to B; or A is a `principal` with a grant on B whose access level allows the action; or B's `public` access is on and `publicActions` includes the action. An intent without an action is `undecidable` here. |
+
+**Exposure.** A component is `exposed` when an anonymous caller from outside can reach and use it: its endpoint is public, and it does not control access or its public access is on (`actions` lists what is allowed). Components with a private endpoint or none, or without public access, are `not-exposed`. Unset settings make it `undecidable` under `strict`. Components of the `external` category stand for the outside parties themselves and are not listed.
+
+```json
+{ "component": "uploads", "exposure": "exposed", "actions": ["read"], "evidence": [ … ] }
+```

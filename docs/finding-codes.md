@@ -63,6 +63,20 @@ Whether the target's type accepts each intent from the source's type. Intents th
 | `CONNECTION_NOT_ACCEPTED` | error | Intent {intent}: {toType} does not accept {purpose} from {fromType}. | No accepts rule of the target's type allows the intent's action and port from the source's type. |
 | `CONNECTION_RULES_MISSING` | warning | Intent {intent} cannot be checked: type {type} does not declare which interactions it accepts. | The target's type has no accepts rules in its pack, so the intent's compatibility is undecidable. |
 
+## Analysis: access
+
+Logical access: forwarding, connectivity and authorization for every intent, and exposure to the internet. Failures are reported per failing check; undecidable intents report what is missing. Compatibility failures come from `connection-validity`, which always runs with `access`.
+
+| Code | Severity | Message template | Meaning |
+|---|---|---|---|
+| `ACCESS_ROUTE_MISSING` | error | Intent {intent}: {from} has no route to {to}. | The source forwards requests, but none of its routes leads to the target. |
+| `ACCESS_NOT_REACHABLE` | error | Intent {intent}: {to} cannot be reached from {from}. | The target's endpoint does not let the source reach it: it is private or has none, or it does not listen on the intent's port. |
+| `ACCESS_PERMISSION_MISSING` | error | Intent {intent}: {from} has no permission to {action} {to}. | The target controls access, and neither a grant, a forwarder's route nor public access allows the action. |
+| `ACCESS_PROPERTY_UNSET` | warning | Intent {intent} cannot be decided: {component} does not set {property}. | Under the strict assumption policy, a property the verdict depends on is not set. The pack-defaults policy would use the pack's documented default. |
+| `ACCESS_ACTION_MISSING` | warning | Intent {intent} cannot be decided: {to} controls access per action, but the intent states no action. | Authorization is decided per action, and the intent only states a port. |
+| `ACCESS_ZONES_UNSUPPORTED` | warning | Intent {intent} cannot be decided: placement in zones is not analyzed yet. | A private endpoint or a placed component needs the network traits, which are not implemented yet. |
+| `EXPOSED_TO_INTERNET` | info | {component} is directly accessible from the internet. | An anonymous caller outside the solution can reach the component and is allowed to use it. |
+
 ## Evidence codes
 
 Evidence explains an intent's verdict: each check lists the evidence it used. Evidence has a `code`, `params` and a default English `message`, like a finding, but no severity.
@@ -77,3 +91,26 @@ Evidence explains an intent's verdict: each check lists the evidence it used. Ev
 | `ACCEPTS_UNDECLARED` | Type {type} does not declare which interactions it accepts. | The target's pack has no accepts rules for the type. |
 | `ACCEPTED` | {toType} accepts {purpose} from {fromType} (accepts rule {rule}). | An accepts rule of the target's type matches the intent. |
 | `NOT_ACCEPTED` | {toType} does not accept {purpose} from {fromType}. | No accepts rule of the target's type matches the intent. |
+| `PROPERTY_UNSET` | {component} does not set {property}. | A property the check depends on is not set (strict policy). |
+| `PROPERTY_ASSUMED` | {component} does not set {property}; the pack default {value} is assumed. | The pack-defaults policy used a documented default. |
+| `PROPERTY_INVALID` | {component} sets {property} to a value the check cannot use. | The value does not match the property's schema; model-validity reports why. |
+| `ROUTE_FOUND` | {from} has a route to {to}. | One of the forwarder's routes targets the intent's target. |
+| `ROUTE_MISSING` | {from} has no route to {to}. | None of the forwarder's routes targets the intent's target. |
+| `ENDPOINT_PUBLIC` | {to} has a public endpoint. | The target can be reached from anywhere. |
+| `ENDPOINT_PRIVATE` | {to} has a private endpoint, and {from} is not inside a private network. | A private endpoint can only be reached from inside a private network. |
+| `ENDPOINT_NONE` | {to} has no network endpoint. | The target cannot be called over the network. |
+| `ENDPOINT_FORWARDED` | {to} has no network endpoint of its own, but {from} forwards to it. | A component without an endpoint is reached through a forwarder's integration. |
+| `PORT_OPEN` | {to} listens on port {port}. | The intent's port is one of the endpoint's ports. |
+| `PORT_CLOSED` | {to} does not listen on port {port}; it listens on {ports}. | The intent's port is not one of the endpoint's ports. |
+| `ZONES_UNSUPPORTED` | Placement in zones is not analyzed yet. | The network traits are not implemented yet. |
+| `FORWARDER_AUTHORIZED` | {from}'s route to {to} also authorizes it. | A forwarder whose routes authorize their targets may use them. |
+| `GRANT_FOUND` | {from} has {access} access to {to}, which allows {action}. | A grant of the source allows the action on the target. |
+| `GRANT_MISSING` | {from} has no grant on {to} that allows {action}. | None of the source's grants allows the action on the target. |
+| `NOT_PRINCIPAL` | {from} has no identity that can be granted access. | The source is not a principal, so only public access could allow the action. |
+| `PUBLIC_ALLOWED` | {to} allows public {action}. | Public access is on and covers the action. |
+| `PUBLIC_DENIED` | {to} does not allow public {action}. | Public access is off, or it does not cover the action. |
+| `ACTION_REQUIRED` | {to} controls access per action, but the intent states no action. | Authorization needs the intent's action. |
+| `ANONYMOUS_ALLOWED` | {component} does not control access. | Anyone who can reach the component may use it. |
+| `ENDPOINT_NOT_PUBLIC` | {component} has no public endpoint. | Its endpoint is private or it has none, so it cannot be reached from outside. |
+| `PUBLIC_ACCESS_ON` | {component} allows public {actions}. | Anonymous callers may perform these actions. |
+| `PUBLIC_ACCESS_OFF` | {component} does not allow public access. | Anonymous callers may not use the component. |
