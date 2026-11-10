@@ -1,16 +1,22 @@
 // Checks the built package the way a consumer sees it: through the package name and its
 // `exports` map. Run `npm run build` first.
 
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 
-const packageJson = JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8"));
-const rootExport = packageJson.exports["."];
+const root = new URL("../", import.meta.url);
+const packageJson = JSON.parse(readFileSync(new URL("package.json", root), "utf8"));
 const failures = [];
 
-for (const condition of ["types", "default"]) {
-  const target = rootExport[condition];
-  if (!existsSync(new URL(`../${target}`, import.meta.url))) {
-    failures.push(`exports["."].${condition} points to a missing file: ${target}`);
+for (const [subpath, target] of Object.entries(packageJson.exports)) {
+  const targets = typeof target === "string" ? [target] : Object.values(target);
+  for (const file of targets) {
+    if (file.includes("*")) {
+      const [directory, suffix] = file.slice(2).split("*");
+      const matches = readdirSync(new URL(directory, root)).filter((name) => name.endsWith(suffix));
+      if (matches.length === 0) failures.push(`exports["${subpath}"] matches no files: ${file}`);
+    } else if (!existsSync(new URL(file, root))) {
+      failures.push(`exports["${subpath}"] points to a missing file: ${file}`);
+    }
   }
 }
 
@@ -19,6 +25,19 @@ if (library.VERSION !== packageJson.version) {
   failures.push(
     `VERSION is ${JSON.stringify(library.VERSION)}, package.json says ${packageJson.version}`,
   );
+}
+
+const { default: corePack } = await import(`${packageJson.name}/packs/core`);
+const { default: awsPack } = await import(`${packageJson.name}/packs/aws`);
+try {
+  const registry = library.createRegistry([corePack, awsPack]);
+  const parsed = library.parseSolution(
+    { schemaVersion: 1, packs: ["aws"], components: [{ id: "fn", type: "aws.lambda" }] },
+    registry,
+  );
+  if (!parsed.ok) failures.push("a minimal solution does not parse");
+} catch (error) {
+  failures.push(`the official packs do not load: ${error}`);
 }
 
 if (failures.length > 0) {

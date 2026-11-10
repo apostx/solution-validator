@@ -26,11 +26,23 @@
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
+    "./packs/core": {
+      "types": "./dist/packs/core.d.ts",
+      "default": "./dist/packs/core.js"
+    },
+    "./packs/aws": {
+      "types": "./dist/packs/aws.d.ts",
+      "default": "./dist/packs/aws.js"
+    },
+    "./packs/*.json": "./packs/*.json",
+    "./schemas/*.json": "./schemas/*.json",
     "./package.json": "./package.json"
   },
   "types": "./dist/index.d.ts",
   "files": [
-    "dist"
+    "dist",
+    "packs",
+    "schemas"
   ],
   "workspaces": [
     "demo"
@@ -48,6 +60,9 @@
     "demo:preview": "npm run preview --workspace demo",
     "check": "npm run typecheck && npm run lint && npm run test && npm run build && npm run check:package && npm run demo:build",
     "prepack": "npm run build"
+  },
+  "dependencies": {
+    "typebox": "^1.4.6"
   },
   "devDependencies": {
     "@biomejs/biome": "2.6.6",

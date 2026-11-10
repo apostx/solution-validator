@@ -1,7 +1,11 @@
 import { defineConfig } from "tsup";
 
 export default defineConfig({
-  entry: ["src/index.ts"],
+  entry: {
+    index: "src/index.ts",
+    "packs/core": "src/packs/core.ts",
+    "packs/aws": "src/packs/aws.ts",
+  },
   format: ["esm"],
   target: "es2022",
   // The library runs in browsers and in Node.js, so the bundle assumes neither.
