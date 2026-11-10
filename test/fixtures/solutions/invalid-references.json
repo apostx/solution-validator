@@ -1,0 +1,17 @@
+{
+  "$schema": "../../../schemas/solution.schema.json",
+  "schemaVersion": 1,
+  "packs": ["core", "aws", "gcp", "aws"],
+  "components": [
+    { "id": "users", "type": "core.internet" },
+    { "id": "fn", "type": "aws.lambda", "placement": ["users", "vpc"] },
+    { "id": "fn", "type": "aws.dynamodb" },
+    { "id": "queue", "type": "aws.sqs" }
+  ],
+  "intents": [
+    { "id": "i1", "from": "users", "to": "api", "port": "https" },
+    { "id": "i2", "from": "fn", "to": "fn" },
+    { "id": "i3", "from": "fn", "to": "users", "action": "publish", "port": "smtp" },
+    { "id": "users", "from": "users", "to": "fn", "port": 8443 }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 2,
+  "packs": "core",
+  "components": [
+    { "id": "two words", "type": "core.internet", "color": "red" },
+    { "type": "aws.lambda", "properties": [] }
+  ],
+  "intents": [{ "id": "i1", "from": "a", "to": "b", "port": 70000 }]
+}

@@ -1,0 +1,172 @@
+{
+  "parse": {
+    "ok": true,
+    "findings": []
+  },
+  "analysis": {
+    "library": {
+      "name": "solution-validator",
+      "version": "<version>"
+    },
+    "vocabulary": 1,
+    "packs": [
+      {
+        "id": "aws",
+        "version": "0.1.0"
+      },
+      {
+        "id": "core",
+        "version": "0.1.0"
+      }
+    ],
+    "options": {
+      "level": "logical",
+      "analyses": [
+        "model-validity"
+      ]
+    },
+    "analyses": [
+      {
+        "id": "model-validity",
+        "valid": false,
+        "findings": [
+          {
+            "code": "SOLUTION_PACK_DUPLICATE",
+            "severity": "warning",
+            "subjects": [],
+            "params": {
+              "pack": "aws"
+            },
+            "message": "Pack aws is listed more than once."
+          },
+          {
+            "code": "SOLUTION_PACK_UNKNOWN",
+            "severity": "error",
+            "subjects": [],
+            "params": {
+              "pack": "gcp"
+            },
+            "message": "The solution needs pack gcp, which is not loaded."
+          },
+          {
+            "code": "ID_DUPLICATE",
+            "severity": "error",
+            "subjects": [
+              "fn"
+            ],
+            "params": {
+              "id": "fn"
+            },
+            "message": "The id fn is used by more than one component or intent."
+          },
+          {
+            "code": "PLACEMENT_NOT_ZONE",
+            "severity": "error",
+            "subjects": [
+              "fn"
+            ],
+            "params": {
+              "component": "fn",
+              "zone": "users"
+            },
+            "message": "Component fn is placed in users, which is not a zone."
+          },
+          {
+            "code": "REFERENCE_UNKNOWN",
+            "severity": "error",
+            "subjects": [
+              "fn"
+            ],
+            "params": {
+              "path": "/components/1/placement/1",
+              "id": "vpc"
+            },
+            "message": "/components/1/placement/1 refers to vpc, which is not a component of the solution."
+          },
+          {
+            "code": "REFERENCE_UNKNOWN",
+            "severity": "error",
+            "subjects": [
+              "i1"
+            ],
+            "params": {
+              "path": "/intents/0/to",
+              "id": "api"
+            },
+            "message": "/intents/0/to refers to api, which is not a component of the solution."
+          },
+          {
+            "code": "INTENT_PURPOSE_MISSING",
+            "severity": "error",
+            "subjects": [
+              "i2"
+            ],
+            "params": {
+              "intent": "i2"
+            },
+            "message": "Intent i2 states neither an action nor a port."
+          },
+          {
+            "code": "INTENT_SELF",
+            "severity": "warning",
+            "subjects": [
+              "i2"
+            ],
+            "params": {
+              "intent": "i2",
+              "component": "fn"
+            },
+            "message": "Intent i2 goes from fn to itself."
+          },
+          {
+            "code": "ACTION_UNKNOWN",
+            "severity": "error",
+            "subjects": [
+              "i3"
+            ],
+            "params": {
+              "intent": "i3",
+              "action": "publish"
+            },
+            "message": "Intent i3 uses the unknown action publish."
+          },
+          {
+            "code": "PORT_UNKNOWN",
+            "severity": "error",
+            "subjects": [
+              "i3"
+            ],
+            "params": {
+              "intent": "i3",
+              "port": "smtp"
+            },
+            "message": "Intent i3 uses the unknown port smtp."
+          },
+          {
+            "code": "TYPE_UNKNOWN",
+            "severity": "error",
+            "subjects": [
+              "queue"
+            ],
+            "params": {
+              "component": "queue",
+              "type": "aws.sqs"
+            },
+            "message": "Component queue has the unknown type aws.sqs."
+          },
+          {
+            "code": "ID_DUPLICATE",
+            "severity": "error",
+            "subjects": [
+              "users"
+            ],
+            "params": {
+              "id": "users"
+            },
+            "message": "The id users is used by more than one component or intent."
+          }
+        ]
+      }
+    ]
+  }
+}

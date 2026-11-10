@@ -1,0 +1,77 @@
+{
+  "parse": {
+    "ok": false,
+    "findings": [
+      {
+        "code": "SCHEMA_ENUM",
+        "severity": "error",
+        "subjects": [],
+        "params": {
+          "path": "/schemaVersion",
+          "allowed": "1"
+        },
+        "message": "/schemaVersion must be one of: 1."
+      },
+      {
+        "code": "SCHEMA_TYPE",
+        "severity": "error",
+        "subjects": [],
+        "params": {
+          "path": "/packs",
+          "expected": "array"
+        },
+        "message": "/packs must be of type array."
+      },
+      {
+        "code": "SCHEMA_UNKNOWN_FIELD",
+        "severity": "error",
+        "subjects": [],
+        "params": {
+          "path": "/components/0",
+          "field": "color"
+        },
+        "message": "/components/0 has an unknown field color."
+      },
+      {
+        "code": "SCHEMA_CONSTRAINT",
+        "severity": "error",
+        "subjects": [],
+        "params": {
+          "path": "/components/0/id",
+          "constraint": "pattern",
+          "limit": "^[A-Za-z0-9_][A-Za-z0-9_.-]*$"
+        },
+        "message": "/components/0/id does not satisfy the constraint pattern ^[A-Za-z0-9_][A-Za-z0-9_.-]*$."
+      },
+      {
+        "code": "SCHEMA_REQUIRED",
+        "severity": "error",
+        "subjects": [],
+        "params": {
+          "path": "/components/1",
+          "field": "id"
+        },
+        "message": "/components/1 is missing the required field id."
+      },
+      {
+        "code": "SCHEMA_TYPE",
+        "severity": "error",
+        "subjects": [],
+        "params": {
+          "path": "/components/1/properties",
+          "expected": "object"
+        },
+        "message": "/components/1/properties must be of type object."
+      },
+      {
+        "code": "SCHEMA_FORM",
+        "severity": "error",
+        "subjects": [],
+        "params": {
+          "path": "/intents/0/port"
+        },
+        "message": "/intents/0/port does not match any of the allowed forms."
+      }
+    ]
+  }
+}

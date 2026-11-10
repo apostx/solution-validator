@@ -1,0 +1,23 @@
+{
+  "$schema": "../../../schemas/solution.schema.json",
+  "schemaVersion": 1,
+  "packs": ["core", "aws"],
+  "components": [
+    {
+      "id": "api",
+      "type": "aws.api-gateway",
+      "properties": {
+        "endpoint": "internal",
+        "routes": [{ "path": "/orders", "target": "orders-fn" }, { "path": "" }],
+        "stage": "prod"
+      }
+    },
+    {
+      "id": "fn",
+      "type": "aws.lambda",
+      "properties": { "permissions": [{ "resource": "table", "access": "admin", "until": 1 }] }
+    },
+    { "id": "bucket", "type": "aws.s3", "properties": { "publicAccess": "yes" } }
+  ],
+  "intents": [{ "id": "i1", "from": "api", "to": "fn", "action": "invoke" }]
+}
