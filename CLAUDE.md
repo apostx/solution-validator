@@ -49,4 +49,6 @@ Guards that enforce the rules above; do not loosen them:
 
 Generated files: `schemas/*.json`, `docs/finding-codes.md` and `test/fixtures/expected/*.json` come from the code; regenerate them instead of editing. A new finding code goes into `src/messages/codes.ts`.
 
+Merging: rebase-merge iteration pull requests (see [README.md](README.md#releases)), and release each iteration before merging the next.
+
 Release files: release-please owns `CHANGELOG.md`, `.release-please-manifest.json` and the version in `package.json` and `src/version.ts`. Do not edit them by hand. Release and repository setup are described in [README.md](README.md#releases).

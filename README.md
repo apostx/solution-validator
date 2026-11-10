@@ -113,7 +113,8 @@ Commits follow [Conventional Commits](https://www.conventionalcommits.org/). com
 [release-please](https://github.com/googleapis/release-please) runs on every push to `main`. When releasable commits (`feat`, `fix`) are on `main`, it opens or updates a release pull request with the next version and the changelog. Merging that pull request tags the release, creates a GitHub release and, once enabled, publishes to npm.
 
 - The first release is `0.1.0`. Versions stay at `0.x`, one minor version per iteration, until the API is declared stable.
-- Merge the release pull request only when an iteration is complete.
+- Merge the release pull request only when an iteration is complete, and release an iteration before merging the next one.
+- Merge iteration pull requests with **rebase and merge** (or squash). release-please walks `main` back to the last release commit, so commits that are older than that commit and only reachable through a merge commit are not seen.
 - npm publishing starts with the first functional release. It runs only when the `NPM_PUBLISH` repository variable is `true`.
 
 ### One-time repository setup
