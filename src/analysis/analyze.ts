@@ -1,7 +1,9 @@
 import type { SolutionModel } from "../core/model";
 import { type Finding, hasErrors, sortFindings } from "../messages/finding";
 import { VERSION } from "../version";
+import { checkConnectionValidity } from "./connection-validity";
 import { checkModelValidity } from "./model-validity";
+import type { IntentVerdict, Verdict } from "./verdict";
 
 export const LIBRARY_NAME = "solution-validator";
 
@@ -12,7 +14,7 @@ export const LIBRARY_NAME = "solution-validator";
  */
 export type AnalysisLevel = "logical" | "detailed";
 
-export type AnalysisId = "model-validity";
+export type AnalysisId = "model-validity" | "connection-validity";
 
 export interface AnalyzeOptions {
   /** Default: `logical`. */
@@ -28,7 +30,18 @@ export interface ModelValidityReport {
   readonly findings: readonly Finding[];
 }
 
-export type AnalysisReport = ModelValidityReport;
+/** How many intents reached each verdict. */
+export type VerdictSummary = Readonly<Record<Verdict, number>>;
+
+export interface ConnectionValidityReport {
+  readonly id: "connection-validity";
+  /** One verdict per intent, sorted by intent id. */
+  readonly intents: readonly IntentVerdict[];
+  readonly summary: VerdictSummary;
+  readonly findings: readonly Finding[];
+}
+
+export type AnalysisReport = ModelValidityReport | ConnectionValidityReport;
 
 export interface AnalysisResult {
   /** The library that produced the result, so that results can be reproduced. */
@@ -59,7 +72,26 @@ const ANALYSES: readonly AnalysisDefinition[] = [
       return { id: "model-validity", valid: !hasErrors(findings), findings };
     },
   },
+  {
+    id: "connection-validity",
+    levels: ["logical", "detailed"],
+    run: (model) => {
+      const { intents, findings } = checkConnectionValidity(model);
+      return {
+        id: "connection-validity",
+        intents,
+        summary: summarize(intents),
+        findings: sortFindings(findings),
+      };
+    },
+  },
 ];
+
+function summarize(intents: readonly IntentVerdict[]): VerdictSummary {
+  const summary = { pass: 0, fail: 0, undecidable: 0 };
+  for (const intent of intents) summary[intent.verdict] += 1;
+  return summary;
+}
 
 /** The ids of the available analyses, in the order they run. */
 export const ANALYSIS_IDS: readonly AnalysisId[] = ANALYSES.map((analysis) => analysis.id);

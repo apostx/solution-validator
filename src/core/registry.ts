@@ -41,7 +41,8 @@ export interface ComponentType {
   readonly description?: string;
   readonly category: string;
   readonly traits: Traits;
-  readonly accepts: readonly AcceptRule[];
+  /** Interactions the type accepts. Omitted when the pack does not say. */
+  readonly accepts?: readonly AcceptRule[];
   readonly properties: PropertySchemas;
   readonly required: readonly string[];
   readonly meta: Meta;
@@ -372,7 +373,7 @@ function buildRegistry(packs: readonly Pack[]): Registry {
         ...(type.description === undefined ? {} : { description: type.description }),
         category: type.category,
         traits: type.traits ?? {},
-        accepts: type.accepts ?? [],
+        ...(type.accepts === undefined ? {} : { accepts: type.accepts }),
         properties: type.properties ?? {},
         required: type.required ?? [],
         meta: type.meta ?? {},
