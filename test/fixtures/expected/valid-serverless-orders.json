@@ -1,0 +1,36 @@
+{
+  "parse": {
+    "ok": true,
+    "findings": []
+  },
+  "analysis": {
+    "library": {
+      "name": "solution-validator",
+      "version": "<version>"
+    },
+    "vocabulary": 1,
+    "packs": [
+      {
+        "id": "aws",
+        "version": "0.1.0"
+      },
+      {
+        "id": "core",
+        "version": "0.1.0"
+      }
+    ],
+    "options": {
+      "level": "logical",
+      "analyses": [
+        "model-validity"
+      ]
+    },
+    "analyses": [
+      {
+        "id": "model-validity",
+        "valid": true,
+        "findings": []
+      }
+    ]
+  }
+}

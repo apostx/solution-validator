@@ -1,0 +1,124 @@
+{
+  "$schema": "../schemas/pack.schema.json",
+  "id": "aws",
+  "version": "0.1.0",
+  "label": "Amazon Web Services",
+  "description": "A minimal serverless subset: API Gateway, Lambda, DynamoDB and S3.",
+  "vocabulary": 1,
+  "requires": { "core": "^0.1.0" },
+  "types": [
+    {
+      "id": "aws.api-gateway",
+      "label": "API Gateway",
+      "description": "A managed HTTPS API that routes requests to integrations such as Lambda functions.",
+      "category": "edge",
+      "traits": {
+        "endpoint": { "visibility": { "property": "endpoint" }, "ports": ["https"] },
+        "forwarder": { "routes": { "property": "routes" }, "authorizes": true }
+      },
+      "accepts": [{ "actions": ["invoke"], "ports": ["https"] }],
+      "properties": {
+        "endpoint": {
+          "type": "string",
+          "title": "Endpoint type",
+          "description": "public: reachable from the internet. private: reachable only from inside a private network.",
+          "enum": ["public", "private"],
+          "default": "public"
+        },
+        "routes": {
+          "type": "array",
+          "title": "Routes",
+          "description": "Each route forwards requests on a path to a target. A route also grants the API permission to invoke its target.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "path": { "type": "string", "title": "Path", "minLength": 1 },
+              "target": { "type": "string", "title": "Target", "x-component-ref": true }
+            },
+            "required": ["path", "target"]
+          },
+          "default": []
+        }
+      }
+    },
+    {
+      "id": "aws.lambda",
+      "label": "Lambda function",
+      "description": "Runs code on demand. Its execution role decides what it may access.",
+      "category": "compute",
+      "traits": {
+        "endpoint": { "visibility": "public" },
+        "principal": { "grants": { "property": "permissions" } },
+        "access-controlled": { "levels": { "invoke": ["invoke"] } }
+      },
+      "accepts": [
+        { "from": { "type": "aws.api-gateway" }, "actions": ["invoke"] },
+        { "from": { "category": "compute" }, "actions": ["invoke"] }
+      ],
+      "properties": {
+        "runtime": {
+          "type": "string",
+          "title": "Runtime",
+          "description": "For example nodejs22.x or python3.13. Informational only."
+        },
+        "permissions": {
+          "type": "array",
+          "title": "Permissions",
+          "description": "What the function's execution role may do. A new function has no permissions on other resources.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "resource": { "type": "string", "title": "Resource", "x-component-ref": true },
+              "access": {
+                "type": "string",
+                "title": "Access",
+                "enum": ["read", "write", "read-write", "invoke"]
+              }
+            },
+            "required": ["resource", "access"]
+          },
+          "default": []
+        }
+      }
+    },
+    {
+      "id": "aws.dynamodb",
+      "label": "DynamoDB table",
+      "description": "A managed NoSQL table. Access requires a permission grant.",
+      "category": "data-store",
+      "traits": {
+        "endpoint": { "visibility": "public", "ports": ["https"] },
+        "access-controlled": {
+          "levels": { "read": ["read"], "write": ["write"], "read-write": ["read", "write"] }
+        }
+      },
+      "accepts": [{ "from": { "category": "compute" }, "actions": ["read", "write"] }]
+    },
+    {
+      "id": "aws.s3",
+      "label": "S3 bucket",
+      "description": "Object storage. Access requires a permission grant unless public access is enabled.",
+      "category": "data-store",
+      "traits": {
+        "endpoint": { "visibility": "public", "ports": ["https"] },
+        "access-controlled": {
+          "levels": { "read": ["read"], "write": ["write"], "read-write": ["read", "write"] },
+          "public": { "property": "publicAccess" },
+          "publicActions": ["read"]
+        }
+      },
+      "accepts": [
+        { "from": { "category": "compute" }, "actions": ["read", "write"] },
+        { "from": { "category": "external" }, "actions": ["read"], "ports": ["https"] }
+      ],
+      "properties": {
+        "publicAccess": {
+          "type": "boolean",
+          "title": "Public access",
+          "description": "Whether anyone on the internet may read objects. New buckets block public access by default.",
+          "default": false
+        }
+      }
+    }
+  ]
+}

@@ -80,7 +80,7 @@ Checks that do not apply are skipped. For example, two serverless components out
 
 ## 5. Example type definitions
 
-Parameter names are illustrative; the schema is not final.
+Parameter names here are illustrative. The implemented format is described in [formats.md](formats.md): for example, `accepts` rules list `actions` and `ports`, and instance settings reach traits through `{ "property": "…" }` bindings.
 
 ```json
 {

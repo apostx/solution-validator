@@ -1,0 +1,42 @@
+{
+  "$schema": "../schemas/pack.schema.json",
+  "id": "core",
+  "version": "0.1.0",
+  "label": "Core",
+  "description": "Provider-neutral basics: common categories, actions, ports and the internet.",
+  "vocabulary": 1,
+  "categories": [
+    { "id": "compute", "label": "Compute", "description": "Runs code." },
+    { "id": "data-store", "label": "Data store", "description": "Stores data." },
+    { "id": "edge", "label": "Edge", "description": "Entry points such as API gateways." },
+    { "id": "messaging", "label": "Messaging", "description": "Queues, topics and streams." },
+    { "id": "network", "label": "Network", "description": "Networks, gateways and filters." },
+    {
+      "id": "external",
+      "label": "External",
+      "description": "Parties outside the solution, such as users on the internet."
+    }
+  ],
+  "actions": [
+    { "id": "invoke", "label": "Invoke", "description": "Call a function or an API." },
+    { "id": "read", "label": "Read", "description": "Read data." },
+    { "id": "write", "label": "Write", "description": "Create, change or delete data." },
+    { "id": "connect", "label": "Connect", "description": "Open a network connection." }
+  ],
+  "ports": [
+    { "id": "http", "label": "HTTP", "protocol": "tcp", "port": 80 },
+    { "id": "https", "label": "HTTPS", "protocol": "tcp", "port": 443 }
+  ],
+  "types": [
+    {
+      "id": "core.internet",
+      "label": "Internet",
+      "description": "Anonymous parties on the public internet, such as end users.",
+      "category": "external",
+      "traits": {
+        "endpoint": { "visibility": "public" }
+      },
+      "accepts": [{ "actions": ["connect"], "ports": ["http", "https"] }]
+    }
+  ]
+}

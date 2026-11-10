@@ -71,7 +71,7 @@ const facts = collect(parsed.model, analysis);                  // optional: met
 
 ## 4. Description model
 
-The example below is a minimal serverless application at the logical level, using types from the AWS pack. It shows the shape of the model; the schema is not final.
+The example below is a minimal serverless application at the logical level, using types from the AWS pack. It shows the shape of the model. The implemented format is described in [formats.md](formats.md).
 
 ```json
 {
@@ -259,6 +259,7 @@ src/
   messages/      finding codes and English templates
 packs/           official JSON packs (core, aws; later azure, on-prem)
 test/fixtures/   example models and expected results
+schemas/         JSON Schemas generated from the TypeBox definitions
 demo/            visual sandbox (not published)
 scripts/         repository scripts (not published)
 docs/            vision, design, component model, roadmap
@@ -275,6 +276,17 @@ These details implement the decisions above. They are not product decisions; ope
 - **npm publishing** runs only when the `NPM_PUBLISH` repository variable is `true`. The owner sets it for the first functional release, together with npm credentials (trusted publishing or an `NPM_TOKEN` secret). See [README.md](../README.md#releases).
 - **Commit checks.** commitlint checks every commit in a pull request and the pull request title, because a squash merge uses the title as the commit message.
 - **Package license field:** `AGPL-3.0-only` (see Q14).
+
+### Implementation notes (Iteration 1)
+
+- **Formats** are described in [formats.md](formats.md); finding codes in [finding-codes.md](finding-codes.md). Both, and the JSON Schemas in `schemas/`, are checked against the code by tests, so they cannot drift.
+- **Validation.** TypeBox validates the library's own schemas and also the property schemas packs declare, which are plain JSON Schema (a documented subset). TypeBox's error limit is raised only for the duration of a validation call.
+- **Parsing versus model validity.** `parseSolution` checks structure only and returns findings instead of throwing. Semantic checks (packs, ids, types, property values, references, placement, actions, ports) are the `model-validity` analysis, so they appear in the analysis result.
+- **Pack namespaces.** Type ids are `<pack>.<name>`. Unprefixed category, action and port ids belong to the `core` pack; other packs prefix theirs. A pack sees the definitions of the packs it requires, transitively.
+- **Bindings.** Trait parameters are fixed values or `{ "property": "<name>" }` bindings to the component's properties. This is how instance settings (an API's endpoint type, a function's permissions) drive trait behavior without provider-specific code.
+- **Distribution (Q11).** Official packs are exported as modules (`solution-validator/packs/aws`) and as raw JSON (`solution-validator/packs/aws.json`); the schemas as `solution-validator/schemas/*.json`.
+- **Programming errors.** `analyze` throws a `TypeError` for an unknown analysis id or an unsupported level; `createRegistry` throws a `RegistryError` with findings. Invalid solutions never throw.
+- **Golden files** use Vitest file snapshots (`npx vitest run -u` updates them). The library version is replaced by a placeholder in golden results, so releases do not change them.
 
 ## 11. Out of scope for the first version
 

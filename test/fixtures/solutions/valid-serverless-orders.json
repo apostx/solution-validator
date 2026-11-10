@@ -1,0 +1,30 @@
+{
+  "$schema": "../../../schemas/solution.schema.json",
+  "schemaVersion": 1,
+  "packs": ["core", "aws"],
+  "components": [
+    { "id": "users", "type": "core.internet" },
+    {
+      "id": "api",
+      "type": "aws.api-gateway",
+      "properties": {
+        "endpoint": "public",
+        "routes": [{ "path": "/orders", "target": "orders-fn" }]
+      }
+    },
+    {
+      "id": "orders-fn",
+      "type": "aws.lambda",
+      "properties": { "permissions": [{ "resource": "orders-table", "access": "read-write" }] },
+      "meta": { "points": 2 }
+    },
+    { "id": "orders-table", "type": "aws.dynamodb" },
+    { "id": "uploads", "type": "aws.s3", "properties": { "publicAccess": false } }
+  ],
+  "intents": [
+    { "id": "i1", "from": "users", "to": "api", "port": "https" },
+    { "id": "i2", "from": "api", "to": "orders-fn", "action": "invoke" },
+    { "id": "i3", "from": "orders-fn", "to": "orders-table", "action": "write" },
+    { "id": "i4", "from": "orders-fn", "to": "uploads", "action": "write" }
+  ]
+}

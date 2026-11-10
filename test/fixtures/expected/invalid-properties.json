@@ -1,0 +1,147 @@
+{
+  "parse": {
+    "ok": true,
+    "findings": []
+  },
+  "analysis": {
+    "library": {
+      "name": "solution-validator",
+      "version": "<version>"
+    },
+    "vocabulary": 1,
+    "packs": [
+      {
+        "id": "aws",
+        "version": "0.1.0"
+      },
+      {
+        "id": "core",
+        "version": "0.1.0"
+      }
+    ],
+    "options": {
+      "level": "logical",
+      "analyses": [
+        "model-validity"
+      ]
+    },
+    "analyses": [
+      {
+        "id": "model-validity",
+        "valid": false,
+        "findings": [
+          {
+            "code": "PROPERTY_UNKNOWN",
+            "severity": "error",
+            "subjects": [
+              "api"
+            ],
+            "params": {
+              "component": "api",
+              "property": "stage",
+              "type": "aws.api-gateway"
+            },
+            "message": "Component api sets property stage, which type aws.api-gateway does not define."
+          },
+          {
+            "code": "REFERENCE_UNKNOWN",
+            "severity": "error",
+            "subjects": [
+              "api"
+            ],
+            "params": {
+              "path": "/components/0/properties/routes/0/target",
+              "id": "orders-fn"
+            },
+            "message": "/components/0/properties/routes/0/target refers to orders-fn, which is not a component of the solution."
+          },
+          {
+            "code": "SCHEMA_CONSTRAINT",
+            "severity": "error",
+            "subjects": [
+              "api"
+            ],
+            "params": {
+              "path": "/components/0/properties/routes/1/path",
+              "constraint": "minLength",
+              "limit": "1"
+            },
+            "message": "/components/0/properties/routes/1/path does not satisfy the constraint minLength 1."
+          },
+          {
+            "code": "SCHEMA_ENUM",
+            "severity": "error",
+            "subjects": [
+              "api"
+            ],
+            "params": {
+              "path": "/components/0/properties/endpoint",
+              "allowed": "public, private"
+            },
+            "message": "/components/0/properties/endpoint must be one of: public, private."
+          },
+          {
+            "code": "SCHEMA_REQUIRED",
+            "severity": "error",
+            "subjects": [
+              "api"
+            ],
+            "params": {
+              "path": "/components/0/properties/routes/1",
+              "field": "target"
+            },
+            "message": "/components/0/properties/routes/1 is missing the required field target."
+          },
+          {
+            "code": "SCHEMA_TYPE",
+            "severity": "error",
+            "subjects": [
+              "bucket"
+            ],
+            "params": {
+              "path": "/components/2/properties/publicAccess",
+              "expected": "boolean"
+            },
+            "message": "/components/2/properties/publicAccess must be of type boolean."
+          },
+          {
+            "code": "REFERENCE_UNKNOWN",
+            "severity": "error",
+            "subjects": [
+              "fn"
+            ],
+            "params": {
+              "path": "/components/1/properties/permissions/0/resource",
+              "id": "table"
+            },
+            "message": "/components/1/properties/permissions/0/resource refers to table, which is not a component of the solution."
+          },
+          {
+            "code": "SCHEMA_ENUM",
+            "severity": "error",
+            "subjects": [
+              "fn"
+            ],
+            "params": {
+              "path": "/components/1/properties/permissions/0/access",
+              "allowed": "read, write, read-write, invoke"
+            },
+            "message": "/components/1/properties/permissions/0/access must be one of: read, write, read-write, invoke."
+          },
+          {
+            "code": "SCHEMA_UNKNOWN_FIELD",
+            "severity": "error",
+            "subjects": [
+              "fn"
+            ],
+            "params": {
+              "path": "/components/1/properties/permissions/0",
+              "field": "until"
+            },
+            "message": "/components/1/properties/permissions/0 has an unknown field until."
+          }
+        ]
+      }
+    ]
+  }
+}

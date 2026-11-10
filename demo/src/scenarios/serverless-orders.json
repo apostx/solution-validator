@@ -1,0 +1,114 @@
+{
+  "id": "serverless-orders",
+  "title": "Serverless orders API",
+  "description": "A minimal serverless application: API Gateway, Lambda and DynamoDB, plus an S3 bucket. The function is connected to the bucket but has no permission on it.",
+  "packs": ["core", "aws"],
+  "solution": {
+    "schemaVersion": 1,
+    "packs": ["core", "aws"],
+    "components": [
+      {
+        "id": "users",
+        "type": "core.internet",
+        "label": "Users",
+        "meta": {
+          "position": {
+            "x": 0,
+            "y": 120
+          }
+        }
+      },
+      {
+        "id": "api",
+        "type": "aws.api-gateway",
+        "properties": {
+          "endpoint": "public",
+          "routes": [
+            {
+              "path": "/orders",
+              "target": "orders-fn"
+            }
+          ]
+        },
+        "label": "Orders API",
+        "meta": {
+          "position": {
+            "x": 240,
+            "y": 120
+          }
+        }
+      },
+      {
+        "id": "orders-fn",
+        "type": "aws.lambda",
+        "properties": {
+          "permissions": [
+            {
+              "resource": "orders-table",
+              "access": "read-write"
+            }
+          ]
+        },
+        "meta": {
+          "points": 2,
+          "position": {
+            "x": 480,
+            "y": 120
+          }
+        },
+        "label": "Orders function"
+      },
+      {
+        "id": "orders-table",
+        "type": "aws.dynamodb",
+        "label": "Orders table",
+        "meta": {
+          "position": {
+            "x": 740,
+            "y": 40
+          }
+        }
+      },
+      {
+        "id": "uploads",
+        "type": "aws.s3",
+        "properties": {
+          "publicAccess": false
+        },
+        "label": "Uploads bucket",
+        "meta": {
+          "position": {
+            "x": 740,
+            "y": 220
+          }
+        }
+      }
+    ],
+    "intents": [
+      {
+        "id": "i1",
+        "from": "users",
+        "to": "api",
+        "port": "https"
+      },
+      {
+        "id": "i2",
+        "from": "api",
+        "to": "orders-fn",
+        "action": "invoke"
+      },
+      {
+        "id": "i3",
+        "from": "orders-fn",
+        "to": "orders-table",
+        "action": "write"
+      },
+      {
+        "id": "i4",
+        "from": "orders-fn",
+        "to": "uploads",
+        "action": "write"
+      }
+    ]
+  }
+}
