@@ -10,8 +10,8 @@ const fixtures = readdirSync(directory)
   .sort();
 
 /**
- * Golden files: each solution in `fixtures/solutions` is parsed and analyzed, and the result is
- * compared with `fixtures/expected`. Update them with `npx vitest run -u` and review the diff.
+ * Golden files: each solution in `fixtures/solutions` is parsed and analyzed under both
+ * assumption policies, and the result is compared with `fixtures/expected`. Update them with `npx vitest run -u` and review the diff.
  */
 describe.each(fixtures)("%s", (name) => {
   const text = readFileSync(new URL(name, directory), "utf8");
@@ -19,7 +19,10 @@ describe.each(fixtures)("%s", (name) => {
   const output = parsed.ok
     ? {
         parse: { ok: true, findings: parsed.findings },
-        analysis: withoutVersion(analyze(parsed.model)),
+        analysis: {
+          strict: withoutVersion(analyze(parsed.model, { assumptions: "strict" })),
+          "pack-defaults": withoutVersion(analyze(parsed.model, { assumptions: "pack-defaults" })),
+        },
       }
     : { parse: { ok: false, findings: parsed.findings } };
 
@@ -30,7 +33,9 @@ describe.each(fixtures)("%s", (name) => {
   it(name.startsWith("valid-") ? "is a valid model" : "is an invalid model", () => {
     const valid =
       parsed.ok &&
-      output.analysis?.analyses.every((report) => report.id !== "model-validity" || report.valid);
+      output.analysis?.strict.analyses.every(
+        (report) => report.id !== "model-validity" || report.valid,
+      );
     expect(valid).toBe(name.startsWith("valid-"));
   });
 

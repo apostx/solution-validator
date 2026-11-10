@@ -4,133 +4,947 @@
     "findings": []
   },
   "analysis": {
-    "library": {
-      "name": "solution-validator",
-      "version": "<version>"
-    },
-    "vocabulary": 1,
-    "packs": [
-      {
-        "id": "aws",
-        "version": "0.1.0"
+    "strict": {
+      "library": {
+        "name": "solution-validator",
+        "version": "<version>"
       },
-      {
-        "id": "core",
-        "version": "0.1.0"
-      }
-    ],
-    "options": {
-      "level": "logical",
+      "vocabulary": 1,
+      "packs": [
+        {
+          "id": "aws",
+          "version": "0.1.0"
+        },
+        {
+          "id": "core",
+          "version": "0.1.0"
+        }
+      ],
+      "options": {
+        "level": "logical",
+        "analyses": [
+          "model-validity",
+          "connection-validity",
+          "access"
+        ],
+        "assumptions": "strict"
+      },
       "analyses": [
-        "model-validity",
-        "connection-validity"
+        {
+          "id": "model-validity",
+          "valid": true,
+          "findings": []
+        },
+        {
+          "id": "connection-validity",
+          "intents": [
+            {
+              "intent": "i1",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "aws.api-gateway",
+                        "purpose": "port https",
+                        "rule": 0
+                      },
+                      "message": "aws.api-gateway accepts port https from core.internet (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "i2",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.api-gateway",
+                        "toType": "aws.lambda",
+                        "purpose": "invoke",
+                        "rule": 0
+                      },
+                      "message": "aws.lambda accepts invoke from aws.api-gateway (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "i3",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.lambda",
+                        "toType": "aws.dynamodb",
+                        "purpose": "write",
+                        "rule": 0
+                      },
+                      "message": "aws.dynamodb accepts write from aws.lambda (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "i4",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.lambda",
+                        "toType": "aws.s3",
+                        "purpose": "write",
+                        "rule": 0
+                      },
+                      "message": "aws.s3 accepts write from aws.lambda (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "summary": {
+            "pass": 4,
+            "fail": 0,
+            "undecidable": 0
+          },
+          "findings": []
+        },
+        {
+          "id": "access",
+          "intents": [
+            {
+              "intent": "i1",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "aws.api-gateway",
+                        "purpose": "port https",
+                        "rule": 0
+                      },
+                      "message": "aws.api-gateway accepts port https from core.internet (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ENDPOINT_PUBLIC",
+                      "params": {
+                        "from": "users",
+                        "to": "api"
+                      },
+                      "message": "api has a public endpoint."
+                    },
+                    {
+                      "code": "PORT_OPEN",
+                      "params": {
+                        "to": "api",
+                        "port": "https"
+                      },
+                      "message": "api listens on port https."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "i2",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.api-gateway",
+                        "toType": "aws.lambda",
+                        "purpose": "invoke",
+                        "rule": 0
+                      },
+                      "message": "aws.lambda accepts invoke from aws.api-gateway (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "forwarding",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ROUTE_FOUND",
+                      "params": {
+                        "from": "api",
+                        "to": "orders-fn"
+                      },
+                      "message": "api has a route to orders-fn."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ENDPOINT_PUBLIC",
+                      "params": {
+                        "from": "api",
+                        "to": "orders-fn"
+                      },
+                      "message": "orders-fn has a public endpoint."
+                    }
+                  ]
+                },
+                {
+                  "check": "authorization",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "FORWARDER_AUTHORIZED",
+                      "params": {
+                        "from": "api",
+                        "to": "orders-fn"
+                      },
+                      "message": "api's route to orders-fn also authorizes it."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "i3",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.lambda",
+                        "toType": "aws.dynamodb",
+                        "purpose": "write",
+                        "rule": 0
+                      },
+                      "message": "aws.dynamodb accepts write from aws.lambda (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ENDPOINT_PUBLIC",
+                      "params": {
+                        "from": "orders-fn",
+                        "to": "orders-table"
+                      },
+                      "message": "orders-table has a public endpoint."
+                    }
+                  ]
+                },
+                {
+                  "check": "authorization",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "GRANT_FOUND",
+                      "params": {
+                        "from": "orders-fn",
+                        "to": "orders-table",
+                        "access": "read-write",
+                        "action": "write"
+                      },
+                      "message": "orders-fn has read-write access to orders-table, which allows write."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "i4",
+              "verdict": "fail",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.lambda",
+                        "toType": "aws.s3",
+                        "purpose": "write",
+                        "rule": 0
+                      },
+                      "message": "aws.s3 accepts write from aws.lambda (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ENDPOINT_PUBLIC",
+                      "params": {
+                        "from": "orders-fn",
+                        "to": "uploads"
+                      },
+                      "message": "uploads has a public endpoint."
+                    }
+                  ]
+                },
+                {
+                  "check": "authorization",
+                  "verdict": "fail",
+                  "evidence": [
+                    {
+                      "code": "GRANT_MISSING",
+                      "params": {
+                        "from": "orders-fn",
+                        "to": "uploads",
+                        "action": "write"
+                      },
+                      "message": "orders-fn has no grant on uploads that allows write."
+                    },
+                    {
+                      "code": "PUBLIC_DENIED",
+                      "params": {
+                        "to": "uploads",
+                        "action": "write"
+                      },
+                      "message": "uploads does not allow public write."
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "summary": {
+            "pass": 3,
+            "fail": 1,
+            "undecidable": 0
+          },
+          "exposure": [
+            {
+              "component": "api",
+              "exposure": "exposed",
+              "evidence": [
+                {
+                  "code": "ENDPOINT_PUBLIC",
+                  "params": {
+                    "to": "api"
+                  },
+                  "message": "api has a public endpoint."
+                },
+                {
+                  "code": "ANONYMOUS_ALLOWED",
+                  "params": {
+                    "component": "api"
+                  },
+                  "message": "api does not control access."
+                }
+              ]
+            },
+            {
+              "component": "orders-fn",
+              "exposure": "not-exposed",
+              "evidence": [
+                {
+                  "code": "ENDPOINT_PUBLIC",
+                  "params": {
+                    "to": "orders-fn"
+                  },
+                  "message": "orders-fn has a public endpoint."
+                },
+                {
+                  "code": "PUBLIC_ACCESS_OFF",
+                  "params": {
+                    "component": "orders-fn"
+                  },
+                  "message": "orders-fn does not allow public access."
+                }
+              ]
+            },
+            {
+              "component": "orders-table",
+              "exposure": "not-exposed",
+              "evidence": [
+                {
+                  "code": "ENDPOINT_PUBLIC",
+                  "params": {
+                    "to": "orders-table"
+                  },
+                  "message": "orders-table has a public endpoint."
+                },
+                {
+                  "code": "PUBLIC_ACCESS_OFF",
+                  "params": {
+                    "component": "orders-table"
+                  },
+                  "message": "orders-table does not allow public access."
+                }
+              ]
+            },
+            {
+              "component": "uploads",
+              "exposure": "not-exposed",
+              "evidence": [
+                {
+                  "code": "ENDPOINT_PUBLIC",
+                  "params": {
+                    "to": "uploads"
+                  },
+                  "message": "uploads has a public endpoint."
+                },
+                {
+                  "code": "PUBLIC_ACCESS_OFF",
+                  "params": {
+                    "component": "uploads"
+                  },
+                  "message": "uploads does not allow public access."
+                }
+              ]
+            }
+          ],
+          "assumptions": [],
+          "findings": [
+            {
+              "code": "EXPOSED_TO_INTERNET",
+              "severity": "info",
+              "subjects": [
+                "api"
+              ],
+              "params": {
+                "component": "api"
+              },
+              "message": "api is directly accessible from the internet."
+            },
+            {
+              "code": "ACCESS_PERMISSION_MISSING",
+              "severity": "error",
+              "subjects": [
+                "i4"
+              ],
+              "params": {
+                "intent": "i4",
+                "from": "orders-fn",
+                "to": "uploads",
+                "action": "write"
+              },
+              "message": "Intent i4: orders-fn has no permission to write uploads."
+            }
+          ]
+        }
       ]
     },
-    "analyses": [
-      {
-        "id": "model-validity",
-        "valid": true,
-        "findings": []
+    "pack-defaults": {
+      "library": {
+        "name": "solution-validator",
+        "version": "<version>"
       },
-      {
-        "id": "connection-validity",
-        "intents": [
-          {
-            "intent": "i1",
-            "verdict": "pass",
-            "checks": [
-              {
-                "check": "compatibility",
-                "verdict": "pass",
-                "evidence": [
-                  {
-                    "code": "ACCEPTED",
-                    "params": {
-                      "fromType": "core.internet",
-                      "toType": "aws.api-gateway",
-                      "purpose": "port https",
-                      "rule": 0
-                    },
-                    "message": "aws.api-gateway accepts port https from core.internet (accepts rule 0)."
-                  }
-                ]
-              }
-            ]
-          },
-          {
-            "intent": "i2",
-            "verdict": "pass",
-            "checks": [
-              {
-                "check": "compatibility",
-                "verdict": "pass",
-                "evidence": [
-                  {
-                    "code": "ACCEPTED",
-                    "params": {
-                      "fromType": "aws.api-gateway",
-                      "toType": "aws.lambda",
-                      "purpose": "invoke",
-                      "rule": 0
-                    },
-                    "message": "aws.lambda accepts invoke from aws.api-gateway (accepts rule 0)."
-                  }
-                ]
-              }
-            ]
-          },
-          {
-            "intent": "i3",
-            "verdict": "pass",
-            "checks": [
-              {
-                "check": "compatibility",
-                "verdict": "pass",
-                "evidence": [
-                  {
-                    "code": "ACCEPTED",
-                    "params": {
-                      "fromType": "aws.lambda",
-                      "toType": "aws.dynamodb",
-                      "purpose": "write",
-                      "rule": 0
-                    },
-                    "message": "aws.dynamodb accepts write from aws.lambda (accepts rule 0)."
-                  }
-                ]
-              }
-            ]
-          },
-          {
-            "intent": "i4",
-            "verdict": "pass",
-            "checks": [
-              {
-                "check": "compatibility",
-                "verdict": "pass",
-                "evidence": [
-                  {
-                    "code": "ACCEPTED",
-                    "params": {
-                      "fromType": "aws.lambda",
-                      "toType": "aws.s3",
-                      "purpose": "write",
-                      "rule": 0
-                    },
-                    "message": "aws.s3 accepts write from aws.lambda (accepts rule 0)."
-                  }
-                ]
-              }
-            ]
-          }
-        ],
-        "summary": {
-          "pass": 4,
-          "fail": 0,
-          "undecidable": 0
+      "vocabulary": 1,
+      "packs": [
+        {
+          "id": "aws",
+          "version": "0.1.0"
         },
-        "findings": []
-      }
-    ]
+        {
+          "id": "core",
+          "version": "0.1.0"
+        }
+      ],
+      "options": {
+        "level": "logical",
+        "analyses": [
+          "model-validity",
+          "connection-validity",
+          "access"
+        ],
+        "assumptions": "pack-defaults"
+      },
+      "analyses": [
+        {
+          "id": "model-validity",
+          "valid": true,
+          "findings": []
+        },
+        {
+          "id": "connection-validity",
+          "intents": [
+            {
+              "intent": "i1",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "aws.api-gateway",
+                        "purpose": "port https",
+                        "rule": 0
+                      },
+                      "message": "aws.api-gateway accepts port https from core.internet (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "i2",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.api-gateway",
+                        "toType": "aws.lambda",
+                        "purpose": "invoke",
+                        "rule": 0
+                      },
+                      "message": "aws.lambda accepts invoke from aws.api-gateway (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "i3",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.lambda",
+                        "toType": "aws.dynamodb",
+                        "purpose": "write",
+                        "rule": 0
+                      },
+                      "message": "aws.dynamodb accepts write from aws.lambda (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "i4",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.lambda",
+                        "toType": "aws.s3",
+                        "purpose": "write",
+                        "rule": 0
+                      },
+                      "message": "aws.s3 accepts write from aws.lambda (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "summary": {
+            "pass": 4,
+            "fail": 0,
+            "undecidable": 0
+          },
+          "findings": []
+        },
+        {
+          "id": "access",
+          "intents": [
+            {
+              "intent": "i1",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "aws.api-gateway",
+                        "purpose": "port https",
+                        "rule": 0
+                      },
+                      "message": "aws.api-gateway accepts port https from core.internet (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ENDPOINT_PUBLIC",
+                      "params": {
+                        "from": "users",
+                        "to": "api"
+                      },
+                      "message": "api has a public endpoint."
+                    },
+                    {
+                      "code": "PORT_OPEN",
+                      "params": {
+                        "to": "api",
+                        "port": "https"
+                      },
+                      "message": "api listens on port https."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "i2",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.api-gateway",
+                        "toType": "aws.lambda",
+                        "purpose": "invoke",
+                        "rule": 0
+                      },
+                      "message": "aws.lambda accepts invoke from aws.api-gateway (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "forwarding",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ROUTE_FOUND",
+                      "params": {
+                        "from": "api",
+                        "to": "orders-fn"
+                      },
+                      "message": "api has a route to orders-fn."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ENDPOINT_PUBLIC",
+                      "params": {
+                        "from": "api",
+                        "to": "orders-fn"
+                      },
+                      "message": "orders-fn has a public endpoint."
+                    }
+                  ]
+                },
+                {
+                  "check": "authorization",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "FORWARDER_AUTHORIZED",
+                      "params": {
+                        "from": "api",
+                        "to": "orders-fn"
+                      },
+                      "message": "api's route to orders-fn also authorizes it."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "i3",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.lambda",
+                        "toType": "aws.dynamodb",
+                        "purpose": "write",
+                        "rule": 0
+                      },
+                      "message": "aws.dynamodb accepts write from aws.lambda (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ENDPOINT_PUBLIC",
+                      "params": {
+                        "from": "orders-fn",
+                        "to": "orders-table"
+                      },
+                      "message": "orders-table has a public endpoint."
+                    }
+                  ]
+                },
+                {
+                  "check": "authorization",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "GRANT_FOUND",
+                      "params": {
+                        "from": "orders-fn",
+                        "to": "orders-table",
+                        "access": "read-write",
+                        "action": "write"
+                      },
+                      "message": "orders-fn has read-write access to orders-table, which allows write."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "i4",
+              "verdict": "fail",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.lambda",
+                        "toType": "aws.s3",
+                        "purpose": "write",
+                        "rule": 0
+                      },
+                      "message": "aws.s3 accepts write from aws.lambda (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ENDPOINT_PUBLIC",
+                      "params": {
+                        "from": "orders-fn",
+                        "to": "uploads"
+                      },
+                      "message": "uploads has a public endpoint."
+                    }
+                  ]
+                },
+                {
+                  "check": "authorization",
+                  "verdict": "fail",
+                  "evidence": [
+                    {
+                      "code": "GRANT_MISSING",
+                      "params": {
+                        "from": "orders-fn",
+                        "to": "uploads",
+                        "action": "write"
+                      },
+                      "message": "orders-fn has no grant on uploads that allows write."
+                    },
+                    {
+                      "code": "PUBLIC_DENIED",
+                      "params": {
+                        "to": "uploads",
+                        "action": "write"
+                      },
+                      "message": "uploads does not allow public write."
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "summary": {
+            "pass": 3,
+            "fail": 1,
+            "undecidable": 0
+          },
+          "exposure": [
+            {
+              "component": "api",
+              "exposure": "exposed",
+              "evidence": [
+                {
+                  "code": "ENDPOINT_PUBLIC",
+                  "params": {
+                    "to": "api"
+                  },
+                  "message": "api has a public endpoint."
+                },
+                {
+                  "code": "ANONYMOUS_ALLOWED",
+                  "params": {
+                    "component": "api"
+                  },
+                  "message": "api does not control access."
+                }
+              ]
+            },
+            {
+              "component": "orders-fn",
+              "exposure": "not-exposed",
+              "evidence": [
+                {
+                  "code": "ENDPOINT_PUBLIC",
+                  "params": {
+                    "to": "orders-fn"
+                  },
+                  "message": "orders-fn has a public endpoint."
+                },
+                {
+                  "code": "PUBLIC_ACCESS_OFF",
+                  "params": {
+                    "component": "orders-fn"
+                  },
+                  "message": "orders-fn does not allow public access."
+                }
+              ]
+            },
+            {
+              "component": "orders-table",
+              "exposure": "not-exposed",
+              "evidence": [
+                {
+                  "code": "ENDPOINT_PUBLIC",
+                  "params": {
+                    "to": "orders-table"
+                  },
+                  "message": "orders-table has a public endpoint."
+                },
+                {
+                  "code": "PUBLIC_ACCESS_OFF",
+                  "params": {
+                    "component": "orders-table"
+                  },
+                  "message": "orders-table does not allow public access."
+                }
+              ]
+            },
+            {
+              "component": "uploads",
+              "exposure": "not-exposed",
+              "evidence": [
+                {
+                  "code": "ENDPOINT_PUBLIC",
+                  "params": {
+                    "to": "uploads"
+                  },
+                  "message": "uploads has a public endpoint."
+                },
+                {
+                  "code": "PUBLIC_ACCESS_OFF",
+                  "params": {
+                    "component": "uploads"
+                  },
+                  "message": "uploads does not allow public access."
+                }
+              ]
+            }
+          ],
+          "assumptions": [],
+          "findings": [
+            {
+              "code": "EXPOSED_TO_INTERNET",
+              "severity": "info",
+              "subjects": [
+                "api"
+              ],
+              "params": {
+                "component": "api"
+              },
+              "message": "api is directly accessible from the internet."
+            },
+            {
+              "code": "ACCESS_PERMISSION_MISSING",
+              "severity": "error",
+              "subjects": [
+                "i4"
+              ],
+              "params": {
+                "intent": "i4",
+                "from": "orders-fn",
+                "to": "uploads",
+                "action": "write"
+              },
+              "message": "Intent i4: orders-fn has no permission to write uploads."
+            }
+          ]
+        }
+      ]
+    }
   }
 }
