@@ -2,7 +2,7 @@
 
 A deterministic, provider-neutral library that analyzes designed software and infrastructure solutions. It answers two questions: does the solution work, and does it meet a task's requirements?
 
-> **Status: early development.** Iteration 0 (foundations) sets up the project. The package has no functional API yet. The first functional release is planned as `0.1.0`. See the [roadmap](docs/roadmap.md).
+> **Status: early development (0.x).** The model, pack format, registry and `model-validity` analysis are implemented. Connection validity and access analysis follow. See the [roadmap](docs/roadmap.md). The API may change before 1.0.
 
 ## What it does
 
@@ -12,16 +12,57 @@ A deterministic, provider-neutral library that analyzes designed software and in
 - Runs in browsers and in Node.js, with no backend.
 - Is deterministic: no randomness, clock, network access or AI. It does not score; consumers build scoring from its verdicts, metadata and facts.
 
+## Usage
+
+```sh
+npm install solution-validator
+```
+
+```ts
+import { analyze, createRegistry, parseSolution } from "solution-validator";
+import awsPack from "solution-validator/packs/aws";
+import corePack from "solution-validator/packs/core";
+
+const registry = createRegistry([corePack, awsPack]); // throws a RegistryError for invalid packs
+
+const parsed = parseSolution(
+  {
+    schemaVersion: 1,
+    packs: ["core", "aws"],
+    components: [
+      { id: "orders-fn", type: "aws.lambda",
+        properties: { permissions: [{ resource: "orders-table", access: "read-write" }] } },
+      { id: "orders-table", type: "aws.dynamodb" },
+    ],
+    intents: [{ id: "i1", from: "orders-fn", to: "orders-table", action: "write" }],
+  },
+  registry,
+);
+
+if (parsed.ok) {
+  const result = analyze(parsed.model);
+  for (const report of result.analyses) {
+    for (const finding of report.findings) console.log(finding.code, finding.message);
+  }
+} else {
+  console.log(parsed.findings); // schema findings; parseSolution never throws for bad input
+}
+```
+
+The formats are described in [docs/formats.md](docs/formats.md) and every finding code in [docs/finding-codes.md](docs/finding-codes.md). JSON Schemas for editors and other tools are exported as `solution-validator/schemas/solution.schema.json` and `solution-validator/schemas/pack.schema.json`.
+
 ## Documentation
 
 - [Product vision](docs/product-vision.md): what the product is and is not
 - [Technical design](docs/design.md): architecture, model, results and tooling
 - [Component model](docs/component-model.md): traits, component types and packs
 - [Roadmap](docs/roadmap.md): iterations and their scope
+- [Formats](docs/formats.md): solution, pack and result formats
+- [Finding codes](docs/finding-codes.md): every finding code and its message
 
 ## Demo
 
-The visual sandbox is deployed to GitHub Pages: <https://apostx.github.io/solution-validator/>. It is a placeholder until Iteration 1.
+The visual sandbox is deployed to GitHub Pages: <https://apostx.github.io/solution-validator/>. Build a solution from the packs' palette, draw intents between components, edit properties, and see the findings as you go. It is a tech demo, not a product.
 
 ## Development
 
@@ -47,14 +88,16 @@ npm run check   # everything CI runs
 
 ```
 src/              library source (browser and Node.js compatible)
-test/             tests; example models and expected results go in test/fixtures/
+packs/            official packs (core, aws) as JSON
+schemas/          JSON Schemas generated from the library's TypeBox definitions
+test/             tests; example models and golden results in test/fixtures/
 demo/             visual sandbox, an npm workspace that imports the library from source
 scripts/          repository scripts (not published)
 docs/             vision, design, component model and roadmap
 .github/workflows CI, commit message checks, releases and the demo deployment
 ```
 
-The other folders planned in [design.md §10](docs/design.md#10-repository-tooling-and-releases) (`packs/`, `src/core/`, `src/analysis/` and so on) arrive with the iterations that need them.
+Inside `src/`: `core/` (schemas, registry, parsing), `analysis/`, `messages/` (finding codes), `packs/` (pack module wrappers) and `util/`. See [design.md §10](docs/design.md#10-repository-tooling-and-releases).
 
 ### Commit messages
 
