@@ -1,0 +1,68 @@
+{
+  "name": "solution-validator",
+  "version": "0.0.0",
+  "description": "Deterministic, provider-neutral validator for software and infrastructure solution designs.",
+  "keywords": [
+    "architecture",
+    "solution-architecture",
+    "validation",
+    "static-analysis",
+    "cloud",
+    "aws"
+  ],
+  "homepage": "https://github.com/apostx/solution-validator#readme",
+  "bugs": {
+    "url": "https://github.com/apostx/solution-validator/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/apostx/solution-validator.git"
+  },
+  "license": "AGPL-3.0-only",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "workspaces": [
+    "demo"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc --build",
+    "lint": "biome check .",
+    "format": "biome check --write .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "check:package": "node scripts/check-package.mjs",
+    "demo:dev": "npm run dev --workspace demo",
+    "demo:build": "npm run build --workspace demo",
+    "demo:preview": "npm run preview --workspace demo",
+    "check": "npm run typecheck && npm run lint && npm run test && npm run build && npm run check:package && npm run demo:build",
+    "prepack": "npm run build"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.6.6",
+    "@commitlint/cli": "^21.2.4",
+    "@commitlint/config-conventional": "^21.2.4",
+    "@types/node": "^22.20.5",
+    "tsup": "^9.0.0",
+    "typescript": "~6.0.3",
+    "vitest": "^5.1.0"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  }
+}
