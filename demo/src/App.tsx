@@ -139,6 +139,7 @@ export function App() {
                 solution={solution}
                 registry={registry}
                 findings={evaluation.findings}
+                intentVerdicts={evaluation.intentVerdicts}
                 selection={selection}
                 onChange={change}
               />

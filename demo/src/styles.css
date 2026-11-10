@@ -478,12 +478,80 @@ button.link:hover {
   border-left-color: #0969da;
 }
 
-.react-flow__edge.intent-error .react-flow__edge-path {
-  stroke: var(--error);
+.react-flow__edge.verdict-pass .react-flow__edge-path {
+  stroke: var(--pass);
 }
 
-.react-flow__edge.intent-warning .react-flow__edge-path {
-  stroke: var(--warning);
+.react-flow__edge.verdict-fail .react-flow__edge-path {
+  stroke: var(--error);
+  stroke-width: 2;
+}
+
+.react-flow__edge.verdict-undecidable .react-flow__edge-path {
+  stroke: var(--undecidable);
+  stroke-dasharray: 6 4;
+}
+
+.intent-label {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 220px;
+  padding: 0.1rem 0.4rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--background);
+  font-size: 11px;
+  text-align: center;
+  pointer-events: all;
+}
+
+.intent-label.selected {
+  border-color: var(--accent);
+}
+
+.intent-label.verdict-pass .mark {
+  color: var(--pass);
+}
+
+.intent-label.verdict-fail {
+  border-color: var(--error);
+}
+
+.intent-label.verdict-fail .mark,
+.intent-message {
+  color: var(--error);
+}
+
+.intent-label.verdict-undecidable .mark {
+  color: var(--undecidable);
+}
+
+.verdict-details ul {
+  margin: 0.2rem 0 0;
+  padding-left: 1.1rem;
+}
+
+.verdict-details > ul {
+  padding-left: 0;
+  list-style: none;
+}
+
+.verdict {
+  font-weight: 600;
+}
+
+.verdict-pass.verdict {
+  color: var(--pass);
+}
+
+.verdict-fail.verdict {
+  color: var(--error);
+}
+
+.verdict-undecidable.verdict {
+  color: var(--undecidable);
 }
 
 .react-flow__edge.selected .react-flow__edge-path {

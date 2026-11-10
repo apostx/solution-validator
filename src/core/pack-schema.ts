@@ -31,8 +31,8 @@ export type TypeSelector = Type.Static<typeof TypeSelector>;
 
 /**
  * An interaction a component type accepts. An intent matches the rule when its source matches
- * `from` (omitted: any source) and the rule lists the intent's action and port, if the intent
- * states them.
+ * `from` (omitted: any source), the rule's `actions` include the intent's action (if it states
+ * one), and the rule's `ports`, if listed, include the intent's port.
  */
 export const AcceptRule = Type.Object(
   {

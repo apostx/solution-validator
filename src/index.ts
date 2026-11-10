@@ -13,10 +13,19 @@ export {
   type AnalysisResult,
   type AnalyzeOptions,
   analyze,
+  type ConnectionValidityReport,
   LIBRARY_NAME,
   listFindings,
   type ModelValidityReport,
+  type VerdictSummary,
 } from "./analysis/analyze";
+export type {
+  CheckId,
+  CheckResult,
+  Evidence,
+  IntentVerdict,
+  Verdict,
+} from "./analysis/verdict";
 export type { Meta } from "./core/ids";
 export { type ParseResult, parseSolution, type SolutionModel } from "./core/model";
 export {
@@ -49,6 +58,9 @@ export {
   Traits,
 } from "./core/traits";
 export {
+  EVIDENCE_CODES,
+  type EvidenceCode,
+  type EvidenceCodeDefinition,
   FINDING_CODES,
   type FindingCode,
   type FindingCodeDefinition,

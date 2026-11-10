@@ -22,7 +22,8 @@
     "options": {
       "level": "logical",
       "analyses": [
-        "model-validity"
+        "model-validity",
+        "connection-validity"
       ]
     },
     "analyses": [
@@ -164,6 +165,115 @@
               "id": "users"
             },
             "message": "The id users is used by more than one component or intent."
+          }
+        ]
+      },
+      {
+        "id": "connection-validity",
+        "intents": [
+          {
+            "intent": "i1",
+            "verdict": "undecidable",
+            "checks": [
+              {
+                "check": "compatibility",
+                "verdict": "undecidable",
+                "evidence": [
+                  {
+                    "code": "COMPONENT_MISSING",
+                    "params": {
+                      "component": "api"
+                    },
+                    "message": "api is not a component of the solution."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "intent": "i2",
+            "verdict": "undecidable",
+            "checks": [
+              {
+                "check": "compatibility",
+                "verdict": "undecidable",
+                "evidence": [
+                  {
+                    "code": "PURPOSE_MISSING",
+                    "params": {},
+                    "message": "The intent states neither an action nor a port."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "intent": "i3",
+            "verdict": "undecidable",
+            "checks": [
+              {
+                "check": "compatibility",
+                "verdict": "undecidable",
+                "evidence": [
+                  {
+                    "code": "ACTION_UNDEFINED",
+                    "params": {
+                      "action": "publish"
+                    },
+                    "message": "The action publish is not defined by the solution's packs."
+                  },
+                  {
+                    "code": "PORT_UNDEFINED",
+                    "params": {
+                      "port": "smtp"
+                    },
+                    "message": "The port smtp is not defined by the solution's packs."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "intent": "users",
+            "verdict": "fail",
+            "checks": [
+              {
+                "check": "compatibility",
+                "verdict": "fail",
+                "evidence": [
+                  {
+                    "code": "NOT_ACCEPTED",
+                    "params": {
+                      "fromType": "core.internet",
+                      "toType": "aws.lambda",
+                      "purpose": "port 8443"
+                    },
+                    "message": "aws.lambda does not accept port 8443 from core.internet."
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "summary": {
+          "pass": 0,
+          "fail": 1,
+          "undecidable": 3
+        },
+        "findings": [
+          {
+            "code": "CONNECTION_NOT_ACCEPTED",
+            "severity": "error",
+            "subjects": [
+              "users"
+            ],
+            "params": {
+              "intent": "users",
+              "fromType": "core.internet",
+              "toType": "aws.lambda",
+              "purpose": "port 8443"
+            },
+            "message": "Intent users: aws.lambda does not accept port 8443 from core.internet."
           }
         ]
       }

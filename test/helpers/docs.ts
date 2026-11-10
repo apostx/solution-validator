@@ -1,4 +1,4 @@
-import { FINDING_CODES, type FindingSource } from "../../src/index";
+import { EVIDENCE_CODES, FINDING_CODES, type FindingSource } from "../../src/index";
 
 const SECTIONS: { source: FindingSource; title: string; intro: string }[] = [
   {
@@ -16,6 +16,12 @@ const SECTIONS: { source: FindingSource; title: string; intro: string }[] = [
     source: "model-validity",
     title: "Analysis: model-validity",
     intro: "Semantic checks of a parsed solution.",
+  },
+  {
+    source: "connection-validity",
+    title: "Analysis: connection-validity",
+    intro:
+      "Whether the target's type accepts each intent from the source's type. Intents that cannot be checked because the model is invalid get an `undecidable` verdict without a finding; `model-validity` reports the cause.",
   },
 ];
 
@@ -41,6 +47,18 @@ export function renderFindingCodes(): string {
         `| \`${code}\` | ${definition.severity} | ${cell(definition.template)} | ${cell(definition.description)} |`,
       );
     }
+  }
+  lines.push(
+    "",
+    "## Evidence codes",
+    "",
+    "Evidence explains an intent's verdict: each check lists the evidence it used. Evidence has a `code`, `params` and a default English `message`, like a finding, but no severity.",
+    "",
+    "| Code | Message template | Meaning |",
+    "|---|---|---|",
+  );
+  for (const [code, definition] of Object.entries(EVIDENCE_CODES)) {
+    lines.push(`| \`${code}\` | ${cell(definition.template)} | ${cell(definition.description)} |`);
   }
   return `${lines.join("\n")}\n`;
 }

@@ -82,7 +82,10 @@ describe("analyze", () => {
     const result = analyze(parsed.model);
     expect(result.library.name).toBe("solution-validator");
     expect(result.packs).toEqual([{ id: "core", version: "0.1.0" }]);
-    expect(result.options).toEqual({ level: "logical", analyses: ["model-validity"] });
+    expect(result.options).toEqual({
+      level: "logical",
+      analyses: ["model-validity", "connection-validity"],
+    });
   });
 
   it("rejects unknown analyses and unsupported levels", () => {

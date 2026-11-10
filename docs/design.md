@@ -288,6 +288,12 @@ These details implement the decisions above. They are not product decisions; ope
 - **Programming errors.** `analyze` throws a `TypeError` for an unknown analysis id or an unsupported level; `createRegistry` throws a `RegistryError` with findings. Invalid solutions never throw.
 - **Golden files** use Vitest file snapshots (`npx vitest run -u` updates them). The library version is replaced by a placeholder in golden results, so releases do not change them.
 
+### Implementation notes (Iteration 2)
+
+- **Verdicts and evidence.** Intent-level analyses report `{ intent, verdict, checks: [{ check, verdict, evidence }] }`. Evidence has a stable code, parameters and an English message, like findings, from a separate catalog. Checks that do not apply are left out.
+- **Compatibility semantics.** A rule's `actions` must include the intent's action. A rule's `ports`, when listed, must include the intent's port; a rule without `ports` does not restrict the port, because which ports a component listens on belongs to the `endpoint` trait (connectivity). A numeric port matches a port id with that number.
+- **Honest undecidability.** A type that omits `accepts` makes the check `undecidable` (with a warning), while `"accepts": []` accepts nothing (`fail`). Intents whose ends, types or purpose are invalid are `undecidable` without an extra finding, since `model-validity` already reports the cause.
+
 ## 11. Out of scope for the first version
 
 - Scoring, weighting and complexity metrics (consumers build these; see [§7](#7-requirements-metadata-and-facts))

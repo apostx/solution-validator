@@ -2,7 +2,7 @@
 export type Severity = "error" | "warning" | "info";
 
 /** Where a finding code comes from. */
-export type FindingSource = "schema" | "registry" | "model-validity";
+export type FindingSource = "schema" | "registry" | "model-validity" | "connection-validity";
 
 export interface FindingCodeDefinition {
   /** Severity of every finding with this code. */
@@ -205,7 +205,73 @@ export const FINDING_CODES = {
     template: "Intent {intent} uses the unknown port {port}.",
     description: "An intent's symbolic port is not defined by the solution's packs.",
   },
+
+  // Analysis: connection-validity
+  CONNECTION_NOT_ACCEPTED: {
+    severity: "error",
+    source: "connection-validity",
+    template: "Intent {intent}: {toType} does not accept {purpose} from {fromType}.",
+    description:
+      "No accepts rule of the target's type allows the intent's action and port from the source's type.",
+  },
+  CONNECTION_RULES_MISSING: {
+    severity: "warning",
+    source: "connection-validity",
+    template:
+      "Intent {intent} cannot be checked: type {type} does not declare which interactions it accepts.",
+    description:
+      "The target's type has no accepts rules in its pack, so the intent's compatibility is undecidable.",
+  },
 } as const satisfies Record<string, FindingCodeDefinition>;
 
 /** A stable finding code. */
 export type FindingCode = keyof typeof FINDING_CODES;
+
+export interface EvidenceCodeDefinition {
+  /** English message template. `{name}` is replaced by the parameter `name`. */
+  readonly template: string;
+  /** One-sentence explanation for the documentation. */
+  readonly description: string;
+}
+
+/**
+ * Evidence explains a verdict: which check was made and which setting allowed or blocked it.
+ * `docs/finding-codes.md` lists these codes as well.
+ */
+export const EVIDENCE_CODES = {
+  COMPONENT_MISSING: {
+    template: "{component} is not a component of the solution.",
+    description: "An end of the intent does not exist, so nothing can be decided.",
+  },
+  TYPE_MISSING: {
+    template: "The type {type} of {component} is not available.",
+    description: "The component's type is unknown or its pack is not used by the solution.",
+  },
+  PURPOSE_MISSING: {
+    template: "The intent states neither an action nor a port.",
+    description: "Without an action or a port there is nothing to check.",
+  },
+  ACTION_UNDEFINED: {
+    template: "The action {action} is not defined by the solution's packs.",
+    description: "The intent's action is unknown.",
+  },
+  PORT_UNDEFINED: {
+    template: "The port {port} is not defined by the solution's packs.",
+    description: "The intent's symbolic port is unknown.",
+  },
+  ACCEPTS_UNDECLARED: {
+    template: "Type {type} does not declare which interactions it accepts.",
+    description: "The target's pack has no accepts rules for the type.",
+  },
+  ACCEPTED: {
+    template: "{toType} accepts {purpose} from {fromType} (accepts rule {rule}).",
+    description: "An accepts rule of the target's type matches the intent.",
+  },
+  NOT_ACCEPTED: {
+    template: "{toType} does not accept {purpose} from {fromType}.",
+    description: "No accepts rule of the target's type matches the intent.",
+  },
+} as const satisfies Record<string, EvidenceCodeDefinition>;
+
+/** A stable evidence code. */
+export type EvidenceCode = keyof typeof EVIDENCE_CODES;

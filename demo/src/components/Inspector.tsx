@@ -1,4 +1,4 @@
-import type { Finding, Registry, Solution } from "solution-validator";
+import type { Finding, IntentVerdict, Registry, Solution } from "solution-validator";
 import { type Selection, setLabel, setProperty, updateIntent } from "../model";
 import { PropertyField } from "./PropertyField";
 
@@ -6,12 +6,20 @@ interface InspectorProps {
   solution: Solution;
   registry: Registry;
   findings: readonly Finding[];
+  intentVerdicts: ReadonlyMap<string, IntentVerdict>;
   selection: Selection;
   onChange(solution: Solution): void;
 }
 
 /** Edits the selected component's properties or the selected intent. */
-export function Inspector({ solution, registry, findings, selection, onChange }: InspectorProps) {
+export function Inspector({
+  solution,
+  registry,
+  findings,
+  intentVerdicts,
+  selection,
+  onChange,
+}: InspectorProps) {
   if (!selection) {
     return (
       <p className="hint">
@@ -62,6 +70,7 @@ export function Inspector({ solution, registry, findings, selection, onChange }:
             ))}
           </select>
         </label>
+        <VerdictDetails verdict={intentVerdicts.get(intent.id)} />
         <RelatedFindings findings={related} />
       </div>
     );
@@ -115,6 +124,30 @@ export function Inspector({ solution, registry, findings, selection, onChange }:
         </fieldset>
       )}
       <RelatedFindings findings={related} />
+    </div>
+  );
+}
+
+function VerdictDetails({ verdict }: { verdict: IntentVerdict | undefined }) {
+  if (!verdict) return null;
+  return (
+    <div className="verdict-details">
+      <p>
+        Verdict: <span className={`verdict verdict-${verdict.verdict}`}>{verdict.verdict}</span>
+      </p>
+      <ul>
+        {verdict.checks.map((check) => (
+          <li key={check.check}>
+            <span className={`verdict verdict-${check.verdict}`}>{check.verdict}</span>{" "}
+            <strong>{check.check}</strong>
+            <ul>
+              {check.evidence.map((evidence) => (
+                <li key={`${evidence.code}:${evidence.message}`}>{evidence.message}</li>
+              ))}
+            </ul>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

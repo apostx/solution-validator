@@ -1,0 +1,115 @@
+{
+  "$schema": "../../../schemas/solution.schema.json",
+  "schemaVersion": 1,
+  "packs": ["core", "aws"],
+  "components": [
+    {
+      "id": "users",
+      "type": "core.internet"
+    },
+    {
+      "id": "api",
+      "type": "aws.api-gateway"
+    },
+    {
+      "id": "fn",
+      "type": "aws.lambda"
+    },
+    {
+      "id": "worker",
+      "type": "aws.lambda"
+    },
+    {
+      "id": "table",
+      "type": "aws.dynamodb"
+    },
+    {
+      "id": "bucket",
+      "type": "aws.s3"
+    }
+  ],
+  "intents": [
+    {
+      "id": "users-to-api",
+      "from": "users",
+      "to": "api",
+      "port": "https"
+    },
+    {
+      "id": "users-to-api-invoke",
+      "from": "users",
+      "to": "api",
+      "action": "invoke",
+      "port": 443
+    },
+    {
+      "id": "api-to-fn",
+      "from": "api",
+      "to": "fn",
+      "action": "invoke"
+    },
+    {
+      "id": "fn-to-worker",
+      "from": "fn",
+      "to": "worker",
+      "action": "invoke"
+    },
+    {
+      "id": "fn-to-table",
+      "from": "fn",
+      "to": "table",
+      "action": "write"
+    },
+    {
+      "id": "fn-to-internet",
+      "from": "fn",
+      "to": "users",
+      "action": "connect",
+      "port": "https"
+    },
+    {
+      "id": "users-read-bucket",
+      "from": "users",
+      "to": "bucket",
+      "action": "read",
+      "port": "https"
+    },
+    {
+      "id": "users-to-fn",
+      "from": "users",
+      "to": "fn",
+      "action": "invoke"
+    },
+    {
+      "id": "users-write-bucket",
+      "from": "users",
+      "to": "bucket",
+      "action": "write"
+    },
+    {
+      "id": "bucket-to-table",
+      "from": "bucket",
+      "to": "table",
+      "action": "write"
+    },
+    {
+      "id": "api-on-http",
+      "from": "users",
+      "to": "api",
+      "port": "http"
+    },
+    {
+      "id": "fn-to-table-https",
+      "from": "fn",
+      "to": "table",
+      "action": "read",
+      "port": "https"
+    },
+    {
+      "id": "users-to-table",
+      "from": "users",
+      "to": "table",
+      "action": "read"
+    }
+  ]
+}

@@ -22,13 +22,113 @@
     "options": {
       "level": "logical",
       "analyses": [
-        "model-validity"
+        "model-validity",
+        "connection-validity"
       ]
     },
     "analyses": [
       {
         "id": "model-validity",
         "valid": true,
+        "findings": []
+      },
+      {
+        "id": "connection-validity",
+        "intents": [
+          {
+            "intent": "i1",
+            "verdict": "pass",
+            "checks": [
+              {
+                "check": "compatibility",
+                "verdict": "pass",
+                "evidence": [
+                  {
+                    "code": "ACCEPTED",
+                    "params": {
+                      "fromType": "core.internet",
+                      "toType": "aws.api-gateway",
+                      "purpose": "port https",
+                      "rule": 0
+                    },
+                    "message": "aws.api-gateway accepts port https from core.internet (accepts rule 0)."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "intent": "i2",
+            "verdict": "pass",
+            "checks": [
+              {
+                "check": "compatibility",
+                "verdict": "pass",
+                "evidence": [
+                  {
+                    "code": "ACCEPTED",
+                    "params": {
+                      "fromType": "aws.api-gateway",
+                      "toType": "aws.lambda",
+                      "purpose": "invoke",
+                      "rule": 0
+                    },
+                    "message": "aws.lambda accepts invoke from aws.api-gateway (accepts rule 0)."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "intent": "i3",
+            "verdict": "pass",
+            "checks": [
+              {
+                "check": "compatibility",
+                "verdict": "pass",
+                "evidence": [
+                  {
+                    "code": "ACCEPTED",
+                    "params": {
+                      "fromType": "aws.lambda",
+                      "toType": "aws.dynamodb",
+                      "purpose": "write",
+                      "rule": 0
+                    },
+                    "message": "aws.dynamodb accepts write from aws.lambda (accepts rule 0)."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "intent": "i4",
+            "verdict": "pass",
+            "checks": [
+              {
+                "check": "compatibility",
+                "verdict": "pass",
+                "evidence": [
+                  {
+                    "code": "ACCEPTED",
+                    "params": {
+                      "fromType": "aws.lambda",
+                      "toType": "aws.s3",
+                      "purpose": "write",
+                      "rule": 0
+                    },
+                    "message": "aws.s3 accepts write from aws.lambda (accepts rule 0)."
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "summary": {
+          "pass": 4,
+          "fail": 0,
+          "undecidable": 0
+        },
         "findings": []
       }
     ]
