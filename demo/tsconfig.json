@@ -5,7 +5,8 @@
     "jsx": "react-jsx",
     "types": ["vite/client", "node"],
     "paths": {
-      "solution-validator": ["../src/index.ts"]
+      "solution-validator": ["../src/index.ts"],
+      "solution-validator/packs/*": ["../src/packs/*.ts"]
     },
     "tsBuildInfoFile": "../node_modules/.cache/tsc/demo.tsbuildinfo"
   },

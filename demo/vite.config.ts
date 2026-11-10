@@ -8,9 +8,16 @@ export default defineConfig({
   base: "./",
   plugins: [react()],
   resolve: {
-    alias: {
-      // The demo uses the library from source, not from npm.
-      "solution-validator": fileURLToPath(new URL("../src/index.ts", import.meta.url)),
-    },
+    // The demo uses the library and the official packs from source, not from npm.
+    alias: [
+      {
+        find: /^solution-validator\/packs\/(.*)$/,
+        replacement: fileURLToPath(new URL("../src/packs/$1.ts", import.meta.url)),
+      },
+      {
+        find: /^solution-validator$/,
+        replacement: fileURLToPath(new URL("../src/index.ts", import.meta.url)),
+      },
+    ],
   },
 });
