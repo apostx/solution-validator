@@ -4,279 +4,825 @@
     "findings": []
   },
   "analysis": {
-    "library": {
-      "name": "solution-validator",
-      "version": "<version>"
-    },
-    "vocabulary": 1,
-    "packs": [
-      {
-        "id": "aws",
-        "version": "0.1.0"
+    "strict": {
+      "library": {
+        "name": "solution-validator",
+        "version": "<version>"
       },
-      {
-        "id": "core",
-        "version": "0.1.0"
-      }
-    ],
-    "options": {
-      "level": "logical",
+      "vocabulary": 1,
+      "packs": [
+        {
+          "id": "aws",
+          "version": "0.1.0"
+        },
+        {
+          "id": "core",
+          "version": "0.1.0"
+        }
+      ],
+      "options": {
+        "level": "logical",
+        "analyses": [
+          "model-validity",
+          "connection-validity",
+          "access"
+        ],
+        "assumptions": "strict"
+      },
       "analyses": [
-        "model-validity",
-        "connection-validity"
+        {
+          "id": "model-validity",
+          "valid": false,
+          "findings": [
+            {
+              "code": "SOLUTION_PACK_DUPLICATE",
+              "severity": "warning",
+              "subjects": [],
+              "params": {
+                "pack": "aws"
+              },
+              "message": "Pack aws is listed more than once."
+            },
+            {
+              "code": "SOLUTION_PACK_UNKNOWN",
+              "severity": "error",
+              "subjects": [],
+              "params": {
+                "pack": "gcp"
+              },
+              "message": "The solution needs pack gcp, which is not loaded."
+            },
+            {
+              "code": "ID_DUPLICATE",
+              "severity": "error",
+              "subjects": [
+                "fn"
+              ],
+              "params": {
+                "id": "fn"
+              },
+              "message": "The id fn is used by more than one component or intent."
+            },
+            {
+              "code": "PLACEMENT_NOT_ZONE",
+              "severity": "error",
+              "subjects": [
+                "fn"
+              ],
+              "params": {
+                "component": "fn",
+                "zone": "users"
+              },
+              "message": "Component fn is placed in users, which is not a zone."
+            },
+            {
+              "code": "REFERENCE_UNKNOWN",
+              "severity": "error",
+              "subjects": [
+                "fn"
+              ],
+              "params": {
+                "path": "/components/1/placement/1",
+                "id": "vpc"
+              },
+              "message": "/components/1/placement/1 refers to vpc, which is not a component of the solution."
+            },
+            {
+              "code": "REFERENCE_UNKNOWN",
+              "severity": "error",
+              "subjects": [
+                "i1"
+              ],
+              "params": {
+                "path": "/intents/0/to",
+                "id": "api"
+              },
+              "message": "/intents/0/to refers to api, which is not a component of the solution."
+            },
+            {
+              "code": "INTENT_PURPOSE_MISSING",
+              "severity": "error",
+              "subjects": [
+                "i2"
+              ],
+              "params": {
+                "intent": "i2"
+              },
+              "message": "Intent i2 states neither an action nor a port."
+            },
+            {
+              "code": "INTENT_SELF",
+              "severity": "warning",
+              "subjects": [
+                "i2"
+              ],
+              "params": {
+                "intent": "i2",
+                "component": "fn"
+              },
+              "message": "Intent i2 goes from fn to itself."
+            },
+            {
+              "code": "ACTION_UNKNOWN",
+              "severity": "error",
+              "subjects": [
+                "i3"
+              ],
+              "params": {
+                "intent": "i3",
+                "action": "publish"
+              },
+              "message": "Intent i3 uses the unknown action publish."
+            },
+            {
+              "code": "PORT_UNKNOWN",
+              "severity": "error",
+              "subjects": [
+                "i3"
+              ],
+              "params": {
+                "intent": "i3",
+                "port": "smtp"
+              },
+              "message": "Intent i3 uses the unknown port smtp."
+            },
+            {
+              "code": "TYPE_UNKNOWN",
+              "severity": "error",
+              "subjects": [
+                "queue"
+              ],
+              "params": {
+                "component": "queue",
+                "type": "aws.sqs"
+              },
+              "message": "Component queue has the unknown type aws.sqs."
+            },
+            {
+              "code": "ID_DUPLICATE",
+              "severity": "error",
+              "subjects": [
+                "users"
+              ],
+              "params": {
+                "id": "users"
+              },
+              "message": "The id users is used by more than one component or intent."
+            }
+          ]
+        },
+        {
+          "id": "connection-validity",
+          "intents": [
+            {
+              "intent": "i1",
+              "verdict": "undecidable",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "undecidable",
+                  "evidence": [
+                    {
+                      "code": "COMPONENT_MISSING",
+                      "params": {
+                        "component": "api"
+                      },
+                      "message": "api is not a component of the solution."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "i2",
+              "verdict": "undecidable",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "undecidable",
+                  "evidence": [
+                    {
+                      "code": "PURPOSE_MISSING",
+                      "params": {},
+                      "message": "The intent states neither an action nor a port."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "i3",
+              "verdict": "undecidable",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "undecidable",
+                  "evidence": [
+                    {
+                      "code": "ACTION_UNDEFINED",
+                      "params": {
+                        "action": "publish"
+                      },
+                      "message": "The action publish is not defined by the solution's packs."
+                    },
+                    {
+                      "code": "PORT_UNDEFINED",
+                      "params": {
+                        "port": "smtp"
+                      },
+                      "message": "The port smtp is not defined by the solution's packs."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "users",
+              "verdict": "fail",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "fail",
+                  "evidence": [
+                    {
+                      "code": "NOT_ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "aws.lambda",
+                        "purpose": "port 8443"
+                      },
+                      "message": "aws.lambda does not accept port 8443 from core.internet."
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "summary": {
+            "pass": 0,
+            "fail": 1,
+            "undecidable": 3
+          },
+          "findings": [
+            {
+              "code": "CONNECTION_NOT_ACCEPTED",
+              "severity": "error",
+              "subjects": [
+                "users"
+              ],
+              "params": {
+                "intent": "users",
+                "fromType": "core.internet",
+                "toType": "aws.lambda",
+                "purpose": "port 8443"
+              },
+              "message": "Intent users: aws.lambda does not accept port 8443 from core.internet."
+            }
+          ]
+        },
+        {
+          "id": "access",
+          "intents": [
+            {
+              "intent": "i1",
+              "verdict": "undecidable",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "undecidable",
+                  "evidence": [
+                    {
+                      "code": "COMPONENT_MISSING",
+                      "params": {
+                        "component": "api"
+                      },
+                      "message": "api is not a component of the solution."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "i2",
+              "verdict": "undecidable",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "undecidable",
+                  "evidence": [
+                    {
+                      "code": "PURPOSE_MISSING",
+                      "params": {},
+                      "message": "The intent states neither an action nor a port."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "i3",
+              "verdict": "undecidable",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "undecidable",
+                  "evidence": [
+                    {
+                      "code": "ACTION_UNDEFINED",
+                      "params": {
+                        "action": "publish"
+                      },
+                      "message": "The action publish is not defined by the solution's packs."
+                    },
+                    {
+                      "code": "PORT_UNDEFINED",
+                      "params": {
+                        "port": "smtp"
+                      },
+                      "message": "The port smtp is not defined by the solution's packs."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "users",
+              "verdict": "fail",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "fail",
+                  "evidence": [
+                    {
+                      "code": "NOT_ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "aws.lambda",
+                        "purpose": "port 8443"
+                      },
+                      "message": "aws.lambda does not accept port 8443 from core.internet."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "undecidable",
+                  "evidence": [
+                    {
+                      "code": "ZONES_UNSUPPORTED",
+                      "params": {},
+                      "message": "Placement in zones is not analyzed yet."
+                    }
+                  ]
+                },
+                {
+                  "check": "authorization",
+                  "verdict": "undecidable",
+                  "evidence": [
+                    {
+                      "code": "ACTION_REQUIRED",
+                      "params": {
+                        "to": "fn"
+                      },
+                      "message": "fn controls access per action, but the intent states no action."
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "summary": {
+            "pass": 0,
+            "fail": 1,
+            "undecidable": 3
+          },
+          "exposure": [
+            {
+              "component": "fn",
+              "exposure": "undecidable",
+              "evidence": [
+                {
+                  "code": "ZONES_UNSUPPORTED",
+                  "params": {},
+                  "message": "Placement in zones is not analyzed yet."
+                }
+              ]
+            }
+          ],
+          "assumptions": [],
+          "findings": []
+        }
       ]
     },
-    "analyses": [
-      {
-        "id": "model-validity",
-        "valid": false,
-        "findings": [
-          {
-            "code": "SOLUTION_PACK_DUPLICATE",
-            "severity": "warning",
-            "subjects": [],
-            "params": {
-              "pack": "aws"
-            },
-            "message": "Pack aws is listed more than once."
-          },
-          {
-            "code": "SOLUTION_PACK_UNKNOWN",
-            "severity": "error",
-            "subjects": [],
-            "params": {
-              "pack": "gcp"
-            },
-            "message": "The solution needs pack gcp, which is not loaded."
-          },
-          {
-            "code": "ID_DUPLICATE",
-            "severity": "error",
-            "subjects": [
-              "fn"
-            ],
-            "params": {
-              "id": "fn"
-            },
-            "message": "The id fn is used by more than one component or intent."
-          },
-          {
-            "code": "PLACEMENT_NOT_ZONE",
-            "severity": "error",
-            "subjects": [
-              "fn"
-            ],
-            "params": {
-              "component": "fn",
-              "zone": "users"
-            },
-            "message": "Component fn is placed in users, which is not a zone."
-          },
-          {
-            "code": "REFERENCE_UNKNOWN",
-            "severity": "error",
-            "subjects": [
-              "fn"
-            ],
-            "params": {
-              "path": "/components/1/placement/1",
-              "id": "vpc"
-            },
-            "message": "/components/1/placement/1 refers to vpc, which is not a component of the solution."
-          },
-          {
-            "code": "REFERENCE_UNKNOWN",
-            "severity": "error",
-            "subjects": [
-              "i1"
-            ],
-            "params": {
-              "path": "/intents/0/to",
-              "id": "api"
-            },
-            "message": "/intents/0/to refers to api, which is not a component of the solution."
-          },
-          {
-            "code": "INTENT_PURPOSE_MISSING",
-            "severity": "error",
-            "subjects": [
-              "i2"
-            ],
-            "params": {
-              "intent": "i2"
-            },
-            "message": "Intent i2 states neither an action nor a port."
-          },
-          {
-            "code": "INTENT_SELF",
-            "severity": "warning",
-            "subjects": [
-              "i2"
-            ],
-            "params": {
-              "intent": "i2",
-              "component": "fn"
-            },
-            "message": "Intent i2 goes from fn to itself."
-          },
-          {
-            "code": "ACTION_UNKNOWN",
-            "severity": "error",
-            "subjects": [
-              "i3"
-            ],
-            "params": {
-              "intent": "i3",
-              "action": "publish"
-            },
-            "message": "Intent i3 uses the unknown action publish."
-          },
-          {
-            "code": "PORT_UNKNOWN",
-            "severity": "error",
-            "subjects": [
-              "i3"
-            ],
-            "params": {
-              "intent": "i3",
-              "port": "smtp"
-            },
-            "message": "Intent i3 uses the unknown port smtp."
-          },
-          {
-            "code": "TYPE_UNKNOWN",
-            "severity": "error",
-            "subjects": [
-              "queue"
-            ],
-            "params": {
-              "component": "queue",
-              "type": "aws.sqs"
-            },
-            "message": "Component queue has the unknown type aws.sqs."
-          },
-          {
-            "code": "ID_DUPLICATE",
-            "severity": "error",
-            "subjects": [
-              "users"
-            ],
-            "params": {
-              "id": "users"
-            },
-            "message": "The id users is used by more than one component or intent."
-          }
-        ]
+    "pack-defaults": {
+      "library": {
+        "name": "solution-validator",
+        "version": "<version>"
       },
-      {
-        "id": "connection-validity",
-        "intents": [
-          {
-            "intent": "i1",
-            "verdict": "undecidable",
-            "checks": [
-              {
-                "check": "compatibility",
-                "verdict": "undecidable",
-                "evidence": [
-                  {
-                    "code": "COMPONENT_MISSING",
-                    "params": {
-                      "component": "api"
-                    },
-                    "message": "api is not a component of the solution."
-                  }
-                ]
-              }
-            ]
-          },
-          {
-            "intent": "i2",
-            "verdict": "undecidable",
-            "checks": [
-              {
-                "check": "compatibility",
-                "verdict": "undecidable",
-                "evidence": [
-                  {
-                    "code": "PURPOSE_MISSING",
-                    "params": {},
-                    "message": "The intent states neither an action nor a port."
-                  }
-                ]
-              }
-            ]
-          },
-          {
-            "intent": "i3",
-            "verdict": "undecidable",
-            "checks": [
-              {
-                "check": "compatibility",
-                "verdict": "undecidable",
-                "evidence": [
-                  {
-                    "code": "ACTION_UNDEFINED",
-                    "params": {
-                      "action": "publish"
-                    },
-                    "message": "The action publish is not defined by the solution's packs."
-                  },
-                  {
-                    "code": "PORT_UNDEFINED",
-                    "params": {
-                      "port": "smtp"
-                    },
-                    "message": "The port smtp is not defined by the solution's packs."
-                  }
-                ]
-              }
-            ]
-          },
-          {
-            "intent": "users",
-            "verdict": "fail",
-            "checks": [
-              {
-                "check": "compatibility",
-                "verdict": "fail",
-                "evidence": [
-                  {
-                    "code": "NOT_ACCEPTED",
-                    "params": {
-                      "fromType": "core.internet",
-                      "toType": "aws.lambda",
-                      "purpose": "port 8443"
-                    },
-                    "message": "aws.lambda does not accept port 8443 from core.internet."
-                  }
-                ]
-              }
-            ]
-          }
-        ],
-        "summary": {
-          "pass": 0,
-          "fail": 1,
-          "undecidable": 3
+      "vocabulary": 1,
+      "packs": [
+        {
+          "id": "aws",
+          "version": "0.1.0"
         },
-        "findings": [
-          {
-            "code": "CONNECTION_NOT_ACCEPTED",
-            "severity": "error",
-            "subjects": [
-              "users"
-            ],
-            "params": {
-              "intent": "users",
-              "fromType": "core.internet",
-              "toType": "aws.lambda",
-              "purpose": "port 8443"
+        {
+          "id": "core",
+          "version": "0.1.0"
+        }
+      ],
+      "options": {
+        "level": "logical",
+        "analyses": [
+          "model-validity",
+          "connection-validity",
+          "access"
+        ],
+        "assumptions": "pack-defaults"
+      },
+      "analyses": [
+        {
+          "id": "model-validity",
+          "valid": false,
+          "findings": [
+            {
+              "code": "SOLUTION_PACK_DUPLICATE",
+              "severity": "warning",
+              "subjects": [],
+              "params": {
+                "pack": "aws"
+              },
+              "message": "Pack aws is listed more than once."
             },
-            "message": "Intent users: aws.lambda does not accept port 8443 from core.internet."
-          }
-        ]
-      }
-    ]
+            {
+              "code": "SOLUTION_PACK_UNKNOWN",
+              "severity": "error",
+              "subjects": [],
+              "params": {
+                "pack": "gcp"
+              },
+              "message": "The solution needs pack gcp, which is not loaded."
+            },
+            {
+              "code": "ID_DUPLICATE",
+              "severity": "error",
+              "subjects": [
+                "fn"
+              ],
+              "params": {
+                "id": "fn"
+              },
+              "message": "The id fn is used by more than one component or intent."
+            },
+            {
+              "code": "PLACEMENT_NOT_ZONE",
+              "severity": "error",
+              "subjects": [
+                "fn"
+              ],
+              "params": {
+                "component": "fn",
+                "zone": "users"
+              },
+              "message": "Component fn is placed in users, which is not a zone."
+            },
+            {
+              "code": "REFERENCE_UNKNOWN",
+              "severity": "error",
+              "subjects": [
+                "fn"
+              ],
+              "params": {
+                "path": "/components/1/placement/1",
+                "id": "vpc"
+              },
+              "message": "/components/1/placement/1 refers to vpc, which is not a component of the solution."
+            },
+            {
+              "code": "REFERENCE_UNKNOWN",
+              "severity": "error",
+              "subjects": [
+                "i1"
+              ],
+              "params": {
+                "path": "/intents/0/to",
+                "id": "api"
+              },
+              "message": "/intents/0/to refers to api, which is not a component of the solution."
+            },
+            {
+              "code": "INTENT_PURPOSE_MISSING",
+              "severity": "error",
+              "subjects": [
+                "i2"
+              ],
+              "params": {
+                "intent": "i2"
+              },
+              "message": "Intent i2 states neither an action nor a port."
+            },
+            {
+              "code": "INTENT_SELF",
+              "severity": "warning",
+              "subjects": [
+                "i2"
+              ],
+              "params": {
+                "intent": "i2",
+                "component": "fn"
+              },
+              "message": "Intent i2 goes from fn to itself."
+            },
+            {
+              "code": "ACTION_UNKNOWN",
+              "severity": "error",
+              "subjects": [
+                "i3"
+              ],
+              "params": {
+                "intent": "i3",
+                "action": "publish"
+              },
+              "message": "Intent i3 uses the unknown action publish."
+            },
+            {
+              "code": "PORT_UNKNOWN",
+              "severity": "error",
+              "subjects": [
+                "i3"
+              ],
+              "params": {
+                "intent": "i3",
+                "port": "smtp"
+              },
+              "message": "Intent i3 uses the unknown port smtp."
+            },
+            {
+              "code": "TYPE_UNKNOWN",
+              "severity": "error",
+              "subjects": [
+                "queue"
+              ],
+              "params": {
+                "component": "queue",
+                "type": "aws.sqs"
+              },
+              "message": "Component queue has the unknown type aws.sqs."
+            },
+            {
+              "code": "ID_DUPLICATE",
+              "severity": "error",
+              "subjects": [
+                "users"
+              ],
+              "params": {
+                "id": "users"
+              },
+              "message": "The id users is used by more than one component or intent."
+            }
+          ]
+        },
+        {
+          "id": "connection-validity",
+          "intents": [
+            {
+              "intent": "i1",
+              "verdict": "undecidable",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "undecidable",
+                  "evidence": [
+                    {
+                      "code": "COMPONENT_MISSING",
+                      "params": {
+                        "component": "api"
+                      },
+                      "message": "api is not a component of the solution."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "i2",
+              "verdict": "undecidable",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "undecidable",
+                  "evidence": [
+                    {
+                      "code": "PURPOSE_MISSING",
+                      "params": {},
+                      "message": "The intent states neither an action nor a port."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "i3",
+              "verdict": "undecidable",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "undecidable",
+                  "evidence": [
+                    {
+                      "code": "ACTION_UNDEFINED",
+                      "params": {
+                        "action": "publish"
+                      },
+                      "message": "The action publish is not defined by the solution's packs."
+                    },
+                    {
+                      "code": "PORT_UNDEFINED",
+                      "params": {
+                        "port": "smtp"
+                      },
+                      "message": "The port smtp is not defined by the solution's packs."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "users",
+              "verdict": "fail",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "fail",
+                  "evidence": [
+                    {
+                      "code": "NOT_ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "aws.lambda",
+                        "purpose": "port 8443"
+                      },
+                      "message": "aws.lambda does not accept port 8443 from core.internet."
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "summary": {
+            "pass": 0,
+            "fail": 1,
+            "undecidable": 3
+          },
+          "findings": [
+            {
+              "code": "CONNECTION_NOT_ACCEPTED",
+              "severity": "error",
+              "subjects": [
+                "users"
+              ],
+              "params": {
+                "intent": "users",
+                "fromType": "core.internet",
+                "toType": "aws.lambda",
+                "purpose": "port 8443"
+              },
+              "message": "Intent users: aws.lambda does not accept port 8443 from core.internet."
+            }
+          ]
+        },
+        {
+          "id": "access",
+          "intents": [
+            {
+              "intent": "i1",
+              "verdict": "undecidable",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "undecidable",
+                  "evidence": [
+                    {
+                      "code": "COMPONENT_MISSING",
+                      "params": {
+                        "component": "api"
+                      },
+                      "message": "api is not a component of the solution."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "i2",
+              "verdict": "undecidable",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "undecidable",
+                  "evidence": [
+                    {
+                      "code": "PURPOSE_MISSING",
+                      "params": {},
+                      "message": "The intent states neither an action nor a port."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "i3",
+              "verdict": "undecidable",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "undecidable",
+                  "evidence": [
+                    {
+                      "code": "ACTION_UNDEFINED",
+                      "params": {
+                        "action": "publish"
+                      },
+                      "message": "The action publish is not defined by the solution's packs."
+                    },
+                    {
+                      "code": "PORT_UNDEFINED",
+                      "params": {
+                        "port": "smtp"
+                      },
+                      "message": "The port smtp is not defined by the solution's packs."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "users",
+              "verdict": "fail",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "fail",
+                  "evidence": [
+                    {
+                      "code": "NOT_ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "aws.lambda",
+                        "purpose": "port 8443"
+                      },
+                      "message": "aws.lambda does not accept port 8443 from core.internet."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "undecidable",
+                  "evidence": [
+                    {
+                      "code": "ZONES_UNSUPPORTED",
+                      "params": {},
+                      "message": "Placement in zones is not analyzed yet."
+                    }
+                  ]
+                },
+                {
+                  "check": "authorization",
+                  "verdict": "undecidable",
+                  "evidence": [
+                    {
+                      "code": "ACTION_REQUIRED",
+                      "params": {
+                        "to": "fn"
+                      },
+                      "message": "fn controls access per action, but the intent states no action."
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "summary": {
+            "pass": 0,
+            "fail": 1,
+            "undecidable": 3
+          },
+          "exposure": [
+            {
+              "component": "fn",
+              "exposure": "undecidable",
+              "evidence": [
+                {
+                  "code": "ZONES_UNSUPPORTED",
+                  "params": {},
+                  "message": "Placement in zones is not analyzed yet."
+                }
+              ]
+            }
+          ],
+          "assumptions": [],
+          "findings": []
+        }
+      ]
+    }
   }
 }

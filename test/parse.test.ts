@@ -84,7 +84,8 @@ describe("analyze", () => {
     expect(result.packs).toEqual([{ id: "core", version: "0.1.0" }]);
     expect(result.options).toEqual({
       level: "logical",
-      analyses: ["model-validity", "connection-validity"],
+      analyses: ["model-validity", "connection-validity", "access"],
+      assumptions: "strict",
     });
   });
 
@@ -93,5 +94,20 @@ describe("analyze", () => {
       TypeError,
     );
     expect(() => analyze(parsed.model, { level: "exact" as "logical" })).toThrow(TypeError);
+    expect(() => analyze(parsed.model, { level: "detailed", analyses: ["access"] })).toThrow(
+      TypeError,
+    );
+    expect(() => analyze(parsed.model, { assumptions: "lenient" as "strict" })).toThrow(TypeError);
+  });
+
+  it("adds the analyses a requested analysis needs", () => {
+    expect(analyze(parsed.model, { analyses: ["access"] }).options.analyses).toEqual([
+      "connection-validity",
+      "access",
+    ]);
+    expect(analyze(parsed.model, { level: "detailed" }).options.analyses).toEqual([
+      "model-validity",
+      "connection-validity",
+    ]);
   });
 });

@@ -23,6 +23,12 @@ const SECTIONS: { source: FindingSource; title: string; intro: string }[] = [
     intro:
       "Whether the target's type accepts each intent from the source's type. Intents that cannot be checked because the model is invalid get an `undecidable` verdict without a finding; `model-validity` reports the cause.",
   },
+  {
+    source: "access",
+    title: "Analysis: access",
+    intro:
+      "Logical access: forwarding, connectivity and authorization for every intent, and exposure to the internet. Failures are reported per failing check; undecidable intents report what is missing. Compatibility failures come from `connection-validity`, which always runs with `access`.",
+  },
 ];
 
 function cell(text: string): string {
