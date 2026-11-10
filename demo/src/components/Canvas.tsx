@@ -2,7 +2,6 @@ import {
   Background,
   type Connection,
   Controls,
-  type Edge,
   type EdgeChange,
   MarkerType,
   type NodeChange,
@@ -10,7 +9,7 @@ import {
   useReactFlow,
 } from "@xyflow/react";
 import { type DragEvent, useMemo, useRef, useState } from "react";
-import type { Intent, Registry, Solution } from "solution-validator";
+import type { Registry, Solution } from "solution-validator";
 import type { Evaluation } from "../evaluation";
 import {
   addComponent,
@@ -23,9 +22,11 @@ import {
   type Selection,
 } from "../model";
 import { ComponentNode, type ComponentNodeType } from "./ComponentNode";
+import { IntentEdge, type IntentEdgeType } from "./IntentEdge";
 import { DRAG_FORMAT } from "./Palette";
 
 const nodeTypes = { component: ComponentNode };
+const edgeTypes = { intent: IntentEdge };
 
 interface CanvasProps {
   solution: Solution;
@@ -34,8 +35,6 @@ interface CanvasProps {
   selection: Selection;
   onSelect(selection: Selection): void;
   onChange(solution: Solution): void;
-  /** Extra class names for an intent's arrow, for example by verdict. */
-  intentClassName?(intent: Intent): string | undefined;
 }
 
 export function Canvas({
@@ -45,7 +44,6 @@ export function Canvas({
   selection,
   onSelect,
   onChange,
-  intentClassName,
 }: CanvasProps) {
   const flow = useReactFlow();
   const [dragging, setDragging] = useState<Record<string, Position>>({});
@@ -86,7 +84,7 @@ export function Canvas({
     [components, dragging, measured, registry, selection, evaluation],
   );
 
-  const edges = useMemo<Edge[]>(() => {
+  const edges = useMemo<IntentEdgeType[]>(() => {
     const ids = new Set(components.map((component) => component.id));
     const seen = new Set<string>();
     return (solution.intents ?? [])
@@ -95,21 +93,24 @@ export function Canvas({
         seen.add(intent.id);
         return drawable;
       })
-      .map((intent) => {
-        const severity = evaluation.severityBySubject.get(intent.id);
-        const classes = [severity ? `intent-${severity}` : "", intentClassName?.(intent) ?? ""];
+      .map((intent): IntentEdgeType => {
+        const verdict = evaluation.intentVerdicts.get(intent.id)?.verdict;
         const purpose = [intent.action, intent.port].filter((part) => part !== undefined);
+        const messages = evaluation.findings
+          .filter((finding) => finding.subjects.includes(intent.id))
+          .map((finding) => finding.message);
         return {
           id: intent.id,
+          type: "intent",
           source: intent.from,
           target: intent.to,
-          label: purpose.length > 0 ? purpose.join(" · ") : "?",
           markerEnd: { type: MarkerType.ArrowClosed },
-          className: classes.join(" ").trim(),
+          className: verdict ? `verdict-${verdict}` : "",
           selected: selection?.kind === "intent" && selection.id === intent.id,
+          data: { purpose: purpose.length > 0 ? purpose.join(" · ") : "?", verdict, messages },
         };
       });
-  }, [components, solution.intents, evaluation, selection, intentClassName]);
+  }, [components, solution.intents, evaluation, selection]);
 
   function onNodesChange(changes: NodeChange<ComponentNodeType>[]) {
     let next = solution;
@@ -137,7 +138,7 @@ export function Canvas({
     if (next !== solution) onChange(next);
   }
 
-  function onEdgesChange(changes: EdgeChange[]) {
+  function onEdgesChange(changes: EdgeChange<IntentEdgeType>[]) {
     const removed: string[] = [];
     for (const change of changes) {
       if (change.type === "select" && change.selected) onSelect({ kind: "intent", id: change.id });
@@ -170,6 +171,7 @@ export function Canvas({
         nodes={nodes}
         edges={edges}
         nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}

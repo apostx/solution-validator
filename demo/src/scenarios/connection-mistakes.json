@@ -1,0 +1,48 @@
+{
+  "id": "connection-mistakes",
+  "title": "Connection mistakes",
+  "description": "Some arrows ask for interactions the target's type does not accept: users cannot invoke a Lambda function directly, and an S3 bucket cannot write to a DynamoDB table.",
+  "packs": ["core", "aws"],
+  "solution": {
+    "schemaVersion": 1,
+    "packs": ["core", "aws"],
+    "components": [
+      {
+        "id": "users",
+        "type": "core.internet",
+        "label": "Users",
+        "meta": { "position": { "x": 0, "y": 140 } }
+      },
+      {
+        "id": "fn",
+        "type": "aws.lambda",
+        "label": "Function",
+        "meta": { "position": { "x": 300, "y": 40 } }
+      },
+      {
+        "id": "bucket",
+        "type": "aws.s3",
+        "label": "Bucket",
+        "meta": { "position": { "x": 300, "y": 240 } }
+      },
+      {
+        "id": "table",
+        "type": "aws.dynamodb",
+        "label": "Table",
+        "meta": { "position": { "x": 620, "y": 140 } }
+      }
+    ],
+    "intents": [
+      { "id": "users-invoke-fn", "from": "users", "to": "fn", "action": "invoke" },
+      {
+        "id": "users-read-bucket",
+        "from": "users",
+        "to": "bucket",
+        "action": "read",
+        "port": "https"
+      },
+      { "id": "fn-write-table", "from": "fn", "to": "table", "action": "write" },
+      { "id": "bucket-write-table", "from": "bucket", "to": "table", "action": "write" }
+    ]
+  }
+}
