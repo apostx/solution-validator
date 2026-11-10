@@ -302,6 +302,7 @@ These details implement the decisions above. They are not product decisions; ope
 - **Authorization paths.** A forwarder route that `authorizes` (for example an API Gateway integration), a principal's grant, or public access. Authorization is per action, so a port-only intent to an access-controlled target is `undecidable`.
 - **Exposure** is computed for every component with an endpoint, whether or not an intent exists. Components of the core `external` category represent outside parties and are not reported.
 - **Findings** name the decisive problem: failing checks for a failed intent, missing settings for an undecidable one. Evidence carries the full reasoning.
+- **Releases in practice.** Pull requests opened by GitHub Actions need the repository setting that allows it; until it is enabled, the release pull request is opened from release-please's branch by hand, with the `autorelease: pending` label, and release-please tags and releases it on merge. Iteration pull requests are rebase-merged, because release-please does not see commits that are older than the last release and only reachable through a merge commit (this hid Iteration 2's commits, so the 0.2.0 release commit was written by hand in release-please's format).
 
 ## 11. Out of scope for the first version
 
