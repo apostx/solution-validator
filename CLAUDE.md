@@ -25,4 +25,24 @@ Guidance for AI coding sessions in this repository. Development runs in online s
 
 ## Commands
 
-To be filled in during Iteration 0.
+Requires Node.js 22.18 or newer (see `.nvmrc`). Run everything from the repository root. The root package is the library; `demo/` is an npm workspace, so one `npm ci` installs both.
+
+| Command | What it does |
+|---|---|
+| `npm ci` | Install dependencies |
+| `npm run check` | Everything CI runs, in order: the commands below |
+| `npm run typecheck` | `tsc --build` over `tsconfig.lib.json` (`src/`), `tsconfig.node.json` (tests, scripts, configs) and `demo/tsconfig.json` |
+| `npm run lint` | Biome lint and format check. `npm run format` applies fixes. CI runs `npx biome ci .` |
+| `npm test` | Vitest, once. `npm run test:watch` keeps watching. Tests live in `test/**/*.test.ts`. |
+| `npm run build` | tsup builds `src/index.ts` into `dist/` (ESM and `.d.ts`) |
+| `npm run check:package` | Imports the built package by name and checks its `exports`. Run after `build`. |
+| `npm run demo:dev` / `npm run demo:build` | Demo dev server / production build into `demo/dist/` |
+| `npx commitlint --from origin/main` | Check commit messages locally (CI checks every PR commit and the PR title) |
+
+Guards that enforce the rules above; do not loosen them:
+
+- `src/` is type-checked with ES2022 built-ins only: no Node.js or DOM types.
+- Biome rejects Node.js modules and the `Date`, `Intl`, `process`, `Buffer` and `fetch` globals in `src/`.
+- Determinism rules that tooling cannot catch (for example `Math.random()`, `localeCompare` or `toLocaleString`) still apply.
+
+Release files: release-please owns `CHANGELOG.md`, `.release-please-manifest.json` and the version in `package.json` and `src/version.ts`. Do not edit them by hand. Release and repository setup are described in [README.md](README.md#releases).

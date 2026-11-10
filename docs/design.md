@@ -260,8 +260,21 @@ src/
 packs/           official JSON packs (core, aws; later azure, on-prem)
 test/fixtures/   example models and expected results
 demo/            visual sandbox (not published)
+scripts/         repository scripts (not published)
 docs/            vision, design, component model, roadmap
 ```
+
+### Implementation notes (Iteration 0)
+
+These details implement the decisions above. They are not product decisions; open points are listed in §12.
+
+- **TypeScript 6.0.** tsup builds the type declarations through the TypeScript compiler API, which TypeScript 7 no longer provides.
+- **npm workspaces.** The root package is the library. `demo/` is a private workspace that imports the library from source through a Vite alias.
+- **Guards in `src/`.** Library code is type-checked with ES2022 built-ins only, without Node.js or DOM types. Biome also rejects Node.js modules and the `Date`, `Intl`, `process`, `Buffer` and `fetch` globals there.
+- **Versions.** release-please starts at `0.1.0` (`initial-version`; otherwise its first version would be `1.0.0`). Below 1.0, a breaking change bumps the minor version (`bump-minor-pre-major`). The exported `VERSION` constant is kept in sync with `package.json` by release-please.
+- **npm publishing** runs only when the `NPM_PUBLISH` repository variable is `true`. The owner sets it for the first functional release, together with npm credentials (trusted publishing or an `NPM_TOKEN` secret). See [README.md](../README.md#releases).
+- **Commit checks.** commitlint checks every commit in a pull request and the pull request title, because a squash merge uses the title as the commit message.
+- **Package license field:** `AGPL-3.0-only` (see Q14).
 
 ## 11. Out of scope for the first version
 
@@ -288,3 +301,5 @@ docs/            vision, design, component model, roadmap
 | Q10 | Trait vocabulary, type definition and pack format. | Decided (initial) | [component-model.md](component-model.md) |
 | Q11 | Pack distribution: official packs ship inside the `solution-validator` package as subpath exports (`solution-validator/packs/aws`); custom packs are any JSON the consumer loads. Split them into separate npm packages only if their release cycles diverge. | Decided (initial) | [component-model.md §3](component-model.md#3-packs) |
 | Q12 | Shape of the metadata and facts query. | Decided (initial) | §7 |
+| Q13 | Build tool: tsup's README now says it is no longer actively maintained and recommends tsdown. tsup 9 works, with TypeScript 6. Proposal: switch to tsdown when the build needs more than tsup offers, or before TypeScript 6 stops being supported. | Proposed | §10 |
+| Q14 | SPDX license identifier in `package.json`. `AGPL-3.0-only` is implemented. `AGPL-3.0-or-later` would let users apply later AGPL versions. To confirm before the first npm release. | Proposed | §10 |
