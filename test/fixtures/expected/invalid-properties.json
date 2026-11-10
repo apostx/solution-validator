@@ -22,7 +22,8 @@
     "options": {
       "level": "logical",
       "analyses": [
-        "model-validity"
+        "model-validity",
+        "connection-validity"
       ]
     },
     "analyses": [
@@ -141,6 +142,39 @@
             "message": "/components/1/properties/permissions/0 has an unknown field until."
           }
         ]
+      },
+      {
+        "id": "connection-validity",
+        "intents": [
+          {
+            "intent": "i1",
+            "verdict": "pass",
+            "checks": [
+              {
+                "check": "compatibility",
+                "verdict": "pass",
+                "evidence": [
+                  {
+                    "code": "ACCEPTED",
+                    "params": {
+                      "fromType": "aws.api-gateway",
+                      "toType": "aws.lambda",
+                      "purpose": "invoke",
+                      "rule": 0
+                    },
+                    "message": "aws.lambda accepts invoke from aws.api-gateway (accepts rule 0)."
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "summary": {
+          "pass": 1,
+          "fail": 0,
+          "undecidable": 0
+        },
+        "findings": []
       }
     ]
   }

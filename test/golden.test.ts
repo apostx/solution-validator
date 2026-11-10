@@ -27,8 +27,10 @@ describe.each(fixtures)("%s", (name) => {
     await expect(toGolden(output)).toMatchFileSnapshot(`./fixtures/expected/${name}`);
   });
 
-  it(name.startsWith("valid-") ? "is valid" : "is invalid", () => {
-    const valid = parsed.ok && output.analysis?.analyses.every((report) => report.valid !== false);
+  it(name.startsWith("valid-") ? "is a valid model" : "is an invalid model", () => {
+    const valid =
+      parsed.ok &&
+      output.analysis?.analyses.every((report) => report.id !== "model-validity" || report.valid);
     expect(valid).toBe(name.startsWith("valid-"));
   });
 

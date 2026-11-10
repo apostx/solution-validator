@@ -1,0 +1,400 @@
+{
+  "parse": {
+    "ok": true,
+    "findings": []
+  },
+  "analysis": {
+    "library": {
+      "name": "solution-validator",
+      "version": "<version>"
+    },
+    "vocabulary": 1,
+    "packs": [
+      {
+        "id": "aws",
+        "version": "0.1.0"
+      },
+      {
+        "id": "core",
+        "version": "0.1.0"
+      }
+    ],
+    "options": {
+      "level": "logical",
+      "analyses": [
+        "model-validity",
+        "connection-validity"
+      ]
+    },
+    "analyses": [
+      {
+        "id": "model-validity",
+        "valid": true,
+        "findings": []
+      },
+      {
+        "id": "connection-validity",
+        "intents": [
+          {
+            "intent": "api-on-http",
+            "verdict": "fail",
+            "checks": [
+              {
+                "check": "compatibility",
+                "verdict": "fail",
+                "evidence": [
+                  {
+                    "code": "NOT_ACCEPTED",
+                    "params": {
+                      "fromType": "core.internet",
+                      "toType": "aws.api-gateway",
+                      "purpose": "port http"
+                    },
+                    "message": "aws.api-gateway does not accept port http from core.internet."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "intent": "api-to-fn",
+            "verdict": "pass",
+            "checks": [
+              {
+                "check": "compatibility",
+                "verdict": "pass",
+                "evidence": [
+                  {
+                    "code": "ACCEPTED",
+                    "params": {
+                      "fromType": "aws.api-gateway",
+                      "toType": "aws.lambda",
+                      "purpose": "invoke",
+                      "rule": 0
+                    },
+                    "message": "aws.lambda accepts invoke from aws.api-gateway (accepts rule 0)."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "intent": "bucket-to-table",
+            "verdict": "fail",
+            "checks": [
+              {
+                "check": "compatibility",
+                "verdict": "fail",
+                "evidence": [
+                  {
+                    "code": "NOT_ACCEPTED",
+                    "params": {
+                      "fromType": "aws.s3",
+                      "toType": "aws.dynamodb",
+                      "purpose": "write"
+                    },
+                    "message": "aws.dynamodb does not accept write from aws.s3."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "intent": "fn-to-internet",
+            "verdict": "pass",
+            "checks": [
+              {
+                "check": "compatibility",
+                "verdict": "pass",
+                "evidence": [
+                  {
+                    "code": "ACCEPTED",
+                    "params": {
+                      "fromType": "aws.lambda",
+                      "toType": "core.internet",
+                      "purpose": "connect on port https",
+                      "rule": 0
+                    },
+                    "message": "core.internet accepts connect on port https from aws.lambda (accepts rule 0)."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "intent": "fn-to-table",
+            "verdict": "pass",
+            "checks": [
+              {
+                "check": "compatibility",
+                "verdict": "pass",
+                "evidence": [
+                  {
+                    "code": "ACCEPTED",
+                    "params": {
+                      "fromType": "aws.lambda",
+                      "toType": "aws.dynamodb",
+                      "purpose": "write",
+                      "rule": 0
+                    },
+                    "message": "aws.dynamodb accepts write from aws.lambda (accepts rule 0)."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "intent": "fn-to-table-https",
+            "verdict": "pass",
+            "checks": [
+              {
+                "check": "compatibility",
+                "verdict": "pass",
+                "evidence": [
+                  {
+                    "code": "ACCEPTED",
+                    "params": {
+                      "fromType": "aws.lambda",
+                      "toType": "aws.dynamodb",
+                      "purpose": "read on port https",
+                      "rule": 0
+                    },
+                    "message": "aws.dynamodb accepts read on port https from aws.lambda (accepts rule 0)."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "intent": "fn-to-worker",
+            "verdict": "pass",
+            "checks": [
+              {
+                "check": "compatibility",
+                "verdict": "pass",
+                "evidence": [
+                  {
+                    "code": "ACCEPTED",
+                    "params": {
+                      "fromType": "aws.lambda",
+                      "toType": "aws.lambda",
+                      "purpose": "invoke",
+                      "rule": 1
+                    },
+                    "message": "aws.lambda accepts invoke from aws.lambda (accepts rule 1)."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "intent": "users-read-bucket",
+            "verdict": "pass",
+            "checks": [
+              {
+                "check": "compatibility",
+                "verdict": "pass",
+                "evidence": [
+                  {
+                    "code": "ACCEPTED",
+                    "params": {
+                      "fromType": "core.internet",
+                      "toType": "aws.s3",
+                      "purpose": "read on port https",
+                      "rule": 1
+                    },
+                    "message": "aws.s3 accepts read on port https from core.internet (accepts rule 1)."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "intent": "users-to-api",
+            "verdict": "pass",
+            "checks": [
+              {
+                "check": "compatibility",
+                "verdict": "pass",
+                "evidence": [
+                  {
+                    "code": "ACCEPTED",
+                    "params": {
+                      "fromType": "core.internet",
+                      "toType": "aws.api-gateway",
+                      "purpose": "port https",
+                      "rule": 0
+                    },
+                    "message": "aws.api-gateway accepts port https from core.internet (accepts rule 0)."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "intent": "users-to-api-invoke",
+            "verdict": "pass",
+            "checks": [
+              {
+                "check": "compatibility",
+                "verdict": "pass",
+                "evidence": [
+                  {
+                    "code": "ACCEPTED",
+                    "params": {
+                      "fromType": "core.internet",
+                      "toType": "aws.api-gateway",
+                      "purpose": "invoke on port 443",
+                      "rule": 0
+                    },
+                    "message": "aws.api-gateway accepts invoke on port 443 from core.internet (accepts rule 0)."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "intent": "users-to-fn",
+            "verdict": "fail",
+            "checks": [
+              {
+                "check": "compatibility",
+                "verdict": "fail",
+                "evidence": [
+                  {
+                    "code": "NOT_ACCEPTED",
+                    "params": {
+                      "fromType": "core.internet",
+                      "toType": "aws.lambda",
+                      "purpose": "invoke"
+                    },
+                    "message": "aws.lambda does not accept invoke from core.internet."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "intent": "users-to-table",
+            "verdict": "fail",
+            "checks": [
+              {
+                "check": "compatibility",
+                "verdict": "fail",
+                "evidence": [
+                  {
+                    "code": "NOT_ACCEPTED",
+                    "params": {
+                      "fromType": "core.internet",
+                      "toType": "aws.dynamodb",
+                      "purpose": "read"
+                    },
+                    "message": "aws.dynamodb does not accept read from core.internet."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "intent": "users-write-bucket",
+            "verdict": "fail",
+            "checks": [
+              {
+                "check": "compatibility",
+                "verdict": "fail",
+                "evidence": [
+                  {
+                    "code": "NOT_ACCEPTED",
+                    "params": {
+                      "fromType": "core.internet",
+                      "toType": "aws.s3",
+                      "purpose": "write"
+                    },
+                    "message": "aws.s3 does not accept write from core.internet."
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "summary": {
+          "pass": 8,
+          "fail": 5,
+          "undecidable": 0
+        },
+        "findings": [
+          {
+            "code": "CONNECTION_NOT_ACCEPTED",
+            "severity": "error",
+            "subjects": [
+              "api-on-http"
+            ],
+            "params": {
+              "intent": "api-on-http",
+              "fromType": "core.internet",
+              "toType": "aws.api-gateway",
+              "purpose": "port http"
+            },
+            "message": "Intent api-on-http: aws.api-gateway does not accept port http from core.internet."
+          },
+          {
+            "code": "CONNECTION_NOT_ACCEPTED",
+            "severity": "error",
+            "subjects": [
+              "bucket-to-table"
+            ],
+            "params": {
+              "intent": "bucket-to-table",
+              "fromType": "aws.s3",
+              "toType": "aws.dynamodb",
+              "purpose": "write"
+            },
+            "message": "Intent bucket-to-table: aws.dynamodb does not accept write from aws.s3."
+          },
+          {
+            "code": "CONNECTION_NOT_ACCEPTED",
+            "severity": "error",
+            "subjects": [
+              "users-to-fn"
+            ],
+            "params": {
+              "intent": "users-to-fn",
+              "fromType": "core.internet",
+              "toType": "aws.lambda",
+              "purpose": "invoke"
+            },
+            "message": "Intent users-to-fn: aws.lambda does not accept invoke from core.internet."
+          },
+          {
+            "code": "CONNECTION_NOT_ACCEPTED",
+            "severity": "error",
+            "subjects": [
+              "users-to-table"
+            ],
+            "params": {
+              "intent": "users-to-table",
+              "fromType": "core.internet",
+              "toType": "aws.dynamodb",
+              "purpose": "read"
+            },
+            "message": "Intent users-to-table: aws.dynamodb does not accept read from core.internet."
+          },
+          {
+            "code": "CONNECTION_NOT_ACCEPTED",
+            "severity": "error",
+            "subjects": [
+              "users-write-bucket"
+            ],
+            "params": {
+              "intent": "users-write-bucket",
+              "fromType": "core.internet",
+              "toType": "aws.s3",
+              "purpose": "write"
+            },
+            "message": "Intent users-write-bucket: aws.s3 does not accept write from core.internet."
+          }
+        ]
+      }
+    ]
+  }
+}
