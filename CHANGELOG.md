@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.0](https://github.com/apostx/solution-validator/compare/v0.1.0...v0.2.0) (2026-11-10)
+
+
+### Features
+
+* add the connection-validity analysis ([b5b40ab](https://github.com/apostx/solution-validator/commit/b5b40ab155472c019fb225c5543b061cde9628ed))
+
 ## 0.1.0 (2026-11-10)
 
 
