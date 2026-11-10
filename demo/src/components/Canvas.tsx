@@ -78,6 +78,7 @@ export function Canvas({
             typeLabel: type?.label ?? component.type,
             category: type?.category ?? "unknown",
             severity: evaluation.severityBySubject.get(component.id),
+            exposure: evaluation.exposure.get(component.id)?.exposure,
           },
         };
       }),

@@ -1,6 +1,9 @@
 import {
   type AnalysisResult,
+  type Assumption,
+  type AssumptionPolicy,
   analyze,
+  type ExposureFact,
   type Finding,
   type IntentVerdict,
   listFindings,
@@ -21,20 +24,30 @@ export interface Evaluation {
   severityBySubject: Map<string, Severity>;
   /** The verdict per intent id, from the most complete intent analysis that ran. */
   intentVerdicts: Map<string, IntentVerdict>;
+  /** Whether each component is directly accessible from the internet. */
+  exposure: Map<string, ExposureFact>;
+  /** Pack defaults the `pack-defaults` policy applied. */
+  assumptions: Assumption[];
 }
 
 const RANK: Record<Severity, number> = { info: 0, warning: 1, error: 2 };
 
-export function evaluate(registry: Registry, document: unknown): Evaluation {
+export function evaluate(
+  registry: Registry,
+  document: unknown,
+  assumptions: AssumptionPolicy,
+): Evaluation {
   const parsed = parseSolution(document, registry);
   if (!parsed.ok) {
     return {
       findings: [...parsed.findings],
       severityBySubject: new Map(),
       intentVerdicts: new Map(),
+      exposure: new Map(),
+      assumptions: [],
     };
   }
-  const result = analyze(parsed.model);
+  const result = analyze(parsed.model, { assumptions });
   const findings = listFindings(result);
   const severityBySubject = new Map<string, Severity>();
   for (const finding of findings) {
@@ -56,5 +69,17 @@ export function evaluate(registry: Registry, document: unknown): Evaluation {
       intentVerdicts.set(verdict.intent, verdict);
     }
   }
-  return { model: parsed.model, result, findings, severityBySubject, intentVerdicts };
+  const access = result.analyses.find((report) => report.id === "access");
+  const exposure = new Map<string, ExposureFact>();
+  for (const fact of access?.id === "access" ? access.exposure : [])
+    exposure.set(fact.component, fact);
+  return {
+    model: parsed.model,
+    result,
+    findings,
+    severityBySubject,
+    intentVerdicts,
+    exposure,
+    assumptions: access?.id === "access" ? [...access.assumptions] : [],
+  };
 }
