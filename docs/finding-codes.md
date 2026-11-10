@@ -53,3 +53,27 @@ Semantic checks of a parsed solution.
 | `INTENT_PURPOSE_MISSING` | error | Intent {intent} states neither an action nor a port. | An intent must say what is needed: an action, a port, or both. |
 | `ACTION_UNKNOWN` | error | Intent {intent} uses the unknown action {action}. | An intent's action is not defined by the solution's packs. |
 | `PORT_UNKNOWN` | error | Intent {intent} uses the unknown port {port}. | An intent's symbolic port is not defined by the solution's packs. |
+
+## Analysis: connection-validity
+
+Whether the target's type accepts each intent from the source's type. Intents that cannot be checked because the model is invalid get an `undecidable` verdict without a finding; `model-validity` reports the cause.
+
+| Code | Severity | Message template | Meaning |
+|---|---|---|---|
+| `CONNECTION_NOT_ACCEPTED` | error | Intent {intent}: {toType} does not accept {purpose} from {fromType}. | No accepts rule of the target's type allows the intent's action and port from the source's type. |
+| `CONNECTION_RULES_MISSING` | warning | Intent {intent} cannot be checked: type {type} does not declare which interactions it accepts. | The target's type has no accepts rules in its pack, so the intent's compatibility is undecidable. |
+
+## Evidence codes
+
+Evidence explains an intent's verdict: each check lists the evidence it used. Evidence has a `code`, `params` and a default English `message`, like a finding, but no severity.
+
+| Code | Message template | Meaning |
+|---|---|---|
+| `COMPONENT_MISSING` | {component} is not a component of the solution. | An end of the intent does not exist, so nothing can be decided. |
+| `TYPE_MISSING` | The type {type} of {component} is not available. | The component's type is unknown or its pack is not used by the solution. |
+| `PURPOSE_MISSING` | The intent states neither an action nor a port. | Without an action or a port there is nothing to check. |
+| `ACTION_UNDEFINED` | The action {action} is not defined by the solution's packs. | The intent's action is unknown. |
+| `PORT_UNDEFINED` | The port {port} is not defined by the solution's packs. | The intent's symbolic port is unknown. |
+| `ACCEPTS_UNDECLARED` | Type {type} does not declare which interactions it accepts. | The target's pack has no accepts rules for the type. |
+| `ACCEPTED` | {toType} accepts {purpose} from {fromType} (accepts rule {rule}). | An accepts rule of the target's type matches the intent. |
+| `NOT_ACCEPTED` | {toType} does not accept {purpose} from {fromType}. | No accepts rule of the target's type matches the intent. |

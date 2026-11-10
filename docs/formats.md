@@ -96,7 +96,7 @@ This document describes the implemented JSON formats. The reasoning behind them 
 
 - **`traits`** compose behavior from the trait vocabulary. Each trait has a parameter schema (see `TraitParameters` in the library and the pack schema).
 - **Bindings.** A trait parameter can be a fixed value or `{ "property": "<name>" }`, which takes the value from the component's property. The registry checks that the bound property fits the parameter. For example, `forwarder.routes` must be bound to an array of objects whose `target` field is a component reference.
-- **`accepts`** lists the interactions the type accepts. An intent matches a rule when its source matches `from` (by `type`, `category` and/or `trait`; omitted means any source), and the rule lists the intent's action and port, if the intent states them.
+- **`accepts`** lists the interactions the type accepts. An intent matches a rule when its source matches `from` (by `type`, `category` and/or `trait`; omitted means any source), the rule's `actions` include the intent's action (if the intent states one), and the rule's `ports`, if listed, include the intent's port. A rule without `ports` does not restrict the port; which ports a component listens on is the `endpoint` trait's concern. A numeric port matches a port id with that number. A type without `accepts` makes the check undecidable; `"accepts": []` accepts nothing.
 - **`properties`** use a subset of JSON Schema: `string` (with `enum`, `minLength`, `maxLength`, `pattern`), `number`, `integer`, `boolean`, arrays of those or of objects, and objects whose fields are scalars or arrays of scalars. Objects are closed. `default` documents the value the `pack-defaults` assumption policy uses. `"x-component-ref": true` marks a string as a component id; references are checked.
 - **`required`** lists properties every component of the type must set. Most properties are optional: a missing property limits what can be decided but does not make the model invalid.
 
@@ -128,6 +128,37 @@ const result = analyze(model, { level: "logical", analyses: ["model-validity"] }
 | `vocabulary` | The trait vocabulary version. |
 | `packs` | The packs the solution uses, with versions, sorted by id. |
 | `options` | The effective level and analyses. |
-| `analyses[]` | One report per analysis, in a fixed order. The `model-validity` report has `valid` and `findings`. |
+| `analyses[]` | One report per analysis, in a fixed order (below). |
 
-Findings are described in [finding-codes.md](finding-codes.md). Lists are sorted by stable keys, so the same input and options always give the same JSON.
+Findings and evidence codes are described in [finding-codes.md](finding-codes.md). Lists are sorted by stable keys, so the same input and options always give the same JSON.
+
+### Reports
+
+| Analysis | Report fields |
+|---|---|
+| `model-validity` | `valid` (no error findings), `findings` |
+| `connection-validity` | `intents` (one verdict per intent, sorted by id), `summary` (count per verdict), `findings` |
+
+An intent verdict has the shape below. A verdict is never a boolean: `pass` is proven from the data, `fail` is disproven, and `undecidable` means the data, the packs or the supported analyses are not enough. A check's evidence says why.
+
+```json
+{
+  "intent": "i2",
+  "verdict": "pass",
+  "checks": [
+    {
+      "check": "compatibility",
+      "verdict": "pass",
+      "evidence": [
+        {
+          "code": "ACCEPTED",
+          "params": { "fromType": "aws.api-gateway", "toType": "aws.lambda", "purpose": "invoke", "rule": 0 },
+          "message": "aws.lambda accepts invoke from aws.api-gateway (accepts rule 0)."
+        }
+      ]
+    }
+  ]
+}
+```
+
+`connection-validity` runs the compatibility check. It is `undecidable` when an end of the intent, a type, the action, the port or the purpose is missing (the `model-validity` findings say why), or when the target's type declares no `accepts` rules.
