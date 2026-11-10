@@ -1,6 +1,6 @@
 import { ReactFlowProvider } from "@xyflow/react";
 import { useMemo, useState } from "react";
-import { createRegistry, type Solution, VERSION } from "solution-validator";
+import { type AssumptionPolicy, createRegistry, type Solution, VERSION } from "solution-validator";
 import { Canvas } from "./components/Canvas";
 import { FindingsPanel } from "./components/FindingsPanel";
 import { Inspector } from "./components/Inspector";
@@ -19,12 +19,16 @@ export function App() {
   const [document, setDocument] = useState<unknown>(() => scenario.solution);
   const [selection, setSelection] = useState<Selection>(null);
   const [tab, setTab] = useState<Tab>("properties");
+  const [policy, setPolicy] = useState<AssumptionPolicy>("strict");
 
   const registry = useMemo(
     () => createRegistry(scenario.packs.flatMap((id) => (PACKS[id] ? [PACKS[id]] : []))),
     [scenario],
   );
-  const evaluation = useMemo(() => evaluate(registry, document), [registry, document]);
+  const evaluation = useMemo(
+    () => evaluate(registry, document, policy),
+    [registry, document, policy],
+  );
   const solution = evaluation.model?.solution;
 
   function change(next: Solution) {
@@ -73,6 +77,19 @@ export function App() {
         >
           Reset
         </button>
+        <label
+          className="scenario-picker"
+          title="strict: unset properties make verdicts undecidable. pack-defaults: the packs' documented defaults are assumed and listed."
+        >
+          <span>Unset properties</span>
+          <select
+            value={policy}
+            onChange={(event) => setPolicy(event.target.value as AssumptionPolicy)}
+          >
+            <option value="strict">strict: undecidable</option>
+            <option value="pack-defaults">pack-defaults: assume defaults</option>
+          </select>
+        </label>
         <span className="spacer" />
         <span className="version">
           library <code>{VERSION}</code> · <a href={REPOSITORY_URL}>GitHub</a>
@@ -109,6 +126,8 @@ export function App() {
             </div>
           )}
           <FindingsPanel
+            assumptions={evaluation.assumptions}
+            exposure={[...evaluation.exposure.values()]}
             findings={evaluation.findings}
             parseFailed={!evaluation.model}
             onSelectSubject={selectSubject}

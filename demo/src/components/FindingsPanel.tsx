@@ -1,13 +1,22 @@
-import type { Finding } from "solution-validator";
+import type { Assumption, ExposureFact, Finding } from "solution-validator";
 
 interface FindingsPanelProps {
   findings: readonly Finding[];
+  assumptions: readonly Assumption[];
+  exposure: readonly ExposureFact[];
   /** Whether the findings come from parsing (the model could not be built). */
   parseFailed: boolean;
   onSelectSubject(id: string): void;
 }
 
-export function FindingsPanel({ findings, parseFailed, onSelectSubject }: FindingsPanelProps) {
+export function FindingsPanel({
+  findings,
+  assumptions,
+  exposure,
+  parseFailed,
+  onSelectSubject,
+}: FindingsPanelProps) {
+  const exposed = exposure.filter((fact) => fact.exposure !== "not-exposed");
   const errors = findings.filter((finding) => finding.severity === "error").length;
   const warnings = findings.filter((finding) => finding.severity === "warning").length;
   return (
@@ -48,6 +57,41 @@ export function FindingsPanel({ findings, parseFailed, onSelectSubject }: Findin
             );
           })}
         </ul>
+      )}
+      {exposed.length > 0 && (
+        <>
+          <h3>Accessible from the internet</h3>
+          <ul>
+            {exposed.map((fact) => (
+              <li key={fact.component}>
+                <button
+                  type="button"
+                  className="link"
+                  onClick={() => onSelectSubject(fact.component)}
+                >
+                  <code>{fact.component}</code>{" "}
+                  {fact.exposure === "exposed"
+                    ? `exposed${fact.actions ? ` (${fact.actions.join(", ")})` : ""}`
+                    : "undecidable"}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+      {assumptions.length > 0 && (
+        <>
+          <h3>Assumptions (pack defaults)</h3>
+          <ul>
+            {assumptions.map((assumption) => (
+              <li key={`${assumption.component}.${assumption.property}`}>
+                <code>
+                  {assumption.component}.{assumption.property} = {JSON.stringify(assumption.value)}
+                </code>
+              </li>
+            ))}
+          </ul>
+        </>
       )}
     </section>
   );
