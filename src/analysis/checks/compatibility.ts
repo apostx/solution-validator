@@ -5,6 +5,7 @@ import type { Intent } from "../../core/solution-schema";
 import { isTraitId } from "../../core/traits";
 import { type CheckResult, createEvidence } from "../verdict";
 import { describePurpose, type ResolvedIntent } from "./intent-context";
+import { samePort } from "./ports";
 
 /**
  * Check 1, compatibility: the target's type accepts the intent's action and port from the
@@ -58,18 +59,4 @@ function matches(
     return rule.ports.some((id) => samePort(model, id, port));
   }
   return true;
-}
-
-/** A rule's port id matches the intent's port by id, or by port number and protocol. */
-function samePort(model: SolutionModel, ruleId: string, port: string | number): boolean {
-  const rulePort = model.registry.getPort(ruleId);
-  if (typeof port === "number") return rulePort?.port === port;
-  if (ruleId === port) return true;
-  const intentPort = model.registry.getPort(port);
-  return (
-    rulePort !== undefined &&
-    intentPort !== undefined &&
-    rulePort.port === intentPort.port &&
-    rulePort.protocol === intentPort.protocol
-  );
 }
