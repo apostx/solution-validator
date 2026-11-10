@@ -1,0 +1,290 @@
+# SolutionValidator — Technical Design
+
+> **Status:** Approved for the first version (initial) · 2026-11-10
+>
+> - **Decided**: approved by the product owner. "Initial" marks a recommendation accepted for now that may be revisited once real work shows how it holds up.
+> - **Proposed**: a suggestion awaiting a decision. Not a requirement until it is approved.
+>
+> Related documents:
+> - Product intent: [product-vision.md](product-vision.md)
+> - Component types, traits and packs: [component-model.md](component-model.md)
+> - Iteration plan: [roadmap.md](roadmap.md)
+>
+> Open questions are listed in [§12](#12-open-questions) and referenced by ID (Q1, Q2, …).
+
+## 1. Context
+
+SolutionValidator is a deterministic, provider-neutral validator. It analyzes a designed software or infrastructure solution: does it work, and does it meet a task's requirements? This document describes how we intend to build it. Where a decision here explicitly supersedes the vision, this document takes precedence. Otherwise it does not extend the product scope.
+
+## 2. Decisions so far
+
+| Topic | Decision | Status |
+|---|---|---|
+| Language and runtime | TypeScript. Runs in the browser and in Node.js, with no server component. Consumer apps (first: ArchitectMate) are hosted on GitHub Pages. | Decided |
+| Distribution | This repository contains the library and its official packs, published to npm as `solution-validator`. ArchitectMate lives in a separate repository and uses the npm package. | Decided |
+| Input format | JSON, described by TypeScript types and validated with JSON Schema. | Decided |
+| Relationship semantics | A relationship is an *intent*: "A must be able to reach B for purpose P". The engine proves or disproves it. | Decided |
+| Generic component model | AWS is not the target. Component types are JSON configuration that composes a fixed vocabulary of behaviors (*traits*) implemented in the engine. See [component-model.md](component-model.md). | Decided (vocabulary initial, Q10) |
+| Packs | Component types come in loadable packs: AWS, Azure, on-premises and custom packs. A consumer pulls in the packs it needs. | Decided (distribution initial, Q11) |
+| Scoring | Not part of the library. The library validates: things work, fail or cannot be decided. Consumers decide how to score. This supersedes the vision's mentions of task-specific scoring. | Decided |
+| Metadata | Components, intents, types, requirements and the solution can carry free-form `meta`. The library never interprets it; a query returns it together with structural facts. | Decided (query API initial, Q12) |
+| Explanations | Every finding has a stable code, parameters, and a default English message rendered from a template. Consumers may translate the message. | Decided |
+| Project language | All code, identifiers, comments, documentation, commit messages and PR descriptions are in English. | Decided |
+| Versioning | Semantic Versioning, with commits in the Conventional Commits format (`feat:`, `fix:`, `docs:`, …). | Decided |
+| License | AGPL-3.0, the strictest license GitHub's license picker offers. | Decided |
+| AI | No AI in analysis, requirement checks or explanations. | Decided (vision) |
+| Where decisions live | Requirements, decisions and the iteration plan are kept in this repository. Development continues in online (cloud) sessions that only see the repository. | Decided |
+| Demo | A minimal visual sandbox, strictly a tech demo, deployed to this repository's GitHub Pages. See [§9](#9-demo-sandbox). | Decided |
+| Working defaults | All recommendations (Q1–Q12) are accepted for now. They are revisited if real work shows they need to change. | Decided (initial) |
+
+## 3. Architecture
+
+```
+packs (JSON) ──▶ createRegistry ──┐
+                                  ▼
+solution (JSON) ──▶ parseSolution ──▶ model ──▶ analyze ──▶ AnalysisResult
+                                                               │
+                   task (JSON) ──▶ checkRequirements ◀─────────┤
+                                                               │
+                                   collect ◀───────────────────┘
+```
+
+- **Packs and registry.** Packs are JSON bundles of component types (see [component-model.md](component-model.md)). The registry loads and validates them and resolves type ids.
+- **Core model.** A provider-neutral graph of typed components, their placement (containment), intents and metadata. It knows nothing about any provider.
+- **Traits.** The only place where behavior is implemented. Engine code contains no provider-specific logic; provider knowledge lives in packs.
+- **Analysis.** Runs a configurable set of analyses. It is useful on its own, without a task.
+- **Requirements.** Checks a task's requirements against an analysis result. It only reads analysis results and never analyzes again.
+- **Query.** Returns metadata and structural facts so consumers can build their own scoring or metrics.
+
+Public API sketch (names are not final):
+
+```ts
+const registry = createRegistry([corePack, awsPack]);          // validated on load
+const parsed = parseSolution(json, registry);                   // returns errors instead of throwing
+const analysis = analyze(parsed.model, {
+  level: "logical",
+  analyses: ["connection-validity", "access"],
+});
+const requirements = checkRequirements(analysis, task);         // optional
+const facts = collect(parsed.model, analysis);                  // optional: meta + structural facts
+```
+
+## 4. Description model
+
+The example below is a minimal serverless application at the logical level, using types from the AWS pack. It shows the shape of the model; the schema is not final.
+
+```json
+{
+  "schemaVersion": 1,
+  "packs": ["core", "aws"],
+  "components": [
+    { "id": "users", "type": "core.internet" },
+    { "id": "api", "type": "aws.api-gateway",
+      "properties": { "endpoint": "public",
+                      "routes": [{ "path": "/orders", "target": "orders-fn" }] } },
+    { "id": "orders-fn", "type": "aws.lambda",
+      "properties": { "permissions": [{ "resource": "orders-table", "access": "read-write" }] },
+      "meta": { "points": 2 } },
+    { "id": "orders-table", "type": "aws.dynamodb" },
+    { "id": "uploads", "type": "aws.s3", "properties": { "publicAccess": false } }
+  ],
+  "intents": [
+    { "id": "i1", "from": "users", "to": "api", "port": "https" },
+    { "id": "i2", "from": "api", "to": "orders-fn", "action": "invoke" },
+    { "id": "i3", "from": "orders-fn", "to": "orders-table", "action": "write" },
+    { "id": "i4", "from": "orders-fn", "to": "uploads", "action": "write" }
+  ]
+}
+```
+
+Here `i4` would `fail`. The function is connected to the bucket, but it has no permission on it. This is the vision's core point: a connection alone does not prove access.
+
+Key points:
+
+- `packs` lists the packs the solution needs, so the input is self-describing.
+- `properties` are defined by the component type's pack. They are optional unless the type says otherwise. Missing properties limit what can be decided; they do not make the model invalid.
+- An intent states what is needed: a network `port` (or protocol), a service-level `action` (`invoke`, `read`, `write`), or both.
+- Permissions are **logical** ("this function may write this table"). Policy documents (IAM, Azure RBAC) are not modeled.
+- `placement` says where a component lives, for example a subnet inside a VPC. It is a list because some components span several zones. The serverless types of the first pack have no placement; placement becomes relevant with network zones (see [roadmap.md](roadmap.md)).
+- The same fields accept **symbolic** values at the logical level (`"internet"`, `"https"`) and **concrete** values at the detailed level (`"0.0.0.0/0"`, `443`, `"10.0.1.0/24"`).
+- `meta` is free-form consumer data. It is allowed on the solution, components and intents.
+
+## 5. Results and verdicts
+
+A verdict always has one of three states. It is never a boolean.
+
+| State | Meaning |
+|---|---|
+| `pass` | Proven from the given data. |
+| `fail` | Disproven from the given data. |
+| `undecidable` | The given data, the packs or the supported analyses are not enough. The result lists what is missing. |
+
+Every finding has this shape:
+
+```ts
+interface Finding {
+  code: string;                  // stable, e.g. "ACCESS_PERMISSION_MISSING"
+  severity: "error" | "warning" | "info";
+  subjects: string[];            // component and intent ids
+  params: Record<string, string | number>;
+  message: string;               // default English text rendered from a template
+}
+```
+
+For each intent the analysis reports the verdict and its evidence: the checks that were made (see [component-model.md §4](component-model.md#how-an-intent-is-verified)) and the setting that allowed or blocked each one. For `i4` above: "`orders-fn` has no permission on `uploads`" → `fail`, code `ACCESS_PERMISSION_MISSING`.
+
+**Decided (Q3, initial): explicit assumptions.** For unspecified settings, the caller chooses a policy per analysis run:
+
+- `strict`: anything unspecified makes the affected verdict `undecidable`.
+- `pack-defaults`: the documented defaults declared in the pack are applied, and every assumption used is listed in the result. For example, a new S3 bucket blocks public access by default.
+
+ArchitectMate would likely use `pack-defaults`, and detailed feasibility checks would use `strict`. In both cases the result never hides an assumption.
+
+## 6. Analysis levels
+
+- **Logical** (default): which component may call or access which, decided from logical settings:
+  - in the first scope: public or private endpoints, API routes, function permissions and bucket public access;
+  - once network traits are implemented: zone placement, public vs. private reachability through routers and gateways, and the role of traffic filters with symbolic sources and ports.
+
+  No IP addresses are needed.
+- **Detailed** (opt-in, later): CIDR containment and overlaps, longest-prefix route matching, and port and CIDR rule evaluation, using the concrete values given.
+
+The detailed level is a static feasibility check of the planned configuration. It does not simulate runtime behavior or guarantee a successful deployment.
+
+The caller chooses which analyses run and at which level. Each analysis declares which levels it supports.
+
+**Decided (Q2, initial):** the first version includes the `model-validity`, `connection-validity` and logical `access` analyses. The detailed level comes later.
+
+## 7. Requirements, metadata and facts
+
+**Decided:** the library does not score. It has no weights, points or complexity metrics. Consumers build those from requirement verdicts, metadata and facts.
+
+### Requirement checks
+
+**Decided (Q5, initial):** requirement checks stay in the library, because they are validation: a requirement passes, fails or cannot be decided. A task accepts many valid solutions, so requirements must not refer to component ids that the solver chose. **Decided (Q4, initial):** requirements select components with selectors:
+
+- by the id of a component the task itself provides (for example a fixed "Users" endpoint);
+- by component type (for example any `aws.dynamodb`);
+- by category or trait (for example any `data-store`). This keeps tasks provider-neutral.
+
+Role tags assigned by the solver are an alternative, deferred unless needed.
+
+| Type | Meaning | Example |
+|---|---|---|
+| `reachable` | At least one matching target can be reached from the source through a chain of `pass` intents. | Users on the internet can write to a data store. |
+| `not-reachable` | No matching target is directly accessible from the source, whether or not an intent exists. | No object storage is directly accessible from the internet. |
+| `uses` | The solution contains at least *n* matching components. Lets a task prescribe a service or approach. | The solution uses `aws.lambda`. |
+
+```json
+{
+  "schemaVersion": 1,
+  "id": "orders-api",
+  "packs": ["core", "aws"],
+  "provided": [{ "id": "users", "type": "core.internet", "locked": true }],
+  "requirements": [
+    { "id": "r1", "type": "reachable", "from": { "id": "users" },
+      "to": { "category": "data-store" }, "action": "write", "meta": { "points": 3 } },
+    { "id": "r2", "type": "not-reachable", "from": { "id": "users" },
+      "to": { "type": "aws.s3" } },
+    { "id": "r3", "type": "uses", "select": { "type": "aws.lambda" } }
+  ]
+}
+```
+
+The result has one verdict per requirement, with evidence, and an overall verdict:
+- `fail` if any requirement fails;
+- otherwise `undecidable` if any requirement is undecidable;
+- otherwise `pass`.
+
+Requirement `meta` is returned unchanged, so a consumer can weight requirements as it likes.
+
+### Metadata and facts query
+
+**Decided (Q12, initial):** `collect(model, analysis?)` returns a deterministic list of every component and intent. Each entry has:
+- id, type, category and traits;
+- `meta`: the type's `meta` merged with the instance's `meta`, the instance winning;
+- the verdict, if an analysis is given;
+- the number of incoming and outgoing intents.
+
+It also returns totals: counts by type, category and verdict, and the number of intents. Points, cost, complexity and similar measures are computed by the consumer from this data.
+
+## 8. Determinism
+
+- Library code uses no randomness, clock, locale-dependent formatting or network access. Packs are passed in by the caller; the library never fetches them itself.
+- Output lists are sorted by stable keys (ids, codes).
+- Results include the library version, the packs and their versions, and the analysis options, so "same input and same conditions" can be checked.
+- Golden-file tests compare example models with their expected JSON results.
+
+## 9. Demo sandbox
+
+**Decided (Q8, initial).** A minimal visual sandbox where a small solution can be assembled, similar in spirit to the planned ArchitectMate. It is strictly a tech demo of the library and is deployed to this repository's GitHub Pages.
+
+- **What it does**
+  - A canvas with a palette generated from the loaded packs. A new component type in a pack appears without demo code changes.
+  - Intents are drawn as arrows between components. Containers (zones) become nested areas once network traits are supported.
+  - A side panel edits the selected component's properties.
+  - The analysis runs on every change. Its findings and verdicts are shown in a panel and on the canvas (for example, a red arrow for a failed intent).
+  - The model can be viewed, imported and exported as JSON.
+  - The first scenario is a minimal serverless app: API Gateway → Lambda → DynamoDB, plus an S3 bucket.
+- **Sandbox configuration.** The demo loads *scenarios*. A scenario is a JSON file with the packs, an optional starting model and an optional task. It reuses the library's formats and adds no new model.
+- **What it does not do.** No levels, progression, scoring, accounts, persistence beyond the browser, or game design. Those belong to ArchitectMate.
+- **Tech.** Vite + React + React Flow (`@xyflow/react`) for the canvas. It lives in `demo/`, imports the library from source, is not published to npm, and is deployed by a GitHub Actions workflow.
+- **Timing.** The demo grows with the library. Each iteration makes its new capability visible in the demo (see [roadmap.md](roadmap.md)).
+
+## 10. Repository, tooling and releases
+
+**Decided (Q6, Q7, initial):**
+
+| Area | Choice |
+|---|---|
+| Package | `solution-validator` on npm. ESM only, with `.d.ts` types. No runtime dependencies except schema validation. Targets ES2022 browsers and Node.js 22 or newer. |
+| License | AGPL-3.0 (`LICENSE`). As copyright holder, the owner may still use the code in their own projects such as ArchitectMate under any terms. Third parties that ship it must comply with the AGPL. Accepting outside contributions without a contributor agreement would limit the owner's own freedom later. |
+| Schemas | TypeBox: one definition produces both the TypeScript types and standard JSON Schema. The JSON Schemas are exported in the package for consumers, including the pack schema. |
+| Build | tsup |
+| Tests | Vitest, including golden-file tests |
+| Lint and format | Biome |
+| Commits | Conventional Commits, checked by commitlint in CI |
+| Releases | release-please GitHub Action: derives the SemVer bump from the commits, writes `CHANGELOG.md`, tags the release and publishes to npm. Versions stay at `0.x` until the API is declared stable. |
+| CI | GitHub Actions on every PR: typecheck, lint, test, build. A separate workflow deploys the demo to GitHub Pages from `main`. |
+
+Layout:
+
+```
+src/
+  core/          model types, schemas, parsing, registry
+  traits/        trait implementations (the behavior vocabulary)
+  analysis/      analysis engine and analyses
+  requirements/  task specification and requirement checks
+  query/         metadata and structural facts
+  messages/      finding codes and English templates
+packs/           official JSON packs (core, aws; later azure, on-prem)
+test/fixtures/   example models and expected results
+demo/            visual sandbox (not published)
+docs/            vision, design, component model, roadmap
+```
+
+## 11. Out of scope for the first version
+
+- Scoring, weighting and complexity metrics (consumers build these; see [§7](#7-requirements-metadata-and-facts))
+- Terraform import or export
+- Azure and on-premises packs (the model is designed for them; see [component-model.md §6](component-model.md#6-cross-provider-mapping))
+- Policy documents (IAM, RBAC), cost estimation and runtime simulation
+- AI of any kind
+- ArchitectMate itself (separate repository)
+
+## 12. Open questions
+
+| ID | Question | Status | Where |
+|---|---|---|---|
+| Q1 | First pack scope: minimal AWS serverless (API Gateway, Lambda, DynamoDB, S3); network types next. | Decided (initial) | [roadmap.md](roadmap.md) |
+| Q2 | Analyses in the first version: model validity, connection validity and logical access; the detailed level comes later. | Decided (initial) | §6 |
+| Q3 | Policy for unspecified settings: `strict` / `pack-defaults`. | Decided (initial) | §5 |
+| Q4 | How requirements select components: provided ids, types, categories or traits. | Decided (initial) | §7 |
+| Q5 | Requirement checks stay in the library, without any scoring. | Decided (initial) | §7 |
+| Q6 | npm name `solution-validator`; license AGPL-3.0. | Decided | §10 |
+| Q7 | Tooling choices. | Decided (initial) | §10 |
+| Q8 | Demo sandbox scope, scenario format, tech and timing. | Decided (initial) | §9 |
+| Q9 | Iteration plan. | Decided (initial) | [roadmap.md](roadmap.md) |
+| Q10 | Trait vocabulary, type definition and pack format. | Decided (initial) | [component-model.md](component-model.md) |
+| Q11 | Pack distribution: official packs ship inside the `solution-validator` package as subpath exports (`solution-validator/packs/aws`); custom packs are any JSON the consumer loads. Split them into separate npm packages only if their release cycles diverge. | Decided (initial) | [component-model.md §3](component-model.md#3-packs) |
+| Q12 | Shape of the metadata and facts query. | Decided (initial) | §7 |

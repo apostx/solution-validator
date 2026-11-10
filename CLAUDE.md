@@ -1,0 +1,28 @@
+# CLAUDE.md
+
+Guidance for AI coding sessions in this repository. Development runs in online sessions that see only the repository, so every requirement and decision must be recorded here or in `docs/`. Nothing may live only in chat history.
+
+## Read first
+
+1. [docs/product-vision.md](docs/product-vision.md): what the product is and is not. Its "Guidance for the developer AI" section is binding.
+2. [docs/design.md](docs/design.md): the technical design. Items marked **Decided** are settled. Items marked **Proposed** are not requirements yet. Where a decision here explicitly supersedes the vision (for example, that the library does not score), design.md wins.
+3. [docs/component-model.md](docs/component-model.md): traits, component types and packs.
+4. [docs/roadmap.md](docs/roadmap.md): the iterations. Work only within the scope of the current approved iteration.
+
+## Rules
+
+- **English only:** code, identifiers, comments, documentation, commit messages and PR descriptions. The product owner may write in Hungarian; reply in the language they use.
+- **Conventional Commits** (`feat:`, `fix:`, `docs:`, `test:`, `refactor:`, `chore:`, `ci:`, `build:`). Choose the type deliberately, because the SemVer bump is derived from it. Breaking changes use `!` or a `BREAKING CHANGE:` footer.
+- **Scope:** do not add features, use cases, component types or analyses beyond the vision and the current iteration. If something seems essential, propose it separately with a short justification and wait for approval.
+- **Ask first** when a decision would change user-visible behavior, the scope, or evaluation results.
+- **Record decisions:** when a proposal or open question is decided, update `docs/design.md` (status and §12) and `docs/roadmap.md` in the same pull request.
+- **Provider-neutral engine:** no AWS, Azure or other provider-specific logic in `src/`. Provider knowledge lives in JSON packs (`packs/`). If a pack cannot express a behavior, propose a new trait; do not special-case a type in engine code.
+- **No scoring:** the library returns verdicts, metadata and facts. Weights, points and complexity metrics belong to consumers.
+- **Determinism:** library code uses no randomness, clock, locale-dependent formatting or network access. Output ordering is stable.
+- **Browser and Node:** no Node-only APIs in `src/`. Consumers run on GitHub Pages without a backend.
+- **No AI** in analysis, scoring or explanations.
+- **Three-state verdicts:** never collapse `undecidable` into `pass` or `fail`. Never claim more than the input supports.
+
+## Commands
+
+To be filled in during Iteration 0.
