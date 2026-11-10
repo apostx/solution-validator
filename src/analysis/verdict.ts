@@ -17,7 +17,7 @@ export interface Evidence {
 }
 
 /** One of the checks that verify an intent. */
-export type CheckId = "compatibility";
+export type CheckId = "compatibility" | "forwarding" | "connectivity" | "authorization";
 
 export interface CheckResult {
   check: CheckId;

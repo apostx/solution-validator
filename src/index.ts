@@ -6,6 +6,7 @@
  */
 
 export {
+  type AccessReport,
   ANALYSIS_IDS,
   type AnalysisId,
   type AnalysisLevel,
@@ -19,6 +20,8 @@ export {
   type ModelValidityReport,
   type VerdictSummary,
 } from "./analysis/analyze";
+export type { ExposureFact } from "./analysis/checks/access-checks";
+export type { Assumption, AssumptionPolicy } from "./analysis/parameters";
 export type {
   CheckId,
   CheckResult,

@@ -1,8 +1,11 @@
 import type { SolutionModel } from "../core/model";
 import { type Finding, hasErrors, sortFindings } from "../messages/finding";
 import { VERSION } from "../version";
+import { checkAccess } from "./access";
+import type { ExposureFact } from "./checks/access-checks";
 import { checkConnectionValidity } from "./connection-validity";
 import { checkModelValidity } from "./model-validity";
+import type { Assumption, AssumptionPolicy } from "./parameters";
 import type { IntentVerdict, Verdict } from "./verdict";
 
 export const LIBRARY_NAME = "solution-validator";
@@ -14,13 +17,18 @@ export const LIBRARY_NAME = "solution-validator";
  */
 export type AnalysisLevel = "logical" | "detailed";
 
-export type AnalysisId = "model-validity" | "connection-validity";
+export type AnalysisId = "model-validity" | "connection-validity" | "access";
 
 export interface AnalyzeOptions {
   /** Default: `logical`. */
   readonly level?: AnalysisLevel;
-  /** Default: every analysis that supports the level. */
+  /**
+   * Default: every analysis that supports the level. Analyses another one needs are added:
+   * `access` adds `connection-validity`, which reports compatibility failures.
+   */
   readonly analyses?: readonly AnalysisId[];
+  /** How unset properties are treated. Default: `strict`. */
+  readonly assumptions?: AssumptionPolicy;
 }
 
 export interface ModelValidityReport {
@@ -41,7 +49,19 @@ export interface ConnectionValidityReport {
   readonly findings: readonly Finding[];
 }
 
-export type AnalysisReport = ModelValidityReport | ConnectionValidityReport;
+export interface AccessReport {
+  readonly id: "access";
+  /** One verdict per intent with the checks that apply, sorted by intent id. */
+  readonly intents: readonly IntentVerdict[];
+  readonly summary: VerdictSummary;
+  /** Which components are directly accessible from the internet, sorted by component id. */
+  readonly exposure: readonly ExposureFact[];
+  /** Pack defaults the `pack-defaults` policy used; always empty under `strict`. */
+  readonly assumptions: readonly Assumption[];
+  readonly findings: readonly Finding[];
+}
+
+export type AnalysisReport = ModelValidityReport | ConnectionValidityReport | AccessReport;
 
 export interface AnalysisResult {
   /** The library that produced the result, so that results can be reproduced. */
@@ -51,7 +71,11 @@ export interface AnalysisResult {
   /** The packs the solution uses, with their versions; sorted by id. */
   readonly packs: readonly { readonly id: string; readonly version: string }[];
   /** The effective options. */
-  readonly options: { readonly level: AnalysisLevel; readonly analyses: readonly AnalysisId[] };
+  readonly options: {
+    readonly level: AnalysisLevel;
+    readonly analyses: readonly AnalysisId[];
+    readonly assumptions: AssumptionPolicy;
+  };
   /** One report per analysis, in the canonical order. */
   readonly analyses: readonly AnalysisReport[];
 }
@@ -59,7 +83,9 @@ export interface AnalysisResult {
 interface AnalysisDefinition {
   readonly id: AnalysisId;
   readonly levels: readonly AnalysisLevel[];
-  run(model: SolutionModel): AnalysisReport;
+  /** Analyses that run whenever this one runs. */
+  readonly requires?: readonly AnalysisId[];
+  run(model: SolutionModel, policy: AssumptionPolicy): AnalysisReport;
 }
 
 /** The available analyses, in the order they run. */
@@ -81,6 +107,22 @@ const ANALYSES: readonly AnalysisDefinition[] = [
         id: "connection-validity",
         intents,
         summary: summarize(intents),
+        findings: sortFindings(findings),
+      };
+    },
+  },
+  {
+    id: "access",
+    levels: ["logical"],
+    requires: ["connection-validity"],
+    run: (model, policy) => {
+      const { intents, exposure, assumptions, findings } = checkAccess(model, policy);
+      return {
+        id: "access",
+        intents,
+        summary: summarize(intents),
+        exposure,
+        assumptions,
         findings: sortFindings(findings),
       };
     },
@@ -107,17 +149,27 @@ export function analyze(model: SolutionModel, options: AnalyzeOptions = {}): Ana
   if (level !== "logical" && level !== "detailed") {
     throw new TypeError(`Unknown analysis level: ${String(level)}`);
   }
+  const policy = options.assumptions ?? "strict";
+  if (policy !== "strict" && policy !== "pack-defaults") {
+    throw new TypeError(`Unknown assumption policy: ${String(policy)}`);
+  }
   const requested = options.analyses;
-  for (const id of requested ?? []) {
+  const wanted = new Set<AnalysisId>();
+  const add = (id: AnalysisId) => {
     const analysis = ANALYSES.find((candidate) => candidate.id === id);
     if (!analysis) throw new TypeError(`Unknown analysis: ${String(id)}`);
     if (!analysis.levels.includes(level)) {
       throw new TypeError(`Analysis ${id} does not support the ${level} level`);
     }
+    wanted.add(id);
+    for (const required of analysis.requires ?? []) add(required);
+  };
+  if (requested) {
+    for (const id of requested) add(id);
+  } else {
+    for (const analysis of ANALYSES) if (analysis.levels.includes(level)) wanted.add(analysis.id);
   }
-  const selected = ANALYSES.filter((analysis) =>
-    requested ? requested.includes(analysis.id) : analysis.levels.includes(level),
-  );
+  const selected = ANALYSES.filter((analysis) => wanted.has(analysis.id));
 
   return {
     library: { name: LIBRARY_NAME, version: VERSION },
@@ -126,8 +178,8 @@ export function analyze(model: SolutionModel, options: AnalyzeOptions = {}): Ana
       const pack = model.registry.getPack(id);
       return pack ? [{ id: pack.id, version: pack.version }] : [];
     }),
-    options: { level, analyses: selected.map((analysis) => analysis.id) },
-    analyses: selected.map((analysis) => analysis.run(model)),
+    options: { level, analyses: selected.map((analysis) => analysis.id), assumptions: policy },
+    analyses: selected.map((analysis) => analysis.run(model, policy)),
   };
 }
 

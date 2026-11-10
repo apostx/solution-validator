@@ -2,7 +2,12 @@
 export type Severity = "error" | "warning" | "info";
 
 /** Where a finding code comes from. */
-export type FindingSource = "schema" | "registry" | "model-validity" | "connection-validity";
+export type FindingSource =
+  | "schema"
+  | "registry"
+  | "model-validity"
+  | "connection-validity"
+  | "access";
 
 export interface FindingCodeDefinition {
   /** Severity of every finding with this code. */
@@ -222,6 +227,56 @@ export const FINDING_CODES = {
     description:
       "The target's type has no accepts rules in its pack, so the intent's compatibility is undecidable.",
   },
+
+  // Analysis: access
+  ACCESS_ROUTE_MISSING: {
+    severity: "error",
+    source: "access",
+    template: "Intent {intent}: {from} has no route to {to}.",
+    description: "The source forwards requests, but none of its routes leads to the target.",
+  },
+  ACCESS_NOT_REACHABLE: {
+    severity: "error",
+    source: "access",
+    template: "Intent {intent}: {to} cannot be reached from {from}.",
+    description:
+      "The target's endpoint does not let the source reach it: it is private or has none, or it does not listen on the intent's port.",
+  },
+  ACCESS_PERMISSION_MISSING: {
+    severity: "error",
+    source: "access",
+    template: "Intent {intent}: {from} has no permission to {action} {to}.",
+    description:
+      "The target controls access, and neither a grant, a forwarder's route nor public access allows the action.",
+  },
+  ACCESS_PROPERTY_UNSET: {
+    severity: "warning",
+    source: "access",
+    template: "Intent {intent} cannot be decided: {component} does not set {property}.",
+    description:
+      "Under the strict assumption policy, a property the verdict depends on is not set. The pack-defaults policy would use the pack's documented default.",
+  },
+  ACCESS_ACTION_MISSING: {
+    severity: "warning",
+    source: "access",
+    template:
+      "Intent {intent} cannot be decided: {to} controls access per action, but the intent states no action.",
+    description: "Authorization is decided per action, and the intent only states a port.",
+  },
+  ACCESS_ZONES_UNSUPPORTED: {
+    severity: "warning",
+    source: "access",
+    template: "Intent {intent} cannot be decided: placement in zones is not analyzed yet.",
+    description:
+      "A private endpoint or a placed component needs the network traits, which are not implemented yet.",
+  },
+  EXPOSED_TO_INTERNET: {
+    severity: "info",
+    source: "access",
+    template: "{component} is directly accessible from the internet.",
+    description:
+      "An anonymous caller outside the solution can reach the component and is allowed to use it.",
+  },
 } as const satisfies Record<string, FindingCodeDefinition>;
 
 /** A stable finding code. */
@@ -270,6 +325,98 @@ export const EVIDENCE_CODES = {
   NOT_ACCEPTED: {
     template: "{toType} does not accept {purpose} from {fromType}.",
     description: "No accepts rule of the target's type matches the intent.",
+  },
+  PROPERTY_UNSET: {
+    template: "{component} does not set {property}.",
+    description: "A property the check depends on is not set (strict policy).",
+  },
+  PROPERTY_ASSUMED: {
+    template: "{component} does not set {property}; the pack default {value} is assumed.",
+    description: "The pack-defaults policy used a documented default.",
+  },
+  PROPERTY_INVALID: {
+    template: "{component} sets {property} to a value the check cannot use.",
+    description: "The value does not match the property's schema; model-validity reports why.",
+  },
+  ROUTE_FOUND: {
+    template: "{from} has a route to {to}.",
+    description: "One of the forwarder's routes targets the intent's target.",
+  },
+  ROUTE_MISSING: {
+    template: "{from} has no route to {to}.",
+    description: "None of the forwarder's routes targets the intent's target.",
+  },
+  ENDPOINT_PUBLIC: {
+    template: "{to} has a public endpoint.",
+    description: "The target can be reached from anywhere.",
+  },
+  ENDPOINT_PRIVATE: {
+    template: "{to} has a private endpoint, and {from} is not inside a private network.",
+    description: "A private endpoint can only be reached from inside a private network.",
+  },
+  ENDPOINT_NONE: {
+    template: "{to} has no network endpoint.",
+    description: "The target cannot be called over the network.",
+  },
+  ENDPOINT_FORWARDED: {
+    template: "{to} has no network endpoint of its own, but {from} forwards to it.",
+    description: "A component without an endpoint is reached through a forwarder's integration.",
+  },
+  PORT_OPEN: {
+    template: "{to} listens on port {port}.",
+    description: "The intent's port is one of the endpoint's ports.",
+  },
+  PORT_CLOSED: {
+    template: "{to} does not listen on port {port}; it listens on {ports}.",
+    description: "The intent's port is not one of the endpoint's ports.",
+  },
+  ZONES_UNSUPPORTED: {
+    template: "Placement in zones is not analyzed yet.",
+    description: "The network traits are not implemented yet.",
+  },
+  FORWARDER_AUTHORIZED: {
+    template: "{from}'s route to {to} also authorizes it.",
+    description: "A forwarder whose routes authorize their targets may use them.",
+  },
+  GRANT_FOUND: {
+    template: "{from} has {access} access to {to}, which allows {action}.",
+    description: "A grant of the source allows the action on the target.",
+  },
+  GRANT_MISSING: {
+    template: "{from} has no grant on {to} that allows {action}.",
+    description: "None of the source's grants allows the action on the target.",
+  },
+  NOT_PRINCIPAL: {
+    template: "{from} has no identity that can be granted access.",
+    description: "The source is not a principal, so only public access could allow the action.",
+  },
+  PUBLIC_ALLOWED: {
+    template: "{to} allows public {action}.",
+    description: "Public access is on and covers the action.",
+  },
+  PUBLIC_DENIED: {
+    template: "{to} does not allow public {action}.",
+    description: "Public access is off, or it does not cover the action.",
+  },
+  ACTION_REQUIRED: {
+    template: "{to} controls access per action, but the intent states no action.",
+    description: "Authorization needs the intent's action.",
+  },
+  ANONYMOUS_ALLOWED: {
+    template: "{component} does not control access.",
+    description: "Anyone who can reach the component may use it.",
+  },
+  ENDPOINT_NOT_PUBLIC: {
+    template: "{component} has no public endpoint.",
+    description: "Its endpoint is private or it has none, so it cannot be reached from outside.",
+  },
+  PUBLIC_ACCESS_ON: {
+    template: "{component} allows public {actions}.",
+    description: "Anonymous callers may perform these actions.",
+  },
+  PUBLIC_ACCESS_OFF: {
+    template: "{component} does not allow public access.",
+    description: "Anonymous callers may not use the component.",
   },
 } as const satisfies Record<string, EvidenceCodeDefinition>;
 
