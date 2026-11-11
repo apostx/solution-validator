@@ -117,3 +117,43 @@ export function removeIntents(solution: Solution, ids: readonly string[]): Solut
   const removed = new Set(ids);
   return { ...solution, intents: (solution.intents ?? []).filter((i) => !removed.has(i.id)) };
 }
+
+export interface Size {
+  width: number;
+  height: number;
+}
+
+const ZONE_SIZE: Size = { width: 420, height: 260 };
+
+/** A zone's size on the canvas, stored in the component's free-form `meta`. */
+export function sizeOf(component: Component): Size {
+  const size = component.meta?.size as Partial<Size> | undefined;
+  if (typeof size?.width === "number" && typeof size.height === "number") {
+    return { width: size.width, height: size.height };
+  }
+  return ZONE_SIZE;
+}
+
+export function resizeComponent(
+  solution: Solution,
+  id: string,
+  size: Size,
+  position?: Position,
+): Solution {
+  return updateComponent(solution, id, (component) => ({
+    ...component,
+    meta: {
+      ...component.meta,
+      size: { width: Math.round(size.width), height: Math.round(size.height) },
+      ...(position ? { position: { x: Math.round(position.x), y: Math.round(position.y) } } : {}),
+    },
+  }));
+}
+
+/** Sets the zones a component is placed in; an empty list removes the placement. */
+export function setPlacement(solution: Solution, id: string, placement: string[]): Solution {
+  return updateComponent(solution, id, (component) => {
+    const { placement: _old, ...rest } = component;
+    return placement.length > 0 ? { ...rest, placement } : rest;
+  });
+}
