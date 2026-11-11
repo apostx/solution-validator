@@ -4,6 +4,7 @@ import corePack from "solution-validator/packs/core";
 import connectionMistakes from "./scenarios/connection-mistakes.json";
 import serverlessOrders from "./scenarios/serverless-orders.json";
 import webAndWorkers from "./scenarios/web-and-workers.json";
+import webTier from "./scenarios/web-tier.json";
 
 /**
  * A scenario: the packs to load, a starting model and (from Iteration 4) a task. It reuses the
@@ -25,4 +26,5 @@ export const SCENARIOS: Scenario[] = [
   serverlessOrders as Scenario,
   connectionMistakes as Scenario,
   webAndWorkers as Scenario,
+  webTier as Scenario,
 ];
