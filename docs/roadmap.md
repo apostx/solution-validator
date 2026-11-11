@@ -1,6 +1,6 @@
 # Roadmap
 
-> **Status:** Approved (initial) · 2026-11-10 · **Current iteration: 4 — Requirement checks and metadata query**
+> **Status:** Approved (initial) · 2026-11-10 · **Current iteration: none approved — Iteration 5 (network traits) is a candidate to be scoped**
 >
 > Iterations 0–4 are approved. Only the current iteration is a commitment. The scope of later iterations may still change and is confirmed before each one starts. Open questions (Q1, Q2, …) are listed in [design.md](design.md#12-open-questions).
 
@@ -36,7 +36,7 @@ Trade-off: the vision's own example (network placement, Security Group and ACL r
 | 1 | Core model, pack format, serverless pack | 0.1.0 | Q10, Q11 | Done |
 | 2 | Connection validity | 0.2.0 | — | Done |
 | 3 | Logical access analysis | 0.3.0 | — | Done |
-| 4 | Requirement checks and metadata query | 0.4.0 | Q4, Q5, Q12 | Approved |
+| 4 | Requirement checks and metadata query | 0.4.0 | Q4, Q5, Q12 | Done |
 | 5 | Network traits (candidate) | 0.5.0 | to be scoped | Candidate |
 
 ### Iteration 0 — Foundations
@@ -96,6 +96,18 @@ Trade-off: the vision's own example (network placement, Security Group and ACL r
 ### Iteration 5 (candidate) — Network traits
 
 Implements `zone`, `gateway`, `router`, `traffic-filter` and `group` at the logical level. Adds the AWS network types to the `aws` pack: VPC, subnet, internet gateway, NAT gateway, route table, security group, network ACL and Auto Scaling group, plus Lambda placed in a VPC. This covers the vision's simple-mode example. To be scoped when Iteration 4 is done.
+
+**Proposed scope (awaiting approval):**
+
+- **Library:** behavior for the network traits at the logical level.
+  - Zones: membership through `placement`, nested zones (subnet in VPC). A private endpoint becomes reachable from components in the same network.
+  - Gateways and routers: internet access only through a route to an internet gateway; `outbound-only` gateways (NAT) allow outbound connections but not inbound ones.
+  - Traffic filters: rules with symbolic sources and destinations (`internet`, a zone, a component or a filter) and ports, stateful versus stateless, attached to components, zones or themselves.
+  - Groups: an intent to or from a group stands for its members.
+  - The connectivity check and the exposure facts use all of the above; the detailed level (CIDR, route matching) stays out.
+- **Packs:** `aws` gains VPC, subnet, internet gateway, NAT gateway, route table, security group, network ACL and Auto Scaling group; Lambda can be placed in a VPC with security groups.
+- **Demo:** zones drawn as nested areas; components dragged into them; filters shown on the components or zones they attach to.
+- **Open questions to decide first:** (a) how a filter is attached: a property of the protected component or zone that lists filter ids, or the filter's own property that lists its targets; (b) the symbolic source vocabulary for rules; (c) whether a verdict through a group requires every member or at least one member to pass.
 
 ## Backlog (not scheduled; each item needs approval)
 

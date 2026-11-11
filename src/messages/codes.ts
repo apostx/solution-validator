@@ -7,7 +7,8 @@ export type FindingSource =
   | "registry"
   | "model-validity"
   | "connection-validity"
-  | "access";
+  | "access"
+  | "requirements";
 
 export interface FindingCodeDefinition {
   /** Severity of every finding with this code. */
@@ -277,6 +278,59 @@ export const FINDING_CODES = {
     description:
       "An anonymous caller outside the solution can reach the component and is allowed to use it.",
   },
+
+  // Tasks and requirement checks
+  TASK_PACK_UNKNOWN: {
+    severity: "error",
+    source: "requirements",
+    template: "The task needs pack {pack}, which is not loaded.",
+    description: "The task lists a pack that the registry does not contain.",
+  },
+  TASK_ID_DUPLICATE: {
+    severity: "error",
+    source: "requirements",
+    template: "The id {id} is used by more than one provided component or requirement.",
+    description: "Provided component and requirement ids must be unique within a task.",
+  },
+  TASK_REFERENCE_UNKNOWN: {
+    severity: "error",
+    source: "requirements",
+    template: "{path} refers to an unknown {kind} {id}.",
+    description:
+      "A provided component or a selector refers to a type, category, trait, action or port that the task's packs do not define.",
+  },
+  TASK_SELECTOR_NOT_PROVIDED: {
+    severity: "error",
+    source: "requirements",
+    template: "{path} selects {id}, which the task does not provide.",
+    description:
+      "Requirements select by id only components the task provides, because the solver chooses every other id.",
+  },
+  TASK_PROVIDED_MISSING: {
+    severity: "error",
+    source: "requirements",
+    template: "The solution does not contain {component}, which the task provides.",
+    description: "A provided component was removed from the solution.",
+  },
+  TASK_PROVIDED_CHANGED: {
+    severity: "error",
+    source: "requirements",
+    template:
+      "{component} has type {actual} in the solution, but the task provides type {expected}.",
+    description: "A provided component's type was changed in the solution.",
+  },
+  REQUIREMENT_FAILED: {
+    severity: "error",
+    source: "requirements",
+    template: "Requirement {requirement} is not met.",
+    description: "The requirement's verdict is fail; its evidence says why.",
+  },
+  REQUIREMENT_UNDECIDABLE: {
+    severity: "warning",
+    source: "requirements",
+    template: "Requirement {requirement} cannot be decided.",
+    description: "The requirement's verdict is undecidable; its evidence says what is missing.",
+  },
 } as const satisfies Record<string, FindingCodeDefinition>;
 
 /** A stable finding code. */
@@ -417,6 +471,48 @@ export const EVIDENCE_CODES = {
   PUBLIC_ACCESS_OFF: {
     template: "{component} does not allow public access.",
     description: "Anonymous callers may not use the component.",
+  },
+  SELECTOR_EMPTY: {
+    template: "No component matches {selector}.",
+    description: "The selector matches nothing in the solution.",
+  },
+  ANALYSIS_MISSING: {
+    template: "The analysis result has no {analysis} report.",
+    description: "The requirement needs an analysis that was not run.",
+  },
+  PATH_FOUND: {
+    template: "Reachable: {path}.",
+    description: "A chain of intents with a pass verdict leads from a source to a target.",
+  },
+  PATH_UNDECIDABLE: {
+    template: "A chain exists, {path}, but these intents are undecidable: {intents}.",
+    description: "The only chains include intents whose verdict is undecidable.",
+  },
+  PATH_MISSING: {
+    template: "No chain of intents leads from {from} to {to}{purpose}.",
+    description: "No chain of passing or undecidable intents connects a source to a target.",
+  },
+  ACCESSIBLE: {
+    template: "{to} is directly accessible from {from}{purpose}.",
+    description: "The connectivity and authorization checks pass for this pair.",
+  },
+  MAYBE_ACCESSIBLE: {
+    template: "Whether {to} is directly accessible from {from}{purpose} is undecidable.",
+    description: "The checks for this pair are undecidable.",
+  },
+  NOT_ACCESSIBLE: {
+    template:
+      "No matching target is directly accessible from a matching source ({pairs} pairs checked).",
+    description: "The connectivity or authorization check fails for every pair.",
+  },
+  ACCESS_UNMODELED: {
+    template:
+      "{to} has neither an endpoint nor access control, so direct access cannot be decided.",
+    description: "The target's type does not model how it is reached.",
+  },
+  USES_COUNT: {
+    template: "{count} component(s) match {selector}; at least {min} required.",
+    description: "How many components match the selector.",
   },
 } as const satisfies Record<string, EvidenceCodeDefinition>;
 

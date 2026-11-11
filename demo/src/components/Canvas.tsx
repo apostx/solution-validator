@@ -35,6 +35,8 @@ interface CanvasProps {
   selection: Selection;
   onSelect(selection: Selection): void;
   onChange(solution: Solution): void;
+  /** Components the task provides and locks; they cannot be deleted. */
+  lockedIds?: readonly string[];
 }
 
 export function Canvas({
@@ -44,6 +46,7 @@ export function Canvas({
   selection,
   onSelect,
   onChange,
+  lockedIds = [],
 }: CanvasProps) {
   const flow = useReactFlow();
   const [dragging, setDragging] = useState<Record<string, Position>>({});
@@ -72,6 +75,7 @@ export function Canvas({
           position: dragging[component.id] ?? positionOf(component, index),
           ...(measured[component.id] ? { measured: measured[component.id] } : {}),
           selected: selection?.kind === "component" && selection.id === component.id,
+          deletable: !lockedIds.includes(component.id),
           data: {
             id: component.id,
             label: component.label ?? component.id,
@@ -82,7 +86,7 @@ export function Canvas({
           },
         };
       }),
-    [components, dragging, measured, registry, selection, evaluation],
+    [components, dragging, measured, registry, selection, evaluation, lockedIds],
   );
 
   const edges = useMemo<IntentEdgeType[]>(() => {

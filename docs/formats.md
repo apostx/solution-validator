@@ -1,6 +1,6 @@
 # Formats
 
-> **Status:** Implemented in 0.1.0 (initial). The formats may still change while the version is below 1.0. JSON Schemas: [`schemas/solution.schema.json`](../schemas/solution.schema.json) and [`schemas/pack.schema.json`](../schemas/pack.schema.json), also exported by the package (`solution-validator/schemas/*.json`).
+> **Status:** Implemented in 0.x (initial). The formats may still change while the version is below 1.0. JSON Schemas: [`schemas/solution.schema.json`](../schemas/solution.schema.json), [`schemas/pack.schema.json`](../schemas/pack.schema.json) and [`schemas/task.schema.json`](../schemas/task.schema.json), also exported by the package (`solution-validator/schemas/*.json`).
 
 This document describes the implemented JSON formats. The reasoning behind them is in [design.md](design.md) and [component-model.md](component-model.md).
 
@@ -186,3 +186,51 @@ An intent verdict has the shape below. A verdict is never a boolean: `pass` is p
 ```json
 { "component": "uploads", "exposure": "exposed", "actions": ["read"], "evidence": [ … ] }
 ```
+
+## Task
+
+```json
+{
+  "schemaVersion": 1,
+  "id": "orders-api",
+  "title": "Orders API",
+  "packs": ["core", "aws"],
+  "provided": [{ "id": "users", "type": "core.internet", "locked": true }],
+  "requirements": [
+    { "id": "r1", "type": "reachable", "from": { "id": "users" },
+      "to": { "category": "data-store" }, "action": "write", "meta": { "points": 3 } },
+    { "id": "r2", "type": "not-reachable", "from": { "id": "users" }, "to": { "type": "aws.s3" } },
+    { "id": "r3", "type": "uses", "select": { "type": "aws.lambda" }, "min": 1 }
+  ],
+  "meta": {}
+}
+```
+
+| Field | Meaning |
+|---|---|
+| `provided` | Components every solution gets, such as the users on the internet. `locked` tells consumers not to let the solver change or remove them. |
+| Selectors (`from`, `to`, `select`) | `{ id, type, category, trait }`; every given field must match. `id` may only name a provided component, because the solver chooses every other id. Selecting by category or trait keeps tasks provider-neutral. |
+| `reachable` | A matching target can be reached from a matching source through a chain of intents whose `access` verdict is `pass`. `action` and `port`, if given, apply to the last intent of the chain. |
+| `not-reachable` | No matching target is directly accessible from a matching source, whether or not an intent exists. Direct access means the forwarding, connectivity and authorization checks pass for a hypothetical intent, under the assumption policy of the analysis. Without `action`, every action the target controls access for is tried. |
+| `uses` | At least `min` (default 1) components match `select`. |
+| `meta` | Returned unchanged with each result, so consumers can weight requirements. |
+
+`parseTask(input, registry)` validates the task and its references and never throws for invalid input. `checkRequirements(model, analysis, task)` returns:
+
+| Field | Meaning |
+|---|---|
+| `verdict` | `fail` if any requirement fails or a provided component is missing or changed; otherwise `undecidable` if any requirement is; otherwise `pass`. |
+| `requirements[]` | `{ requirement, type, verdict, evidence, meta }`, in the task's order. |
+| `summary`, `findings`, `meta` | Counts per verdict, task findings (`TASK_PROVIDED_MISSING`, `REQUIREMENT_FAILED`, …) and the task's `meta`. |
+
+A `reachable` requirement fails when no chain exists, and is `undecidable` when the only chains include undecidable intents or the result has no `access` report. A `not-reachable` requirement is `undecidable` when its source matches nothing.
+
+## Metadata and facts
+
+`collect(model, analysis?)` returns every component and intent, sorted by id, for consumers that compute their own scores or metrics:
+
+- components: `id`, `type`, `category`, `traits`, `meta` (the type's `meta` merged with the component's, the component winning), `incoming` and `outgoing` intent counts, and `exposure` when an access analysis is given;
+- intents: `id`, `from`, `to`, `action`, `port`, `meta`, and the verdict of the most complete intent analysis given;
+- `totals`: component and intent counts, counts by type and by category, and intent counts by verdict when an analysis is given.
+
+The library does not score: points, costs and complexity measures are computed by the consumer from these facts and the requirement verdicts.

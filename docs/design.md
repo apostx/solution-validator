@@ -65,7 +65,7 @@ const analysis = analyze(parsed.model, {
   level: "logical",
   analyses: ["connection-validity", "access"],
 });
-const requirements = checkRequirements(analysis, task);         // optional
+const requirements = checkRequirements(parsed.model, analysis, task); // optional
 const facts = collect(parsed.model, analysis);                  // optional: meta + structural facts
 ```
 
@@ -303,6 +303,13 @@ These details implement the decisions above. They are not product decisions; ope
 - **Exposure** is computed for every component with an endpoint, whether or not an intent exists. Components of the core `external` category represent outside parties and are not reported.
 - **Findings** name the decisive problem: failing checks for a failed intent, missing settings for an undecidable one. Evidence carries the full reasoning.
 - **Releases in practice.** Pull requests opened by GitHub Actions need the repository setting that allows it; until it is enabled, the release pull request is opened from release-please's branch by hand, with the `autorelease: pending` label, and release-please tags and releases it on merge. Iteration pull requests are rebase-merged, because release-please does not see commits that are older than the last release and only reachable through a merge commit (this hid Iteration 2's commits, so the 0.2.0 release commit was written by hand in release-please's format).
+
+### Implementation notes (Iteration 4)
+
+- **Signature.** `checkRequirements(model, analysis, task)` takes the model as well, because selectors need component types and categories. It reads intent verdicts from the `access` report and does not re-run analyses.
+- **`not-reachable`** evaluates hypothetical direct access (forwarding, connectivity, authorization) between each matching source and target with the same checks and the assumption policy recorded in the analysis result. This is what "whether or not an intent exists" requires.
+- **Provided components.** A missing or retyped provided component is a finding and makes the overall verdict `fail`, so removing the source cannot make a `not-reachable` requirement pass. `locked` is enforced by consumers (the demo does).
+- **`collect`** merges the type's `meta` with the instance's, reports exposure and the most complete intent verdict, and sorts every list and key. It never interprets `meta`.
 
 ## 11. Out of scope for the first version
 

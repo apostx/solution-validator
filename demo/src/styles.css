@@ -599,3 +599,90 @@ button.link:hover {
   margin: 0.6rem 0 0.2rem;
   font-size: 0.9rem;
 }
+
+.tabs {
+  flex-wrap: wrap;
+}
+
+.task-panel,
+.facts-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.task-panel h2 {
+  font-size: 1.05rem;
+}
+
+.task-panel p {
+  margin: 0;
+}
+
+.checklist {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.checklist > li {
+  margin-bottom: 0.5rem;
+  padding: 0.5rem;
+  border: 1px solid var(--border);
+  border-left-width: 4px;
+  border-radius: 6px;
+  background: var(--background);
+}
+
+.checklist > li.verdict-pass {
+  border-left-color: var(--pass);
+}
+
+.checklist > li.verdict-fail {
+  border-left-color: var(--error);
+}
+
+.checklist > li.verdict-undecidable {
+  border-left-color: var(--undecidable);
+}
+
+.checklist ul {
+  margin: 0.25rem 0 0;
+  padding-left: 1.1rem;
+  color: var(--muted);
+}
+
+.requirement-head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  align-items: baseline;
+}
+
+.facts-panel h3 {
+  margin: 0.4rem 0 0;
+  font-size: 0.95rem;
+}
+
+.facts-panel table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.facts-panel th,
+.facts-panel td {
+  padding: 0.2rem 0.3rem;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  vertical-align: top;
+}
+
+.facts-panel td code {
+  word-break: break-all;
+}
+
+.totals {
+  margin: 0;
+  padding-left: 1.1rem;
+}

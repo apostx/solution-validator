@@ -1,0 +1,321 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "id",
+    "packs",
+    "requirements"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "schemaVersion": {
+      "type": "number",
+      "const": 1
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_][A-Za-z0-9_.-]*$",
+      "maxLength": 128
+    },
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "packs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "provided": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "type"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_][A-Za-z0-9_.-]*$",
+            "maxLength": 128
+          },
+          "type": {
+            "type": "string",
+            "minLength": 1
+          },
+          "label": {
+            "type": "string"
+          },
+          "properties": {
+            "type": "object",
+            "patternProperties": {
+              "^.*$": {}
+            }
+          },
+          "locked": {
+            "type": "boolean"
+          },
+          "meta": {
+            "type": "object",
+            "patternProperties": {
+              "^.*$": {}
+            }
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "requirements": {
+      "type": "array",
+      "items": {
+        "anyOf": [
+          {
+            "type": "object",
+            "required": [
+              "id",
+              "type",
+              "from",
+              "to"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_][A-Za-z0-9_.-]*$",
+                "maxLength": 128
+              },
+              "description": {
+                "type": "string"
+              },
+              "meta": {
+                "type": "object",
+                "patternProperties": {
+                  "^.*$": {}
+                }
+              },
+              "type": {
+                "type": "string",
+                "const": "reachable"
+              },
+              "from": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9_][A-Za-z0-9_.-]*$",
+                    "maxLength": 128
+                  },
+                  "type": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "category": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "trait": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "additionalProperties": false
+              },
+              "to": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9_][A-Za-z0-9_.-]*$",
+                    "maxLength": 128
+                  },
+                  "type": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "category": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "trait": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "additionalProperties": false
+              },
+              "action": {
+                "type": "string",
+                "minLength": 1
+              },
+              "port": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 65535
+                  }
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "required": [
+              "id",
+              "type",
+              "from",
+              "to"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_][A-Za-z0-9_.-]*$",
+                "maxLength": 128
+              },
+              "description": {
+                "type": "string"
+              },
+              "meta": {
+                "type": "object",
+                "patternProperties": {
+                  "^.*$": {}
+                }
+              },
+              "type": {
+                "type": "string",
+                "const": "not-reachable"
+              },
+              "from": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9_][A-Za-z0-9_.-]*$",
+                    "maxLength": 128
+                  },
+                  "type": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "category": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "trait": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "additionalProperties": false
+              },
+              "to": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9_][A-Za-z0-9_.-]*$",
+                    "maxLength": 128
+                  },
+                  "type": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "category": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "trait": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "additionalProperties": false
+              },
+              "action": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "required": [
+              "id",
+              "type",
+              "select"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_][A-Za-z0-9_.-]*$",
+                "maxLength": 128
+              },
+              "description": {
+                "type": "string"
+              },
+              "meta": {
+                "type": "object",
+                "patternProperties": {
+                  "^.*$": {}
+                }
+              },
+              "type": {
+                "type": "string",
+                "const": "uses"
+              },
+              "select": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9_][A-Za-z0-9_.-]*$",
+                    "maxLength": 128
+                  },
+                  "type": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "category": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "trait": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "additionalProperties": false
+              },
+              "min": {
+                "type": "integer",
+                "minimum": 1
+              }
+            },
+            "additionalProperties": false
+          }
+        ]
+      }
+    },
+    "meta": {
+      "type": "object",
+      "patternProperties": {
+        "^.*$": {}
+      }
+    }
+  },
+  "additionalProperties": false,
+  "title": "SolutionValidator task"
+}

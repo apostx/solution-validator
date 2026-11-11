@@ -29,6 +29,12 @@ const SECTIONS: { source: FindingSource; title: string; intro: string }[] = [
     intro:
       "Logical access: forwarding, connectivity and authorization for every intent, and exposure to the internet. Failures are reported per failing check; undecidable intents report what is missing. Compatibility failures come from `connection-validity`, which always runs with `access`.",
   },
+  {
+    source: "requirements",
+    title: "Tasks and requirements",
+    intro:
+      "Reported by `parseTask` for invalid tasks and by `checkRequirements` for provided components and requirement verdicts.",
+  },
 ];
 
 function cell(text: string): string {

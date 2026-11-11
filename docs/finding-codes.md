@@ -77,6 +77,21 @@ Logical access: forwarding, connectivity and authorization for every intent, and
 | `ACCESS_ZONES_UNSUPPORTED` | warning | Intent {intent} cannot be decided: placement in zones is not analyzed yet. | A private endpoint or a placed component needs the network traits, which are not implemented yet. |
 | `EXPOSED_TO_INTERNET` | info | {component} is directly accessible from the internet. | An anonymous caller outside the solution can reach the component and is allowed to use it. |
 
+## Tasks and requirements
+
+Reported by `parseTask` for invalid tasks and by `checkRequirements` for provided components and requirement verdicts.
+
+| Code | Severity | Message template | Meaning |
+|---|---|---|---|
+| `TASK_PACK_UNKNOWN` | error | The task needs pack {pack}, which is not loaded. | The task lists a pack that the registry does not contain. |
+| `TASK_ID_DUPLICATE` | error | The id {id} is used by more than one provided component or requirement. | Provided component and requirement ids must be unique within a task. |
+| `TASK_REFERENCE_UNKNOWN` | error | {path} refers to an unknown {kind} {id}. | A provided component or a selector refers to a type, category, trait, action or port that the task's packs do not define. |
+| `TASK_SELECTOR_NOT_PROVIDED` | error | {path} selects {id}, which the task does not provide. | Requirements select by id only components the task provides, because the solver chooses every other id. |
+| `TASK_PROVIDED_MISSING` | error | The solution does not contain {component}, which the task provides. | A provided component was removed from the solution. |
+| `TASK_PROVIDED_CHANGED` | error | {component} has type {actual} in the solution, but the task provides type {expected}. | A provided component's type was changed in the solution. |
+| `REQUIREMENT_FAILED` | error | Requirement {requirement} is not met. | The requirement's verdict is fail; its evidence says why. |
+| `REQUIREMENT_UNDECIDABLE` | warning | Requirement {requirement} cannot be decided. | The requirement's verdict is undecidable; its evidence says what is missing. |
+
 ## Evidence codes
 
 Evidence explains an intent's verdict: each check lists the evidence it used. Evidence has a `code`, `params` and a default English `message`, like a finding, but no severity.
@@ -114,3 +129,13 @@ Evidence explains an intent's verdict: each check lists the evidence it used. Ev
 | `ENDPOINT_NOT_PUBLIC` | {component} has no public endpoint. | Its endpoint is private or it has none, so it cannot be reached from outside. |
 | `PUBLIC_ACCESS_ON` | {component} allows public {actions}. | Anonymous callers may perform these actions. |
 | `PUBLIC_ACCESS_OFF` | {component} does not allow public access. | Anonymous callers may not use the component. |
+| `SELECTOR_EMPTY` | No component matches {selector}. | The selector matches nothing in the solution. |
+| `ANALYSIS_MISSING` | The analysis result has no {analysis} report. | The requirement needs an analysis that was not run. |
+| `PATH_FOUND` | Reachable: {path}. | A chain of intents with a pass verdict leads from a source to a target. |
+| `PATH_UNDECIDABLE` | A chain exists, {path}, but these intents are undecidable: {intents}. | The only chains include intents whose verdict is undecidable. |
+| `PATH_MISSING` | No chain of intents leads from {from} to {to}{purpose}. | No chain of passing or undecidable intents connects a source to a target. |
+| `ACCESSIBLE` | {to} is directly accessible from {from}{purpose}. | The connectivity and authorization checks pass for this pair. |
+| `MAYBE_ACCESSIBLE` | Whether {to} is directly accessible from {from}{purpose} is undecidable. | The checks for this pair are undecidable. |
+| `NOT_ACCESSIBLE` | No matching target is directly accessible from a matching source ({pairs} pairs checked). | The connectivity or authorization check fails for every pair. |
+| `ACCESS_UNMODELED` | {to} has neither an endpoint nor access control, so direct access cannot be decided. | The target's type does not model how it is reached. |
+| `USES_COUNT` | {count} component(s) match {selector}; at least {min} required. | How many components match the selector. |

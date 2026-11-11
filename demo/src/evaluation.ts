@@ -3,14 +3,19 @@ import {
   type Assumption,
   type AssumptionPolicy,
   analyze,
+  checkRequirements,
+  collect,
   type ExposureFact,
+  type Facts,
   type Finding,
   type IntentVerdict,
   listFindings,
   parseSolution,
   type Registry,
+  type RequirementsResult,
   type Severity,
   type SolutionModel,
+  type Task,
 } from "solution-validator";
 
 /** The library's view of the current document. */
@@ -28,6 +33,10 @@ export interface Evaluation {
   exposure: Map<string, ExposureFact>;
   /** Pack defaults the `pack-defaults` policy applied. */
   assumptions: Assumption[];
+  /** Requirement verdicts, when the scenario has a task. */
+  requirements?: RequirementsResult;
+  /** Metadata and structural facts. */
+  facts?: Facts;
 }
 
 const RANK: Record<Severity, number> = { info: 0, warning: 1, error: 2 };
@@ -36,6 +45,7 @@ export function evaluate(
   registry: Registry,
   document: unknown,
   assumptions: AssumptionPolicy,
+  task?: Task,
 ): Evaluation {
   const parsed = parseSolution(document, registry);
   if (!parsed.ok) {
@@ -81,5 +91,7 @@ export function evaluate(
     intentVerdicts,
     exposure,
     assumptions: access?.id === "access" ? [...access.assumptions] : [],
+    ...(task ? { requirements: checkRequirements(parsed.model, result, task) } : {}),
+    facts: collect(parsed.model, result),
   };
 }

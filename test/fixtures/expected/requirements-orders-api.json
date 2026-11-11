@@ -1,0 +1,64 @@
+{
+  "task": "orders-api",
+  "verdict": "pass",
+  "summary": {
+    "pass": 3,
+    "fail": 0,
+    "undecidable": 0
+  },
+  "requirements": [
+    {
+      "requirement": "r1",
+      "type": "reachable",
+      "verdict": "pass",
+      "evidence": [
+        {
+          "code": "PATH_FOUND",
+          "params": {
+            "path": "users → api (i1) → orders-fn (i2) → orders-table (i3)"
+          },
+          "message": "Reachable: users → api (i1) → orders-fn (i2) → orders-table (i3)."
+        }
+      ],
+      "meta": {
+        "points": 3
+      }
+    },
+    {
+      "requirement": "r2",
+      "type": "not-reachable",
+      "verdict": "pass",
+      "evidence": [
+        {
+          "code": "NOT_ACCESSIBLE",
+          "params": {
+            "pairs": 2
+          },
+          "message": "No matching target is directly accessible from a matching source (2 pairs checked)."
+        }
+      ],
+      "meta": {}
+    },
+    {
+      "requirement": "r3",
+      "type": "uses",
+      "verdict": "pass",
+      "evidence": [
+        {
+          "code": "USES_COUNT",
+          "params": {
+            "count": 1,
+            "selector": "type aws.lambda",
+            "min": 1
+          },
+          "message": "1 component(s) match type aws.lambda; at least 1 required."
+        }
+      ],
+      "meta": {}
+    }
+  ],
+  "findings": [],
+  "meta": {
+    "difficulty": "easy"
+  }
+}

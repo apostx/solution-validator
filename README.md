@@ -2,7 +2,7 @@
 
 A deterministic, provider-neutral library that analyzes designed software and infrastructure solutions. It answers two questions: does the solution work, and does it meet a task's requirements?
 
-> **Status: early development (0.x).** The model, pack format, registry and the `model-validity`, `connection-validity` and logical `access` analyses are implemented. Requirement checks and the metadata query follow. See the [roadmap](docs/roadmap.md). The API may change before 1.0.
+> **Status: 0.x.** Iterations 1–4 of the [roadmap](docs/roadmap.md) are implemented: the model and pack format, the `model-validity`, `connection-validity` and logical `access` analyses, requirement checks and the metadata query. The API may change before 1.0.
 
 ## What it does
 
@@ -46,6 +46,20 @@ if (parsed.ok) {
   }
 } else {
   console.log(parsed.findings); // schema findings; parseSolution never throws for bad input
+}
+```
+
+Check a task's requirements and collect facts for your own scoring:
+
+```ts
+import { checkRequirements, collect, parseTask } from "solution-validator";
+
+const task = parseTask(taskJson, registry); // { ok, task } or { ok: false, findings }
+if (parsed.ok && task.ok) {
+  const analysis = analyze(parsed.model, { assumptions: "pack-defaults" });
+  const requirements = checkRequirements(parsed.model, analysis, task.task);
+  console.log(requirements.verdict); // "pass" | "fail" | "undecidable"
+  const facts = collect(parsed.model, analysis); // meta, counts and verdicts; no scores
 }
 ```
 

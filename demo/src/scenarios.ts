@@ -1,4 +1,4 @@
-import type { Pack, Solution } from "solution-validator";
+import type { Pack, Solution, Task } from "solution-validator";
 import awsPack from "solution-validator/packs/aws";
 import corePack from "solution-validator/packs/core";
 import connectionMistakes from "./scenarios/connection-mistakes.json";
@@ -14,6 +14,7 @@ export interface Scenario {
   description: string;
   packs: string[];
   solution: Solution;
+  task?: Task;
 }
 
 /** The packs the demo can load, by id. */

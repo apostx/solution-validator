@@ -1,18 +1,33 @@
 import { ReactFlowProvider } from "@xyflow/react";
 import { useMemo, useState } from "react";
-import { type AssumptionPolicy, createRegistry, type Solution, VERSION } from "solution-validator";
+import {
+  type AssumptionPolicy,
+  createRegistry,
+  parseTask,
+  type Solution,
+  VERSION,
+} from "solution-validator";
 import { Canvas } from "./components/Canvas";
+import { FactsPanel } from "./components/FactsPanel";
 import { FindingsPanel } from "./components/FindingsPanel";
 import { Inspector } from "./components/Inspector";
 import { JsonPanel } from "./components/JsonPanel";
 import { Palette } from "./components/Palette";
+import { TaskPanel } from "./components/TaskPanel";
 import { evaluate } from "./evaluation";
 import { addComponent, type Selection } from "./model";
 import { PACKS, SCENARIOS, type Scenario } from "./scenarios";
 
 const REPOSITORY_URL = "https://github.com/apostx/solution-validator";
 
-type Tab = "properties" | "json";
+type Tab = "properties" | "task" | "facts" | "json";
+
+const TABS: { id: Tab; label: string }[] = [
+  { id: "properties", label: "Properties" },
+  { id: "task", label: "Task" },
+  { id: "facts", label: "Facts" },
+  { id: "json", label: "JSON" },
+];
 
 export function App() {
   const [scenario, setScenario] = useState<Scenario>(() => SCENARIOS[0] as Scenario);
@@ -25,9 +40,18 @@ export function App() {
     () => createRegistry(scenario.packs.flatMap((id) => (PACKS[id] ? [PACKS[id]] : []))),
     [scenario],
   );
+  const parsedTask = useMemo(
+    () => (scenario.task ? parseTask(scenario.task, registry) : undefined),
+    [scenario, registry],
+  );
+  const task = parsedTask?.ok ? parsedTask.task : undefined;
   const evaluation = useMemo(
-    () => evaluate(registry, document, policy),
-    [registry, document, policy],
+    () => evaluate(registry, document, policy, task),
+    [registry, document, policy, task],
+  );
+  const lockedIds = useMemo(
+    () => (task?.provided ?? []).filter((c) => c.locked).map((c) => c.id),
+    [task],
   );
   const solution = evaluation.model?.solution;
 
@@ -118,6 +142,7 @@ export function App() {
                 selection={selection}
                 onSelect={setSelection}
                 onChange={change}
+                lockedIds={lockedIds}
               />
             </ReactFlowProvider>
           ) : (
@@ -135,25 +160,23 @@ export function App() {
         </div>
         <aside className="side-panel">
           <div className="tabs" role="tablist">
-            <button
-              type="button"
-              role="tab"
-              aria-selected={tab === "properties"}
-              onClick={() => setTab("properties")}
-            >
-              Properties
-            </button>
-            <button
-              type="button"
-              role="tab"
-              aria-selected={tab === "json"}
-              onClick={() => setTab("json")}
-            >
-              JSON
-            </button>
+            {TABS.map((candidate) => (
+              <button
+                key={candidate.id}
+                type="button"
+                role="tab"
+                aria-selected={tab === candidate.id}
+                onClick={() => setTab(candidate.id)}
+              >
+                {candidate.label}
+                {candidate.id === "task" && evaluation.requirements && (
+                  <span className={`verdict verdict-${evaluation.requirements.verdict}`}> ●</span>
+                )}
+              </button>
+            ))}
           </div>
-          {tab === "properties" ? (
-            solution ? (
+          {tab === "properties" &&
+            (solution ? (
               <Inspector
                 solution={solution}
                 registry={registry}
@@ -164,8 +187,16 @@ export function App() {
               />
             ) : (
               <p className="hint">Fix the schema errors in the JSON view first.</p>
-            )
-          ) : (
+            ))}
+          {tab === "task" && (
+            <TaskPanel
+              task={scenario.task}
+              taskFindings={parsedTask?.findings ?? []}
+              result={evaluation.requirements}
+            />
+          )}
+          {tab === "facts" && <FactsPanel facts={evaluation.facts} />}
+          {tab === "json" && (
             <JsonPanel
               document={document}
               fileName={`${scenario.id}.json`}

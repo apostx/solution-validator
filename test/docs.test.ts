@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { FINDING_CODES, Pack, Solution } from "../src/index";
+import { FINDING_CODES, Pack, Solution, Task } from "../src/index";
 import { renderFindingCodes } from "./helpers/docs";
 
 const JSON_SCHEMA_DIALECT = "https://json-schema.org/draft/2020-12/schema";
@@ -15,6 +15,10 @@ describe("generated files", () => {
 
   it("schemas/solution.schema.json matches the solution schema", async () => {
     await expect(schemaFile(Solution)).toMatchFileSnapshot("../schemas/solution.schema.json");
+  });
+
+  it("schemas/task.schema.json matches the task schema", async () => {
+    await expect(schemaFile(Task)).toMatchFileSnapshot("../schemas/task.schema.json");
   });
 
   it("schemas/pack.schema.json matches the pack schema", async () => {
