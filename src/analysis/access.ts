@@ -79,10 +79,8 @@ export function checkAccess(model: SolutionModel, policy: AssumptionPolicy): Acc
             }),
           );
         }
-        if (outcome.zones) {
-          findings.push(
-            createFinding("ACCESS_ZONES_UNSUPPORTED", [intent.id], { intent: intent.id }),
-          );
+        if (outcome.portUnknown) {
+          findings.push(createFinding("ACCESS_PORT_UNKNOWN", [intent.id], { intent: intent.id }));
         }
         if (outcome.actionMissing) {
           findings.push(

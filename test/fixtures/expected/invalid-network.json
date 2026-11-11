@@ -1,0 +1,318 @@
+{
+  "parse": {
+    "ok": true,
+    "findings": []
+  },
+  "analysis": {
+    "strict": {
+      "library": {
+        "name": "solution-validator",
+        "version": "<version>"
+      },
+      "vocabulary": 2,
+      "packs": [
+        {
+          "id": "aws",
+          "version": "0.2.0"
+        },
+        {
+          "id": "core",
+          "version": "0.1.0"
+        }
+      ],
+      "options": {
+        "level": "logical",
+        "analyses": [
+          "model-validity",
+          "connection-validity",
+          "access"
+        ],
+        "assumptions": "strict"
+      },
+      "analyses": [
+        {
+          "id": "model-validity",
+          "valid": false,
+          "findings": [
+            {
+              "code": "NETWORK_REFERENCE_INVALID",
+              "severity": "error",
+              "subjects": [
+                "acl"
+              ],
+              "params": {
+                "path": "/components/6/properties/subnets/0",
+                "expected": "a zone",
+                "id": "fn"
+              },
+              "message": "/components/6/properties/subnets/0 must refer to a zone; fn does not qualify."
+            },
+            {
+              "code": "NETWORK_REFERENCE_INVALID",
+              "severity": "error",
+              "subjects": [
+                "igw"
+              ],
+              "params": {
+                "path": "/components/3/properties/attachedTo/0",
+                "expected": "a zone",
+                "id": "fn"
+              },
+              "message": "/components/3/properties/attachedTo/0 must refer to a zone; fn does not qualify."
+            },
+            {
+              "code": "NETWORK_REFERENCE_INVALID",
+              "severity": "error",
+              "subjects": [
+                "rt"
+              ],
+              "params": {
+                "path": "/components/4/properties/routes/0/gateway",
+                "expected": "a gateway",
+                "id": "subnet"
+              },
+              "message": "/components/4/properties/routes/0/gateway must refer to a gateway; subnet does not qualify."
+            },
+            {
+              "code": "NETWORK_REFERENCE_INVALID",
+              "severity": "error",
+              "subjects": [
+                "rt"
+              ],
+              "params": {
+                "path": "/components/4/properties/associations/0",
+                "expected": "a zone",
+                "id": "fn"
+              },
+              "message": "/components/4/properties/associations/0 must refer to a zone; fn does not qualify."
+            },
+            {
+              "code": "NETWORK_REFERENCE_INVALID",
+              "severity": "error",
+              "subjects": [
+                "sg"
+              ],
+              "params": {
+                "path": "/components/5/properties/attachedTo/0",
+                "expected": "a component that is not a zone",
+                "id": "subnet"
+              },
+              "message": "/components/5/properties/attachedTo/0 must refer to a component that is not a zone; subnet does not qualify."
+            },
+            {
+              "code": "REFERENCE_UNKNOWN",
+              "severity": "error",
+              "subjects": [
+                "sg"
+              ],
+              "params": {
+                "path": "/components/5/properties/rules/0/peer",
+                "id": "nobody"
+              },
+              "message": "/components/5/properties/rules/0/peer refers to nobody, which is not a component of the solution."
+            }
+          ]
+        },
+        {
+          "id": "connection-validity",
+          "intents": [],
+          "summary": {
+            "pass": 0,
+            "fail": 0,
+            "undecidable": 0
+          },
+          "findings": []
+        },
+        {
+          "id": "access",
+          "intents": [],
+          "summary": {
+            "pass": 0,
+            "fail": 0,
+            "undecidable": 0
+          },
+          "exposure": [
+            {
+              "component": "fn",
+              "exposure": "not-exposed",
+              "evidence": [
+                {
+                  "code": "ENDPOINT_PUBLIC",
+                  "params": {
+                    "from": "the internet",
+                    "to": "fn"
+                  },
+                  "message": "fn has a public endpoint."
+                },
+                {
+                  "code": "PUBLIC_ACCESS_OFF",
+                  "params": {
+                    "component": "fn"
+                  },
+                  "message": "fn does not allow public access."
+                }
+              ]
+            }
+          ],
+          "assumptions": [],
+          "findings": []
+        }
+      ]
+    },
+    "pack-defaults": {
+      "library": {
+        "name": "solution-validator",
+        "version": "<version>"
+      },
+      "vocabulary": 2,
+      "packs": [
+        {
+          "id": "aws",
+          "version": "0.2.0"
+        },
+        {
+          "id": "core",
+          "version": "0.1.0"
+        }
+      ],
+      "options": {
+        "level": "logical",
+        "analyses": [
+          "model-validity",
+          "connection-validity",
+          "access"
+        ],
+        "assumptions": "pack-defaults"
+      },
+      "analyses": [
+        {
+          "id": "model-validity",
+          "valid": false,
+          "findings": [
+            {
+              "code": "NETWORK_REFERENCE_INVALID",
+              "severity": "error",
+              "subjects": [
+                "acl"
+              ],
+              "params": {
+                "path": "/components/6/properties/subnets/0",
+                "expected": "a zone",
+                "id": "fn"
+              },
+              "message": "/components/6/properties/subnets/0 must refer to a zone; fn does not qualify."
+            },
+            {
+              "code": "NETWORK_REFERENCE_INVALID",
+              "severity": "error",
+              "subjects": [
+                "igw"
+              ],
+              "params": {
+                "path": "/components/3/properties/attachedTo/0",
+                "expected": "a zone",
+                "id": "fn"
+              },
+              "message": "/components/3/properties/attachedTo/0 must refer to a zone; fn does not qualify."
+            },
+            {
+              "code": "NETWORK_REFERENCE_INVALID",
+              "severity": "error",
+              "subjects": [
+                "rt"
+              ],
+              "params": {
+                "path": "/components/4/properties/routes/0/gateway",
+                "expected": "a gateway",
+                "id": "subnet"
+              },
+              "message": "/components/4/properties/routes/0/gateway must refer to a gateway; subnet does not qualify."
+            },
+            {
+              "code": "NETWORK_REFERENCE_INVALID",
+              "severity": "error",
+              "subjects": [
+                "rt"
+              ],
+              "params": {
+                "path": "/components/4/properties/associations/0",
+                "expected": "a zone",
+                "id": "fn"
+              },
+              "message": "/components/4/properties/associations/0 must refer to a zone; fn does not qualify."
+            },
+            {
+              "code": "NETWORK_REFERENCE_INVALID",
+              "severity": "error",
+              "subjects": [
+                "sg"
+              ],
+              "params": {
+                "path": "/components/5/properties/attachedTo/0",
+                "expected": "a component that is not a zone",
+                "id": "subnet"
+              },
+              "message": "/components/5/properties/attachedTo/0 must refer to a component that is not a zone; subnet does not qualify."
+            },
+            {
+              "code": "REFERENCE_UNKNOWN",
+              "severity": "error",
+              "subjects": [
+                "sg"
+              ],
+              "params": {
+                "path": "/components/5/properties/rules/0/peer",
+                "id": "nobody"
+              },
+              "message": "/components/5/properties/rules/0/peer refers to nobody, which is not a component of the solution."
+            }
+          ]
+        },
+        {
+          "id": "connection-validity",
+          "intents": [],
+          "summary": {
+            "pass": 0,
+            "fail": 0,
+            "undecidable": 0
+          },
+          "findings": []
+        },
+        {
+          "id": "access",
+          "intents": [],
+          "summary": {
+            "pass": 0,
+            "fail": 0,
+            "undecidable": 0
+          },
+          "exposure": [
+            {
+              "component": "fn",
+              "exposure": "not-exposed",
+              "evidence": [
+                {
+                  "code": "ENDPOINT_PUBLIC",
+                  "params": {
+                    "from": "the internet",
+                    "to": "fn"
+                  },
+                  "message": "fn has a public endpoint."
+                },
+                {
+                  "code": "PUBLIC_ACCESS_OFF",
+                  "params": {
+                    "component": "fn"
+                  },
+                  "message": "fn does not allow public access."
+                }
+              ]
+            }
+          ],
+          "assumptions": [],
+          "findings": []
+        }
+      ]
+    }
+  }
+}

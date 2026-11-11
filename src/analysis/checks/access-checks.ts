@@ -10,6 +10,7 @@ import {
 } from "../parameters";
 import { type CheckResult, combineVerdicts, createEvidence, type Evidence } from "../verdict";
 import type { ResolvedIntent } from "./intent-context";
+import { combineSteps, Network, type Party, type PortSpec, type Step, step } from "./network";
 import { samePort } from "./ports";
 
 /** A check's result, with what the access analysis needs to report findings. */
@@ -17,8 +18,8 @@ export interface CheckOutcome {
   result: CheckResult;
   /** Unset properties that made the check undecidable. */
   missing: MissingProperty[];
-  /** The check needed zone placement, which is not analyzed yet. */
-  zones?: boolean;
+  /** A traffic filter limits ports, and the intent's port is not known. */
+  portUnknown?: boolean;
   /** The check needed an action, and the intent states none. */
   actionMissing?: boolean;
 }
@@ -68,10 +69,18 @@ export function checkForwarding(
 }
 
 /**
- * Check 3, connectivity: the target's endpoint must be reachable from the source. At the
- * logical level without zones, a public endpoint is reachable from anywhere, a private one only
- * from inside a private network, and a component without an endpoint only through a forwarder
- * that routes to it. The intent's port must be one the endpoint listens on.
+ * Check 3, connectivity: the target's endpoint must be reachable from the source.
+ *
+ * - Outside every zone, a public endpoint is reachable from anywhere and a private one is not.
+ * - Inside the same network (zones with the same outermost zone), public and private endpoints
+ *   are reachable, subject to the traffic filters on the way.
+ * - Between networks, or between a network and the outside, traffic needs a route to the
+ *   internet through a gateway (inbound: one that allows both directions), a public endpoint,
+ *   and the traffic filters' permission on both sides.
+ * - A component without an endpoint is reached only through a forwarder that routes to it.
+ *
+ * Groups stand for their members, and a component placed in several zones must be reachable in
+ * each: every combination must pass. The intent's port must be one the endpoint listens on.
  */
 export function checkConnectivity(
   context: AccessContext,
@@ -80,58 +89,124 @@ export function checkConnectivity(
   const { intent, from, fromType, to, toType } = resolved;
   const endpoint = toType.traits.endpoint;
   if (!endpoint) return undefined;
-  if ((from.placement ?? []).length > 0 || (to.placement ?? []).length > 0) {
-    return {
-      ...outcome("connectivity", "undecidable", [createEvidence("ZONES_UNSUPPORTED")]),
-      zones: true,
-    };
-  }
   const visibility = context.resolver.resolve(to, toType, endpoint.visibility);
   if (!visibility.known) {
     return outcome("connectivity", "undecidable", visibility.evidence, unknown(visibility).missing);
   }
+  if (!VISIBILITIES.includes(visibility.value as never)) {
+    const invalid = invalidValue(to, endpoint.visibility);
+    return outcome("connectivity", "undecidable", [...visibility.evidence, ...invalid.evidence]);
+  }
   const evidence = [...visibility.evidence];
   const ids = { from: from.id, to: to.id };
-  switch (visibility.value) {
-    case "public":
-      evidence.push(createEvidence("ENDPOINT_PUBLIC", ids));
-      break;
-    case "private":
-      evidence.push(createEvidence("ENDPOINT_PRIVATE", ids));
+
+  let reach: Step;
+  if (visibility.value === "none") {
+    const routes = routeTargets(context, from, fromType);
+    if (routes && !routes.known) {
+      return outcome(
+        "connectivity",
+        "undecidable",
+        [...evidence, ...routes.evidence],
+        routes.missing,
+      );
+    }
+    if (!routes?.targets.includes(to.id)) {
+      evidence.push(createEvidence("ENDPOINT_NONE", ids));
       return outcome("connectivity", "fail", evidence);
-    case "none": {
-      const routes = routeTargets(context, from, fromType);
-      if (routes && !routes.known) {
-        return outcome(
-          "connectivity",
-          "undecidable",
-          [...evidence, ...routes.evidence],
-          routes.missing,
-        );
-      }
-      if (!routes?.targets.includes(to.id)) {
-        evidence.push(createEvidence("ENDPOINT_NONE", ids));
-        return outcome("connectivity", "fail", evidence);
-      }
-      evidence.push(...routes.evidence, createEvidence("ENDPOINT_FORWARDED", ids));
-      break;
     }
-    default: {
-      const invalid = invalidValue(to, endpoint.visibility);
-      return outcome("connectivity", "undecidable", [...evidence, ...invalid.evidence]);
+    reach = step("pass", [...routes.evidence, createEvidence("ENDPOINT_FORWARDED", ids)]);
+  } else {
+    const network = new Network(context);
+    const sources = network.members(from);
+    const targets = network.members(to);
+    const parts: Step[] = [];
+    for (const side of [sources, targets]) if (!side.known) parts.push(side.step);
+    if (sources.known && targets.known) {
+      const targetParties =
+        endpoint.via === "provider"
+          ? targets.value.map((party) => ({ ...party, position: undefined }))
+          : targets.value;
+      const ports = portSpec(intent.port, endpoint.ports);
+      for (const source of dedupe(sources.value)) {
+        for (const target of dedupe(targetParties)) {
+          parts.push(path(network, source, target, visibility.value as string, ports));
+        }
+      }
+      parts.unshift(step("pass", [...sources.evidence, ...targets.evidence]));
     }
+    reach = combineSteps(parts);
   }
+
+  const all = [...evidence, ...reach.evidence];
   const port = intent.port;
-  if (port !== undefined && endpoint.ports !== undefined) {
+  if (reach.verdict !== "fail" && port !== undefined && endpoint.ports !== undefined) {
     const open = endpoint.ports.some((id) => samePort(context.model, id, port));
-    evidence.push(
+    all.push(
       open
         ? createEvidence("PORT_OPEN", { to: to.id, port })
         : createEvidence("PORT_CLOSED", { to: to.id, port, ports: endpoint.ports.join(", ") }),
     );
-    if (!open) return outcome("connectivity", "fail", evidence);
+    if (!open) return outcome("connectivity", "fail", all);
   }
-  return outcome("connectivity", "pass", evidence);
+  return {
+    ...outcome("connectivity", reach.verdict, all, reach.missing),
+    ...(reach.portUnknown && reach.verdict === "undecidable" ? { portUnknown: true } : {}),
+  };
+}
+
+function portSpec(
+  port: string | number | undefined,
+  endpointPorts: readonly string[] | undefined,
+): PortSpec {
+  if (port !== undefined) return { kind: "ports", ports: [port] };
+  if (endpointPorts !== undefined) return { kind: "ports", ports: [...endpointPorts] };
+  return { kind: "unknown" };
+}
+
+function dedupe(parties: readonly Party[]): Party[] {
+  const seen = new Set<string>();
+  return parties.filter((party) => {
+    const key = `${party.component?.id ?? ""}\u0000${party.position ?? ""}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+/** Whether traffic gets from one party to the other, through routes, gateways and filters. */
+function path(
+  network: Network,
+  source: Party,
+  target: Party,
+  visibility: string,
+  ports: PortSpec,
+): Step {
+  const from = source.component?.id ?? "the internet";
+  const to = target.component?.id ?? "the internet";
+  const sourceNetwork = network.root(source.position);
+  const targetNetwork = network.root(target.position);
+  const steps: Step[] = [];
+  if (sourceNetwork !== undefined && sourceNetwork === targetNetwork) {
+    steps.push(
+      step("pass", [createEvidence("SAME_NETWORK", { from, to, network: sourceNetwork })]),
+    );
+  } else {
+    if (visibility === "private") {
+      return step("fail", [createEvidence("ENDPOINT_PRIVATE", { from, to })]);
+    }
+    if (source.position !== undefined) {
+      steps.push(network.internet(source.position, "outbound", target, ports));
+    }
+    if (target.position !== undefined) {
+      steps.push(network.internet(target.position, "inbound", source, ports));
+    } else {
+      steps.push(step("pass", [createEvidence("ENDPOINT_PUBLIC", { from, to })]));
+    }
+  }
+  steps.push(network.filtersOnSide(source, target, "outbound", ports));
+  steps.push(network.filtersOnSide(target, source, "inbound", ports));
+  return combineSteps(steps);
 }
 
 /**
@@ -282,13 +357,16 @@ export interface ExposureFact {
   exposure: "exposed" | "not-exposed" | "undecidable";
   /** Actions anonymous callers may perform, when access control limits them. */
   actions?: string[];
+  /** Ports open to anonymous callers, when the component is inside a network. */
+  ports?: string[];
   evidence: Evidence[];
 }
 
 /**
  * Decides whether a component is directly accessible from the internet: its endpoint is public
- * and it either does not control access or allows public access. External components, which
- * stand for the outside parties themselves, are not reported.
+ * and reachable from outside (through a gateway and the traffic filters, when it is inside a
+ * network), and it either does not control access or allows public access. External
+ * components, which stand for the outside parties themselves, are not reported.
  */
 export function exposureOf(
   context: AccessContext,
@@ -300,16 +378,8 @@ export function exposureOf(
   const fact = (
     exposure: ExposureFact["exposure"],
     evidence: Evidence[],
-    actions?: string[],
-  ): ExposureFact => ({
-    component: component.id,
-    exposure,
-    ...(actions ? { actions } : {}),
-    evidence,
-  });
-  if ((component.placement ?? []).length > 0) {
-    return fact("undecidable", [createEvidence("ZONES_UNSUPPORTED")]);
-  }
+    extra: { actions?: string[]; ports?: string[] } = {},
+  ): ExposureFact => ({ component: component.id, exposure, ...extra, evidence });
   const visibility = context.resolver.resolve(component, type, endpoint.visibility);
   if (!visibility.known) return fact("undecidable", visibility.evidence);
   if (!VISIBILITIES.includes(visibility.value as never)) {
@@ -323,26 +393,74 @@ export function exposureOf(
     evidence.push(createEvidence("ENDPOINT_NOT_PUBLIC", { component: component.id }));
     return fact("not-exposed", evidence);
   }
-  evidence.push(createEvidence("ENDPOINT_PUBLIC", { to: component.id }));
+  evidence.push(createEvidence("ENDPOINT_PUBLIC", { from: "the internet", to: component.id }));
+
+  // Inside a network, the outside must get in on at least one port, in every placement.
+  const network = new Network(context);
+  const placed = network.positions(component);
+  if (endpoint.via !== "provider" && !placed.known) {
+    return fact("undecidable", [...evidence, ...placed.step.evidence]);
+  }
+  const positions = endpoint.via === "provider" || !placed.known ? [undefined] : placed.value;
+  const extra: { ports?: string[] } = {};
+  if (positions.some((position) => position !== undefined)) {
+    const outsider: Party = { ids: [], position: undefined };
+    const candidates =
+      endpoint.ports ??
+      context.model.packs.flatMap((pack) =>
+        context.model.registry.ports.filter((port) => port.pack === pack).map((port) => port.id),
+      );
+    const open: string[] = [];
+    let undecidable: Step | undefined;
+    let closed: Step | undefined;
+    for (const port of candidates) {
+      const ports: PortSpec = { kind: "ports", ports: [port] };
+      const steps = positions.map((position) => {
+        const party: Party = { component, ids: [component.id], position };
+        if (position === undefined) return step("pass", []);
+        return combineSteps([
+          network.internet(position, "inbound", outsider, ports),
+          network.filtersOnSide(party, outsider, "inbound", ports),
+        ]);
+      });
+      const result = combineSteps(steps);
+      if (result.verdict === "pass") {
+        open.push(port);
+        evidence.push(...result.evidence);
+      } else if (result.verdict === "undecidable") {
+        undecidable ??= result;
+      } else {
+        closed ??= result;
+      }
+    }
+    if (open.length === 0) {
+      if (undecidable) return fact("undecidable", [...evidence, ...undecidable.evidence]);
+      evidence.push(...(closed?.evidence ?? []));
+      evidence.push(createEvidence("NOT_REACHABLE_FROM_INTERNET", { component: component.id }));
+      return fact("not-exposed", evidence);
+    }
+    extra.ports = open;
+  }
+
   const controlled = type.traits["access-controlled"];
   if (!controlled) {
     evidence.push(createEvidence("ANONYMOUS_ALLOWED", { component: component.id }));
-    return fact("exposed", evidence);
+    return fact("exposed", evidence, extra);
   }
   const actions = controlled.publicActions ?? [];
   if (controlled.public === undefined || actions.length === 0) {
     evidence.push(createEvidence("PUBLIC_ACCESS_OFF", { component: component.id }));
     return fact("not-exposed", evidence);
   }
-  const open = context.resolver.resolve(component, type, controlled.public);
-  if (!open.known) return fact("undecidable", [...evidence, ...open.evidence]);
-  evidence.push(...open.evidence);
-  if (open.value !== true) {
+  const allowed = context.resolver.resolve(component, type, controlled.public);
+  if (!allowed.known) return fact("undecidable", [...evidence, ...allowed.evidence]);
+  evidence.push(...allowed.evidence);
+  if (allowed.value !== true) {
     evidence.push(createEvidence("PUBLIC_ACCESS_OFF", { component: component.id }));
     return fact("not-exposed", evidence);
   }
   evidence.push(
     createEvidence("PUBLIC_ACCESS_ON", { component: component.id, actions: actions.join(", ") }),
   );
-  return fact("exposed", evidence, [...actions]);
+  return fact("exposed", evidence, { ...extra, actions: [...actions] });
 }

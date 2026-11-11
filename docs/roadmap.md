@@ -1,6 +1,6 @@
 # Roadmap
 
-> **Status:** Approved (initial) · 2026-11-10 · **Current iteration: none approved — Iteration 5 (network traits) is a candidate to be scoped**
+> **Status:** Approved (initial) · 2026-11-10 · **Current iteration: none — Iterations 0–5 are done; the next step is chosen from the backlog**
 >
 > Iterations 0–4 are approved. Only the current iteration is a commitment. The scope of later iterations may still change and is confirmed before each one starts. Open questions (Q1, Q2, …) are listed in [design.md](design.md#12-open-questions).
 
@@ -37,7 +37,7 @@ Trade-off: the vision's own example (network placement, Security Group and ACL r
 | 2 | Connection validity | 0.2.0 | — | Done |
 | 3 | Logical access analysis | 0.3.0 | — | Done |
 | 4 | Requirement checks and metadata query | 0.4.0 | Q4, Q5, Q12 | Done |
-| 5 | Network traits (candidate) | 0.5.0 | to be scoped | Candidate |
+| 5 | Network traits | 0.5.0 | Q15, Q16, Q17 | Done |
 
 ### Iteration 0 — Foundations
 
@@ -93,11 +93,11 @@ Trade-off: the vision's own example (network placement, Security Group and ACL r
 - **Demo:** scenarios that include a task, with a requirement checklist, plus a table of the collected metadata and facts.
 - After this iteration ArchitectMate can start integrating the library.
 
-### Iteration 5 (candidate) — Network traits
+### Iteration 5 — Network traits (0.5.0)
 
-Implements `zone`, `gateway`, `router`, `traffic-filter` and `group` at the logical level. Adds the AWS network types to the `aws` pack: VPC, subnet, internet gateway, NAT gateway, route table, security group, network ACL and Auto Scaling group, plus Lambda placed in a VPC. This covers the vision's simple-mode example. To be scoped when Iteration 4 is done.
+Implements `zone`, `gateway`, `router`, `traffic-filter` and `group` at the logical level. Adds the AWS network types to the `aws` pack: VPC, subnet, internet gateway, NAT gateway, route table, security group, network ACL and Auto Scaling group, plus Lambda placed in a VPC. This covers the vision's simple-mode example. The scope below was approved after Iteration 4, with the open questions decided as Q15–Q17 in [design.md](design.md#12-open-questions).
 
-**Proposed scope (awaiting approval):**
+**Scope (approved):**
 
 - **Library:** behavior for the network traits at the logical level.
   - Zones: membership through `placement`, nested zones (subnet in VPC). A private endpoint becomes reachable from components in the same network.
@@ -107,7 +107,7 @@ Implements `zone`, `gateway`, `router`, `traffic-filter` and `group` at the logi
   - The connectivity check and the exposure facts use all of the above; the detailed level (CIDR, route matching) stays out.
 - **Packs:** `aws` gains VPC, subnet, internet gateway, NAT gateway, route table, security group, network ACL and Auto Scaling group; Lambda can be placed in a VPC with security groups.
 - **Demo:** zones drawn as nested areas; components dragged into them; filters shown on the components or zones they attach to.
-- **Open questions to decide first:** (a) how a filter is attached: a property of the protected component or zone that lists filter ids, or the filter's own property that lists its targets; (b) the symbolic source vocabulary for rules; (c) whether a verdict through a group requires every member or at least one member to pass.
+- **Decisions:** (a) the filter or router lists what it applies to (Q15); (b) rules with `direction`, `peer` (`any`, `internet`, or an id), `ports` and `effect`, first match wins (Q16); (c) a verdict through a group or several placements requires every member or placement to pass (Q17). `endpoint.via` was added so that a function placed in a VPC is still invoked through the provider.
 
 ## Backlog (not scheduled; each item needs approval)
 

@@ -9,11 +9,11 @@
         "name": "solution-validator",
         "version": "<version>"
       },
-      "vocabulary": 1,
+      "vocabulary": 2,
       "packs": [
         {
           "id": "aws",
-          "version": "0.1.0"
+          "version": "0.2.0"
         },
         {
           "id": "core",
@@ -273,6 +273,7 @@
                 {
                   "code": "ENDPOINT_PUBLIC",
                   "params": {
+                    "from": "the internet",
                     "to": "bucket"
                   },
                   "message": "bucket has a public endpoint."
@@ -293,6 +294,7 @@
                 {
                   "code": "ENDPOINT_PUBLIC",
                   "params": {
+                    "from": "the internet",
                     "to": "fn"
                   },
                   "message": "fn has a public endpoint."
@@ -345,11 +347,11 @@
         "name": "solution-validator",
         "version": "<version>"
       },
-      "vocabulary": 1,
+      "vocabulary": 2,
       "packs": [
         {
           "id": "aws",
-          "version": "0.1.0"
+          "version": "0.2.0"
         },
         {
           "id": "core",
@@ -609,6 +611,7 @@
                 {
                   "code": "ENDPOINT_PUBLIC",
                   "params": {
+                    "from": "the internet",
                     "to": "bucket"
                   },
                   "message": "bucket has a public endpoint."
@@ -629,6 +632,7 @@
                 {
                   "code": "ENDPOINT_PUBLIC",
                   "params": {
+                    "from": "the internet",
                     "to": "fn"
                   },
                   "message": "fn has a public endpoint."

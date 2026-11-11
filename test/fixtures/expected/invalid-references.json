@@ -9,11 +9,11 @@
         "name": "solution-validator",
         "version": "<version>"
       },
-      "vocabulary": 1,
+      "vocabulary": 2,
       "packs": [
         {
           "id": "aws",
-          "version": "0.1.0"
+          "version": "0.2.0"
         },
         {
           "id": "core",
@@ -369,9 +369,12 @@
                   "verdict": "undecidable",
                   "evidence": [
                     {
-                      "code": "ZONES_UNSUPPORTED",
-                      "params": {},
-                      "message": "Placement in zones is not analyzed yet."
+                      "code": "PLACEMENT_INVALID",
+                      "params": {
+                        "component": "fn",
+                        "zone": "users"
+                      },
+                      "message": "fn is placed in users, which is not a zone of the solution."
                     }
                   ]
                 },
@@ -399,12 +402,22 @@
           "exposure": [
             {
               "component": "fn",
-              "exposure": "undecidable",
+              "exposure": "not-exposed",
               "evidence": [
                 {
-                  "code": "ZONES_UNSUPPORTED",
-                  "params": {},
-                  "message": "Placement in zones is not analyzed yet."
+                  "code": "ENDPOINT_PUBLIC",
+                  "params": {
+                    "from": "the internet",
+                    "to": "fn"
+                  },
+                  "message": "fn has a public endpoint."
+                },
+                {
+                  "code": "PUBLIC_ACCESS_OFF",
+                  "params": {
+                    "component": "fn"
+                  },
+                  "message": "fn does not allow public access."
                 }
               ]
             }
@@ -419,11 +432,11 @@
         "name": "solution-validator",
         "version": "<version>"
       },
-      "vocabulary": 1,
+      "vocabulary": 2,
       "packs": [
         {
           "id": "aws",
-          "version": "0.1.0"
+          "version": "0.2.0"
         },
         {
           "id": "core",
@@ -779,9 +792,12 @@
                   "verdict": "undecidable",
                   "evidence": [
                     {
-                      "code": "ZONES_UNSUPPORTED",
-                      "params": {},
-                      "message": "Placement in zones is not analyzed yet."
+                      "code": "PLACEMENT_INVALID",
+                      "params": {
+                        "component": "fn",
+                        "zone": "users"
+                      },
+                      "message": "fn is placed in users, which is not a zone of the solution."
                     }
                   ]
                 },
@@ -809,12 +825,22 @@
           "exposure": [
             {
               "component": "fn",
-              "exposure": "undecidable",
+              "exposure": "not-exposed",
               "evidence": [
                 {
-                  "code": "ZONES_UNSUPPORTED",
-                  "params": {},
-                  "message": "Placement in zones is not analyzed yet."
+                  "code": "ENDPOINT_PUBLIC",
+                  "params": {
+                    "from": "the internet",
+                    "to": "fn"
+                  },
+                  "message": "fn has a public endpoint."
+                },
+                {
+                  "code": "PUBLIC_ACCESS_OFF",
+                  "params": {
+                    "component": "fn"
+                  },
+                  "message": "fn does not allow public access."
                 }
               ]
             }

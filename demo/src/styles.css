@@ -686,3 +686,74 @@ button.link:hover {
   margin: 0;
   padding-left: 1.1rem;
 }
+
+/* Zones and network attachments */
+
+.zone-node {
+  width: 100%;
+  height: 100%;
+  padding: 0.35rem 0.6rem;
+  border: 1.5px dashed var(--muted);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--accent) 5%, transparent);
+}
+
+.zone-node.selected {
+  border-style: solid;
+  border-color: var(--accent);
+}
+
+.zone-node.has-error {
+  border-color: var(--error);
+}
+
+.zone-title {
+  font-size: 0.85rem;
+}
+
+.attachments {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.2rem;
+  margin-top: 0.2rem;
+}
+
+.attachments .badge {
+  margin-left: 0;
+}
+
+.badge-filter {
+  background: var(--error-surface);
+  color: var(--error);
+}
+
+.badge-router {
+  background: var(--surface);
+  color: var(--accent);
+  border: 1px solid var(--border);
+}
+
+.badge-gateway {
+  background: var(--warning-surface);
+  color: var(--warning);
+}
+
+.category-network {
+  border-left-color: #57606a;
+}
+
+.placement {
+  gap: 0.25rem;
+}
+
+label.checkbox {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.4rem;
+  font-weight: normal;
+}
+
+label.checkbox input {
+  width: auto;
+}

@@ -1,5 +1,5 @@
 import type { Finding, IntentVerdict, Registry, Solution } from "solution-validator";
-import { type Selection, setLabel, setProperty, updateIntent } from "../model";
+import { type Selection, setLabel, setPlacement, setProperty, updateIntent } from "../model";
 import { PropertyField } from "./PropertyField";
 
 interface InspectorProps {
@@ -81,6 +81,11 @@ export function Inspector({
   const type = registry.getType(component.type);
   const componentIds = solution.components.map((candidate) => candidate.id);
   const properties = component.properties ?? {};
+  const placement = component.placement ?? [];
+  const zones = solution.components.filter(
+    (candidate) =>
+      candidate.id !== component.id && registry.getType(candidate.type)?.traits.zone !== undefined,
+  );
   return (
     <div className="inspector">
       <h2>{component.label ?? component.id}</h2>
@@ -101,6 +106,32 @@ export function Inspector({
           onChange={(event) => onChange(setLabel(solution, component.id, event.target.value))}
         />
       </label>
+      {zones.length > 0 && (
+        <fieldset className="placement">
+          <legend>Placed in</legend>
+          {zones.map((zone) => (
+            <label key={zone.id} className="checkbox">
+              <input
+                type="checkbox"
+                checked={placement.includes(zone.id)}
+                onChange={(event) =>
+                  onChange(
+                    setPlacement(
+                      solution,
+                      component.id,
+                      event.target.checked
+                        ? [...placement, zone.id]
+                        : placement.filter((id) => id !== zone.id),
+                    ),
+                  )
+                }
+              />
+              {zone.label ?? zone.id} <code>{zone.type}</code>
+            </label>
+          ))}
+          <span className="hint">Or drag the component into a zone on the canvas.</span>
+        </fieldset>
+      )}
       {type && Object.keys(type.properties).length > 0 && (
         <fieldset>
           <legend>Properties</legend>

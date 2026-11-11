@@ -100,21 +100,32 @@ This document describes the implemented JSON formats. The reasoning behind them 
 - **`properties`** use a subset of JSON Schema: `string` (with `enum`, `minLength`, `maxLength`, `pattern`), `number`, `integer`, `boolean`, arrays of those or of objects, and objects whose fields are scalars or arrays of scalars. Objects are closed. `default` documents the value the `pack-defaults` assumption policy uses. `"x-component-ref": true` marks a string as a component id; references are checked.
 - **`required`** lists properties every component of the type must set. Most properties are optional: a missing property limits what can be decided but does not make the model invalid.
 
-### Trait parameters (vocabulary 1)
+### Trait parameters (vocabulary 2)
 
 | Trait | Parameters |
 |---|---|
-| `endpoint` | `visibility`: `public`, `private` or `none` (bindable); `ports`: port ids it listens on (omitted: any) |
+| `endpoint` | `visibility`: `public`, `private` or `none` (bindable); `ports`: port ids it listens on (omitted: any); `via`: `placement` (default) or `provider`, see below |
 | `forwarder` | `routes`: binding to the routes array; `targetField` (default `target`); `authorizes`: a route also authorizes the forwarder on its target |
 | `principal` | `grants`: binding to the grants array; `resourceField` (default `resource`); `accessField` (default `access`) |
 | `access-controlled` | `levels`: access level → actions it allows; `public`: anonymous access (bindable boolean); `publicActions`: actions allowed when public |
 | `zone` | `addressSpace` (bindable string, detailed level) |
-| `gateway` | `direction`: `both` or `outbound-only` (bindable); `connects`: binding to an array of component references |
-| `router` | `routes`: binding to the routes array |
-| `traffic-filter` | `stateful`; `attachTo`: `component`, `zone` and/or `self`; `rules`: binding; `default`: `{ inbound, outbound }` of `allow` or `deny` |
-| `group` | `members`: binding to component references; `size` (bindable integer); `zones`: binding to component references |
+| `gateway` | `direction`: `both` or `outbound-only` (bindable); `connects`: binding to the zones it is attached to (without it, the gateway belongs to the network of the zone it is placed in) |
+| `router` | `routes`: binding to routes `{ destination: "internet", gateway }`; `zones`: binding to the zones it serves |
+| `traffic-filter` | `stateful`; `attachTo`: `component`, `zone` and/or `self`; `rules`: binding to the rules (below); `targets`: binding to what it is attached to; `default`: `{ inbound, outbound }` of `allow` or `deny` (default: deny) |
+| `group` | `members`: binding to component references; `size` (bindable integer, informational) |
 
-Behavior arrives per iteration: `endpoint`, `forwarder`, `principal` and `access-controlled` in Iteration 3; the network traits are a candidate for Iteration 5, and their parameters may change before then.
+Vocabulary 2 added `endpoint.via`, `router.zones` and `traffic-filter.targets`, removed `group.zones` (placement says where a group runs), and gave the network traits their behavior. Packs that need it declare `"vocabulary": 2`.
+
+**Traffic filter rules** are objects, checked in order; the first rule that matches the traffic's direction, peer and ports decides, and the `default` policy decides when none matches:
+
+| Field | Meaning |
+|---|---|
+| `direction` | `inbound` or `outbound`, seen from what the filter protects |
+| `peer` | `any`; `internet` (anything outside the protected side's network); or the id of a component, a zone (anything placed in it, at any depth) or a filter (anything it is attached to) |
+| `ports` | Port ids, or port numbers as strings. Omitted: all ports |
+| `effect` | `allow` (default) or `deny` |
+
+Stateless filters (`stateful: false`) also check the return traffic in the opposite direction, on any port, so they need a rule without `ports` for the replies.
 
 ## Analysis result
 
@@ -178,10 +189,20 @@ An intent verdict has the shape below. A verdict is never a boolean: `pass` is p
 |---|---|---|
 | `compatibility` | always | B's type accepts the intent from A's type. |
 | `forwarding` | A is a `forwarder` | One of A's routes targets B. |
-| `connectivity` | B has an `endpoint` | `public`: reachable from anywhere. `private`: only from inside a private network; components are not in one until zones are analyzed, so this fails, and placed components are `undecidable`. `none`: only through a forwarder whose routes target B. If B lists `ports`, the intent's port must be one of them. |
+| `connectivity` | B has an `endpoint` | See below. If B lists `ports`, the intent's port must be one of them. |
 | `authorization` | B is `access-controlled` | Allowed if A is a forwarder that `authorizes` its routes and routes to B; or A is a `principal` with a grant on B whose access level allows the action; or B's `public` access is on and `publicActions` includes the action. An intent without an action is `undecidable` here. |
 
-**Exposure.** A component is `exposed` when an anonymous caller from outside can reach and use it: its endpoint is public, and it does not control access or its public access is on (`actions` lists what is allowed). Components with a private endpoint or none, or without public access, are `not-exposed`. Unset settings make it `undecidable` under `strict`. Components of the `external` category stand for the outside parties themselves and are not listed.
+**Connectivity.** A component's position is the zone it is placed in; components without placement are outside every zone (the internet, and provider services such as object storage). The outermost zone of a position is its network.
+
+- **Same network:** public and private endpoints are reachable through the local routes.
+- **Between networks, or with the outside:** the endpoint must be public. A source inside a network needs a route to the internet in its router: through a `both` gateway attached to its network, or through an `outbound-only` gateway placed in a zone that itself routes to a `both` gateway. A target inside a network needs a route to the internet through a `both` gateway; `outbound-only` gateways do not let traffic in. A zone without a router uses the router of the nearest zone it is placed in; with none, it only has local routes.
+- **Traffic filters on the way:** the filters attached to the source and to the target, and the zone filters of every zone the traffic leaves or enters, must allow it; `self` filters on a gateway the traffic passes apply too.
+- **`none`:** reachable only through a forwarder whose routes target B.
+- **`via: provider`:** the endpoint is reached at the provider's service endpoint, outside every zone, even when the component is placed. Its placement then only decides its own outbound traffic, as for a function attached to a private network.
+- **Several placements and groups:** a component placed in several zones, and a group with `members`, stand for every placement or member; each combination must pass.
+- **Undecidable:** under `strict`, unset routes, targets or rules; an invalid placement; a filter that limits ports when the intent states no port and the endpoint lists none.
+
+**Exposure.** A component is `exposed` when an anonymous caller from outside can reach and use it: its endpoint is public, it is reachable from outside (inside a network, on at least one port through a `both` gateway and the filters; `ports` lists which), and it does not control access or its public access is on (`actions` lists what is allowed). Otherwise it is `not-exposed`. Unset settings make it `undecidable` under `strict`. Components of the `external` category stand for the outside parties themselves and are not listed.
 
 ```json
 { "component": "uploads", "exposure": "exposed", "actions": ["read"], "evidence": [ … ] }

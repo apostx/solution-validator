@@ -52,11 +52,11 @@ const parsed = parseSolution(json, registry);
 
 | Trait | What the engine evaluates | Key parameters / properties |
 |---|---|---|
-| `zone` | A network area that contains components. Members can reach each other at the routing level, subject to filters. | parent zone; address space (detailed level) |
+| `zone` | A network area that contains components. Members can reach each other at the routing level, subject to filters. | parent zone (through placement); address space (detailed level) |
 | `gateway` | Connects a zone to another zone or to an external network. | direction: `both` or `outbound-only`; what it connects |
-| `router` | Decides which gateway traffic leaving a zone uses. | routes: destination → gateway |
-| `traffic-filter` | Allows or denies traffic by source, destination and port. | stateful or stateless; attaches to `component`, `zone` or `self` (traffic passing through it); rules; default policy |
-| `endpoint` | How a component can be called from outside. | visibility: `public`, `private` or `none`; protocols and ports |
+| `router` | Decides which gateway traffic leaving a zone uses. | routes: destination → gateway; the zones it serves |
+| `traffic-filter` | Allows or denies traffic by source, destination and port. | stateful or stateless; attaches to `component`, `zone` or `self` (traffic passing through it); what it is attached to; rules; default policy |
+| `endpoint` | How a component can be called from outside. | visibility: `public`, `private` or `none`; protocols and ports; reached in its placement or at the provider (`via`) |
 | `forwarder` | Receives requests and forwards them to targets. | routes or targets |
 | `principal` | Has an identity that can be granted access. | grants: resource + access level |
 | `access-controlled` | Requires a grant, a resource policy or a public setting before others can use it. | public access; logical resource policy |
@@ -76,7 +76,7 @@ Each check gives `pass`, `fail` or `undecidable`. The intent's verdict combines 
 - otherwise `undecidable` if any check is undecidable;
 - otherwise `pass`.
 
-Checks that do not apply are skipped. For example, two serverless components outside any zone have no network path to check beyond their endpoints.
+Checks that do not apply are skipped. For example, two serverless components outside any zone have no network path to check beyond their endpoints. The implemented rules are described in [formats.md](formats.md#access-checks-logical-level).
 
 ## 5. Example type definitions
 

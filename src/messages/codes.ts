@@ -168,6 +168,13 @@ export const FINDING_CODES = {
     template: "Component {component} sets property {property}, which type {type} does not define.",
     description: "A component sets a property that its type does not declare.",
   },
+  NETWORK_REFERENCE_INVALID: {
+    severity: "error",
+    source: "model-validity",
+    template: "{path} must refer to {expected}; {id} does not qualify.",
+    description:
+      "A router, gateway, traffic filter or rule refers to a component of the wrong kind: for example a route to a component that is not a gateway.",
+  },
   REFERENCE_UNKNOWN: {
     severity: "error",
     source: "model-validity",
@@ -236,6 +243,14 @@ export const FINDING_CODES = {
     template: "Intent {intent}: {from} has no route to {to}.",
     description: "The source forwards requests, but none of its routes leads to the target.",
   },
+  ACCESS_PORT_UNKNOWN: {
+    severity: "warning",
+    source: "access",
+    template:
+      "Intent {intent} cannot be decided: a traffic filter limits ports, and the intent's port is not known.",
+    description:
+      "The intent states no port, its target's endpoint lists none, and a filter on the way only allows some ports.",
+  },
   ACCESS_NOT_REACHABLE: {
     severity: "error",
     source: "access",
@@ -263,13 +278,6 @@ export const FINDING_CODES = {
     template:
       "Intent {intent} cannot be decided: {to} controls access per action, but the intent states no action.",
     description: "Authorization is decided per action, and the intent only states a port.",
-  },
-  ACCESS_ZONES_UNSUPPORTED: {
-    severity: "warning",
-    source: "access",
-    template: "Intent {intent} cannot be decided: placement in zones is not analyzed yet.",
-    description:
-      "A private endpoint or a placed component needs the network traits, which are not implemented yet.",
   },
   EXPOSED_TO_INTERNET: {
     severity: "info",
@@ -405,8 +413,8 @@ export const EVIDENCE_CODES = {
     description: "The target can be reached from anywhere.",
   },
   ENDPOINT_PRIVATE: {
-    template: "{to} has a private endpoint, and {from} is not inside a private network.",
-    description: "A private endpoint can only be reached from inside a private network.",
+    template: "{to} has a private endpoint, and {from} is not inside its network.",
+    description: "A private endpoint can only be reached from inside the same network.",
   },
   ENDPOINT_NONE: {
     template: "{to} has no network endpoint.",
@@ -423,10 +431,6 @@ export const EVIDENCE_CODES = {
   PORT_CLOSED: {
     template: "{to} does not listen on port {port}; it listens on {ports}.",
     description: "The intent's port is not one of the endpoint's ports.",
-  },
-  ZONES_UNSUPPORTED: {
-    template: "Placement in zones is not analyzed yet.",
-    description: "The network traits are not implemented yet.",
   },
   FORWARDER_AUTHORIZED: {
     template: "{from}'s route to {to} also authorizes it.",
@@ -455,6 +459,77 @@ export const EVIDENCE_CODES = {
   ACTION_REQUIRED: {
     template: "{to} controls access per action, but the intent states no action.",
     description: "Authorization needs the intent's action.",
+  },
+  PLACEMENT_INVALID: {
+    template: "{component} is placed in {zone}, which is not a zone of the solution.",
+    description: "The component's placement is invalid, so its network position is unknown.",
+  },
+  SAME_NETWORK: {
+    template: "{from} and {to} are in the same network, {network}.",
+    description:
+      "Both sides are placed in zones of the same outermost zone; local routes connect them.",
+  },
+  LOCAL_ROUTES_ONLY: {
+    template: "{zone} has no router, so it only has local routes.",
+    description: "No router serves the zone or the zones it is placed in.",
+  },
+  INTERNET_ROUTE_MISSING: {
+    template: "{router}, the router of {zone}, has no route to the internet.",
+    description: "The zone's router has no route with the destination internet.",
+  },
+  INTERNET_ROUTE: {
+    template: "{zone} reaches the internet through {gateway}.",
+    description: "The zone's internet route uses a gateway that allows both directions.",
+  },
+  NAT_ROUTE: {
+    template: "{zone} reaches the internet through {gateway}, for outbound connections only.",
+    description: "The zone's internet route uses an outbound-only gateway.",
+  },
+  GATEWAY_INVALID: {
+    template: "{gateway} is not a gateway.",
+    description: "A route points to a component without the gateway trait.",
+  },
+  GATEWAY_NOT_ATTACHED: {
+    template: "{gateway} is not attached to the network {network}.",
+    description: "A route points to a gateway of another network.",
+  },
+  GATEWAY_OUTBOUND_ONLY: {
+    template:
+      "{gateway} only allows outbound connections, so {zone} cannot be reached from the internet.",
+    description: "Inbound traffic needs a gateway that allows both directions.",
+  },
+  NAT_WITHOUT_INTERNET: {
+    template:
+      "{gateway} sits in {zone}, which has no route to the internet through a gateway that allows both directions.",
+    description: "An outbound-only gateway needs a route to the internet itself.",
+  },
+  FILTER_ALLOWS: {
+    template: "{filter} allows {direction} traffic with {peer} (rule {rule}).",
+    description: "The first matching rule of a traffic filter allows the traffic.",
+  },
+  FILTER_DENIES: {
+    template: "{filter} denies {direction} traffic with {peer} (rule {rule}).",
+    description: "The first matching rule of a traffic filter denies the traffic.",
+  },
+  FILTER_DEFAULT_ALLOWS: {
+    template: "No rule of {filter} matches {direction} traffic with {peer}; its default allows it.",
+    description: "No rule matches, and the filter's default policy allows.",
+  },
+  FILTER_DEFAULT_DENIES: {
+    template: "No rule of {filter} matches {direction} traffic with {peer}; its default denies it.",
+    description: "No rule matches, and the filter's default policy denies.",
+  },
+  FILTER_PORT_UNKNOWN: {
+    template: "Rule {rule} of {filter} limits ports, but the traffic's port is not known.",
+    description: "The intent states no port and the target's endpoint lists none.",
+  },
+  STATELESS_RETURN: {
+    template: "{filter} is stateless, so the return traffic needs a rule of its own.",
+    description: "Stateless filters check the replies as well, on any port.",
+  },
+  NOT_REACHABLE_FROM_INTERNET: {
+    template: "{component} cannot be reached from the internet on any port.",
+    description: "Routes, gateways or traffic filters keep outside callers out.",
   },
   ANONYMOUS_ALLOWED: {
     template: "{component} does not control access.",

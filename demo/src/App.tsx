@@ -134,7 +134,7 @@ export function App() {
         />
         <div className="workspace">
           {solution ? (
-            <ReactFlowProvider>
+            <ReactFlowProvider key={scenario.id}>
               <Canvas
                 solution={solution}
                 registry={registry}

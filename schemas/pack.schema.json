@@ -190,6 +190,12 @@
                       "pattern": "^(?:[a-z][a-z0-9]*(?:-[a-z0-9]+)*\\.)?[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
                     },
                     "minItems": 1
+                  },
+                  "via": {
+                    "enum": [
+                      "placement",
+                      "provider"
+                    ]
                   }
                 },
                 "additionalProperties": false
@@ -393,6 +399,19 @@
                       }
                     },
                     "additionalProperties": false
+                  },
+                  "zones": {
+                    "type": "object",
+                    "required": [
+                      "property"
+                    ],
+                    "properties": {
+                      "property": {
+                        "type": "string",
+                        "pattern": "^[a-z][A-Za-z0-9]*$"
+                      }
+                    },
+                    "additionalProperties": false
                   }
                 },
                 "additionalProperties": false
@@ -419,6 +438,19 @@
                     "minItems": 1
                   },
                   "rules": {
+                    "type": "object",
+                    "required": [
+                      "property"
+                    ],
+                    "properties": {
+                      "property": {
+                        "type": "string",
+                        "pattern": "^[a-z][A-Za-z0-9]*$"
+                      }
+                    },
+                    "additionalProperties": false
+                  },
+                  "targets": {
                     "type": "object",
                     "required": [
                       "property"
@@ -492,19 +524,6 @@
                         "additionalProperties": false
                       }
                     ]
-                  },
-                  "zones": {
-                    "type": "object",
-                    "required": [
-                      "property"
-                    ],
-                    "properties": {
-                      "property": {
-                        "type": "string",
-                        "pattern": "^[a-z][A-Za-z0-9]*$"
-                      }
-                    },
-                    "additionalProperties": false
                   }
                 },
                 "additionalProperties": false

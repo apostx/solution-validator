@@ -1,0 +1,32 @@
+{
+  "$schema": "../../../schemas/solution.schema.json",
+  "schemaVersion": 1,
+  "packs": ["core", "aws"],
+  "components": [
+    { "id": "vpc", "type": "aws.vpc" },
+    { "id": "subnet", "type": "aws.subnet", "placement": ["vpc"] },
+    { "id": "fn", "type": "aws.lambda", "placement": ["subnet"] },
+    { "id": "igw", "type": "aws.internet-gateway", "properties": { "attachedTo": ["fn"] } },
+    {
+      "id": "rt",
+      "type": "aws.route-table",
+      "properties": {
+        "routes": [{ "destination": "internet", "gateway": "subnet" }],
+        "associations": ["fn"]
+      }
+    },
+    {
+      "id": "sg",
+      "type": "aws.security-group",
+      "properties": {
+        "rules": [{ "direction": "inbound", "peer": "nobody" }],
+        "attachedTo": ["subnet"]
+      }
+    },
+    {
+      "id": "acl",
+      "type": "aws.network-acl",
+      "properties": { "rules": [], "subnets": ["fn"] }
+    }
+  ]
+}

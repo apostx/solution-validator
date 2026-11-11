@@ -1,0 +1,421 @@
+{
+  "id": "web-and-workers",
+  "title": "Web tier and private workers (VPC)",
+  "description": "A VPC with a public subnet (web servers, NAT gateway), a private subnet (app servers, a VPC-attached worker function) and an isolated subnet. Drag components between subnets, edit security group rules and route tables, and watch the arrows: the batch job in the isolated subnet cannot reach DynamoDB, and the users cannot reach the private app servers.",
+  "packs": ["core", "aws"],
+  "solution": {
+    "schemaVersion": 1,
+    "packs": ["core", "aws"],
+    "components": [
+      {
+        "id": "users",
+        "type": "core.internet",
+        "label": "Users",
+        "meta": {
+          "position": {
+            "x": -300,
+            "y": 230
+          }
+        }
+      },
+      {
+        "id": "vpc",
+        "type": "aws.vpc",
+        "label": "VPC",
+        "meta": {
+          "position": {
+            "x": 0,
+            "y": 0
+          },
+          "size": {
+            "width": 1020,
+            "height": 560
+          }
+        }
+      },
+      {
+        "id": "public-a",
+        "type": "aws.subnet",
+        "placement": ["vpc"],
+        "label": "Public subnet",
+        "meta": {
+          "position": {
+            "x": 30,
+            "y": 50
+          },
+          "size": {
+            "width": 450,
+            "height": 230
+          }
+        }
+      },
+      {
+        "id": "private-a",
+        "type": "aws.subnet",
+        "placement": ["vpc"],
+        "label": "Private subnet",
+        "meta": {
+          "position": {
+            "x": 530,
+            "y": 50
+          },
+          "size": {
+            "width": 460,
+            "height": 230
+          }
+        }
+      },
+      {
+        "id": "isolated-a",
+        "type": "aws.subnet",
+        "placement": ["vpc"],
+        "label": "Isolated subnet",
+        "meta": {
+          "position": {
+            "x": 530,
+            "y": 310
+          },
+          "size": {
+            "width": 460,
+            "height": 220
+          }
+        }
+      },
+      {
+        "id": "igw",
+        "type": "aws.internet-gateway",
+        "properties": {
+          "attachedTo": ["vpc"]
+        },
+        "label": "Internet gateway",
+        "meta": {
+          "position": {
+            "x": -300,
+            "y": 40
+          }
+        }
+      },
+      {
+        "id": "nat",
+        "type": "aws.nat-gateway",
+        "placement": ["public-a"],
+        "label": "NAT gateway",
+        "meta": {
+          "position": {
+            "x": 280,
+            "y": 170
+          }
+        }
+      },
+      {
+        "id": "public-rt",
+        "type": "aws.route-table",
+        "properties": {
+          "routes": [
+            {
+              "destination": "internet",
+              "gateway": "igw"
+            }
+          ],
+          "associations": ["public-a"]
+        },
+        "label": "Public routes",
+        "meta": {
+          "position": {
+            "x": 40,
+            "y": 620
+          }
+        }
+      },
+      {
+        "id": "private-rt",
+        "type": "aws.route-table",
+        "properties": {
+          "routes": [
+            {
+              "destination": "internet",
+              "gateway": "nat"
+            }
+          ],
+          "associations": ["private-a"]
+        },
+        "label": "Private routes",
+        "meta": {
+          "position": {
+            "x": 260,
+            "y": 620
+          }
+        }
+      },
+      {
+        "id": "web",
+        "type": "aws.autoscaling-group",
+        "placement": ["public-a"],
+        "properties": {
+          "endpoint": "public",
+          "permissions": [
+            {
+              "resource": "orders-table",
+              "access": "read"
+            }
+          ]
+        },
+        "label": "Web servers",
+        "meta": {
+          "position": {
+            "x": 60,
+            "y": 100
+          }
+        }
+      },
+      {
+        "id": "web-sg",
+        "type": "aws.security-group",
+        "properties": {
+          "rules": [
+            {
+              "direction": "inbound",
+              "peer": "internet",
+              "ports": ["https"]
+            },
+            {
+              "direction": "outbound",
+              "peer": "any"
+            }
+          ],
+          "attachedTo": ["web"]
+        },
+        "label": "web-sg",
+        "meta": {
+          "position": {
+            "x": 480,
+            "y": 620
+          }
+        }
+      },
+      {
+        "id": "app",
+        "type": "aws.autoscaling-group",
+        "placement": ["private-a"],
+        "properties": {
+          "endpoint": "private",
+          "permissions": []
+        },
+        "label": "App servers",
+        "meta": {
+          "position": {
+            "x": 560,
+            "y": 100
+          }
+        }
+      },
+      {
+        "id": "app-sg",
+        "type": "aws.security-group",
+        "properties": {
+          "rules": [
+            {
+              "direction": "inbound",
+              "peer": "web-sg",
+              "ports": ["https"]
+            },
+            {
+              "direction": "outbound",
+              "peer": "any"
+            }
+          ],
+          "attachedTo": ["app"]
+        },
+        "label": "app-sg",
+        "meta": {
+          "position": {
+            "x": 690,
+            "y": 620
+          }
+        }
+      },
+      {
+        "id": "worker",
+        "type": "aws.lambda",
+        "placement": ["private-a"],
+        "properties": {
+          "permissions": [
+            {
+              "resource": "orders-table",
+              "access": "read-write"
+            }
+          ]
+        },
+        "label": "Worker",
+        "meta": {
+          "position": {
+            "x": 780,
+            "y": 100
+          }
+        }
+      },
+      {
+        "id": "worker-sg",
+        "type": "aws.security-group",
+        "properties": {
+          "rules": [
+            {
+              "direction": "outbound",
+              "peer": "any"
+            }
+          ],
+          "attachedTo": ["worker"]
+        },
+        "label": "worker-sg",
+        "meta": {
+          "position": {
+            "x": 900,
+            "y": 620
+          }
+        }
+      },
+      {
+        "id": "batch",
+        "type": "aws.lambda",
+        "placement": ["isolated-a"],
+        "properties": {
+          "permissions": [
+            {
+              "resource": "orders-table",
+              "access": "read"
+            }
+          ]
+        },
+        "label": "Batch job",
+        "meta": {
+          "position": {
+            "x": 600,
+            "y": 380
+          }
+        }
+      },
+      {
+        "id": "batch-sg",
+        "type": "aws.security-group",
+        "properties": {
+          "rules": [
+            {
+              "direction": "outbound",
+              "peer": "any"
+            }
+          ],
+          "attachedTo": ["batch"]
+        },
+        "label": "batch-sg",
+        "meta": {
+          "position": {
+            "x": 1110,
+            "y": 620
+          }
+        }
+      },
+      {
+        "id": "orders-table",
+        "type": "aws.dynamodb",
+        "label": "Orders table",
+        "meta": {
+          "position": {
+            "x": 1120,
+            "y": 280
+          }
+        }
+      }
+    ],
+    "intents": [
+      {
+        "id": "users-web-https",
+        "from": "users",
+        "to": "web",
+        "port": "https"
+      },
+      {
+        "id": "users-web-http",
+        "from": "users",
+        "to": "web",
+        "port": "http"
+      },
+      {
+        "id": "users-app",
+        "from": "users",
+        "to": "app",
+        "port": "https"
+      },
+      {
+        "id": "web-app",
+        "from": "web",
+        "to": "app",
+        "action": "invoke",
+        "port": "https"
+      },
+      {
+        "id": "web-table",
+        "from": "web",
+        "to": "orders-table",
+        "action": "read"
+      },
+      {
+        "id": "worker-table",
+        "from": "worker",
+        "to": "orders-table",
+        "action": "write"
+      },
+      {
+        "id": "batch-table",
+        "from": "batch",
+        "to": "orders-table",
+        "action": "read"
+      }
+    ]
+  },
+  "task": {
+    "schemaVersion": 1,
+    "id": "web-and-workers",
+    "title": "Web tier and private workers",
+    "packs": ["core", "aws"],
+    "provided": [
+      {
+        "id": "users",
+        "type": "core.internet",
+        "locked": true
+      }
+    ],
+    "requirements": [
+      {
+        "id": "r1",
+        "type": "reachable",
+        "description": "Users on the internet can read orders through the web tier.",
+        "from": {
+          "id": "users"
+        },
+        "to": {
+          "category": "data-store"
+        },
+        "action": "read"
+      },
+      {
+        "id": "r2",
+        "type": "not-reachable",
+        "description": "No data store is directly accessible from the internet.",
+        "from": {
+          "id": "users"
+        },
+        "to": {
+          "category": "data-store"
+        }
+      },
+      {
+        "id": "r3",
+        "type": "uses",
+        "description": "Private workloads reach the internet through a NAT gateway.",
+        "select": {
+          "type": "aws.nat-gateway"
+        }
+      }
+    ]
+  }
+}
