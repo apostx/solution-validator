@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0](https://github.com/apostx/solution-validator/compare/v0.2.0...v0.3.0) (2026-11-11)
+
+
+### Features
+
+* add the logical access analysis with exposure facts and assumption policies ([82c9764](https://github.com/apostx/solution-validator/commit/82c97643a157cdc179cbeaf1c9dd1f5461db668f))
+
 ## [0.2.0](https://github.com/apostx/solution-validator/compare/v0.1.0...v0.2.0) (2026-11-10)
 
 
