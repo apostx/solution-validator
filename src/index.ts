@@ -71,4 +71,26 @@ export {
   type Severity,
 } from "./messages/codes";
 export { type Finding, type FindingParams, renderMessage } from "./messages/finding";
+export {
+  type CollectedComponent,
+  type CollectedIntent,
+  collect,
+  type Facts,
+} from "./query/collect";
+export {
+  checkRequirements,
+  type RequirementResult,
+  type RequirementsResult,
+} from "./requirements/check-requirements";
+export { type ParseTaskResult, parseTask } from "./requirements/parse-task";
+export {
+  NotReachableRequirement,
+  ProvidedComponent,
+  ReachableRequirement,
+  Requirement,
+  Selector,
+  TASK_SCHEMA_VERSION,
+  Task,
+  UsesRequirement,
+} from "./requirements/task-schema";
 export { VERSION } from "./version";
