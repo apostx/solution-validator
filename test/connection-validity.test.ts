@@ -70,7 +70,7 @@ describe("connection-validity", () => {
     const registry = createRegistry([
       ...officialPacks,
       testPack({
-        requires: { aws: "^0.1.0" },
+        requires: { aws: "^0.2.0" },
         types: [
           {
             id: "acme.sink",

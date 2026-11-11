@@ -167,18 +167,24 @@ describe("access", () => {
     });
   });
 
-  it("is undecidable for placed components until zones are analyzed", () => {
+  it("does not reach the internet from a zone without routes", () => {
     const registry = createRegistry([
       ...officialPacks,
       testPack({
-        requires: { aws: "^0.1.0" },
+        requires: { aws: "^0.2.0" },
+        vocabulary: 2,
         types: [{ id: "acme.net", label: "Net", category: "network", traits: { zone: {} } }],
       }),
     ]);
     const report = accessReport(
       [
         { id: "net", type: "acme.net" },
-        { id: "fn", type: "aws.lambda", placement: ["net"], properties: { permissions: [] } },
+        {
+          id: "fn",
+          type: "aws.lambda",
+          placement: ["net"],
+          properties: { permissions: [{ resource: "table", access: "read" }] },
+        },
         table,
       ],
       [{ id: "x", from: "fn", to: "table", action: "read" }],
@@ -186,14 +192,16 @@ describe("access", () => {
       registry,
       ["acme"],
     );
-    expect(checks(report).connectivity).toBe("undecidable");
+    expect(checks(report).connectivity).toBe("fail");
+    const evidence = report.intents[0]?.checks.flatMap((check) => check.evidence) ?? [];
+    expect(evidence.map((item) => item.code)).toContain("LOCAL_ROUTES_ONLY");
   });
 
   it("reaches a component without an endpoint only through a forwarder's route", () => {
     const registry = createRegistry([
       ...officialPacks,
       testPack({
-        requires: { aws: "^0.1.0" },
+        requires: { aws: "^0.2.0" },
         types: [
           {
             id: "acme.worker",

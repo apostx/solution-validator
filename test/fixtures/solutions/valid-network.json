@@ -1,0 +1,105 @@
+{
+  "$schema": "../../../schemas/solution.schema.json",
+  "schemaVersion": 1,
+  "packs": ["core", "aws"],
+  "components": [
+    { "id": "users", "type": "core.internet" },
+    { "id": "vpc", "type": "aws.vpc" },
+    { "id": "public-a", "type": "aws.subnet", "placement": ["vpc"] },
+    { "id": "private-a", "type": "aws.subnet", "placement": ["vpc"] },
+    { "id": "isolated-a", "type": "aws.subnet", "placement": ["vpc"] },
+    { "id": "igw", "type": "aws.internet-gateway", "properties": { "attachedTo": ["vpc"] } },
+    { "id": "nat", "type": "aws.nat-gateway", "placement": ["public-a"] },
+    {
+      "id": "public-rt",
+      "type": "aws.route-table",
+      "properties": {
+        "routes": [{ "destination": "internet", "gateway": "igw" }],
+        "associations": ["public-a"]
+      }
+    },
+    {
+      "id": "private-rt",
+      "type": "aws.route-table",
+      "properties": {
+        "routes": [{ "destination": "internet", "gateway": "nat" }],
+        "associations": ["private-a"]
+      }
+    },
+    {
+      "id": "web",
+      "type": "aws.autoscaling-group",
+      "placement": ["public-a"],
+      "properties": {
+        "endpoint": "public",
+        "permissions": [{ "resource": "orders-table", "access": "read" }]
+      }
+    },
+    {
+      "id": "web-sg",
+      "type": "aws.security-group",
+      "properties": {
+        "rules": [
+          { "direction": "inbound", "peer": "internet", "ports": ["https"] },
+          { "direction": "outbound", "peer": "any" }
+        ],
+        "attachedTo": ["web"]
+      }
+    },
+    {
+      "id": "app",
+      "type": "aws.autoscaling-group",
+      "placement": ["private-a"],
+      "properties": { "endpoint": "private", "permissions": [] }
+    },
+    {
+      "id": "app-sg",
+      "type": "aws.security-group",
+      "properties": {
+        "rules": [
+          { "direction": "inbound", "peer": "web-sg", "ports": ["https"] },
+          { "direction": "outbound", "peer": "any" }
+        ],
+        "attachedTo": ["app"]
+      }
+    },
+    {
+      "id": "worker",
+      "type": "aws.lambda",
+      "placement": ["private-a"],
+      "properties": { "permissions": [{ "resource": "orders-table", "access": "read-write" }] }
+    },
+    {
+      "id": "worker-sg",
+      "type": "aws.security-group",
+      "properties": {
+        "rules": [{ "direction": "outbound", "peer": "any" }],
+        "attachedTo": ["worker"]
+      }
+    },
+    {
+      "id": "batch",
+      "type": "aws.lambda",
+      "placement": ["isolated-a"],
+      "properties": { "permissions": [{ "resource": "orders-table", "access": "read" }] }
+    },
+    {
+      "id": "batch-sg",
+      "type": "aws.security-group",
+      "properties": {
+        "rules": [{ "direction": "outbound", "peer": "any" }],
+        "attachedTo": ["batch"]
+      }
+    },
+    { "id": "orders-table", "type": "aws.dynamodb" }
+  ],
+  "intents": [
+    { "id": "users-web-https", "from": "users", "to": "web", "port": "https" },
+    { "id": "users-web-http", "from": "users", "to": "web", "port": "http" },
+    { "id": "users-app", "from": "users", "to": "app", "port": "https" },
+    { "id": "web-app", "from": "web", "to": "app", "action": "invoke", "port": "https" },
+    { "id": "web-table", "from": "web", "to": "orders-table", "action": "read" },
+    { "id": "worker-table", "from": "worker", "to": "orders-table", "action": "write" },
+    { "id": "batch-table", "from": "batch", "to": "orders-table", "action": "read" }
+  ]
+}
