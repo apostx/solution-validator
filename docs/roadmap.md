@@ -1,6 +1,6 @@
 # Roadmap
 
-> **Status:** Approved (initial) · 2026-11-10 · **Current iteration: 4 — Requirement checks and metadata query**
+> **Status:** Approved (initial) · 2026-11-10 · **Current iteration: none approved — Iteration 5 (network traits) is a candidate to be scoped**
 >
 > Iterations 0–4 are approved. Only the current iteration is a commitment. The scope of later iterations may still change and is confirmed before each one starts. Open questions (Q1, Q2, …) are listed in [design.md](design.md#12-open-questions).
 
@@ -36,7 +36,7 @@ Trade-off: the vision's own example (network placement, Security Group and ACL r
 | 1 | Core model, pack format, serverless pack | 0.1.0 | Q10, Q11 | Done |
 | 2 | Connection validity | 0.2.0 | — | Done |
 | 3 | Logical access analysis | 0.3.0 | — | Done |
-| 4 | Requirement checks and metadata query | 0.4.0 | Q4, Q5, Q12 | Approved |
+| 4 | Requirement checks and metadata query | 0.4.0 | Q4, Q5, Q12 | Done |
 | 5 | Network traits (candidate) | 0.5.0 | to be scoped | Candidate |
 
 ### Iteration 0 — Foundations
