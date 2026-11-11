@@ -1,0 +1,126 @@
+{
+  "components": [
+    {
+      "id": "api",
+      "type": "aws.api-gateway",
+      "category": "edge",
+      "traits": [
+        "endpoint",
+        "forwarder"
+      ],
+      "meta": {},
+      "incoming": 1,
+      "outgoing": 1,
+      "exposure": "exposed"
+    },
+    {
+      "id": "orders-fn",
+      "type": "aws.lambda",
+      "category": "compute",
+      "traits": [
+        "access-controlled",
+        "endpoint",
+        "principal"
+      ],
+      "meta": {
+        "points": 2
+      },
+      "incoming": 1,
+      "outgoing": 2,
+      "exposure": "not-exposed"
+    },
+    {
+      "id": "orders-table",
+      "type": "aws.dynamodb",
+      "category": "data-store",
+      "traits": [
+        "access-controlled",
+        "endpoint"
+      ],
+      "meta": {},
+      "incoming": 1,
+      "outgoing": 0,
+      "exposure": "not-exposed"
+    },
+    {
+      "id": "uploads",
+      "type": "aws.s3",
+      "category": "data-store",
+      "traits": [
+        "access-controlled",
+        "endpoint"
+      ],
+      "meta": {},
+      "incoming": 1,
+      "outgoing": 0,
+      "exposure": "not-exposed"
+    },
+    {
+      "id": "users",
+      "type": "core.internet",
+      "category": "external",
+      "traits": [
+        "endpoint"
+      ],
+      "meta": {},
+      "incoming": 0,
+      "outgoing": 1
+    }
+  ],
+  "intents": [
+    {
+      "id": "i1",
+      "from": "users",
+      "to": "api",
+      "port": "https",
+      "meta": {},
+      "verdict": "pass"
+    },
+    {
+      "id": "i2",
+      "from": "api",
+      "to": "orders-fn",
+      "action": "invoke",
+      "meta": {},
+      "verdict": "pass"
+    },
+    {
+      "id": "i3",
+      "from": "orders-fn",
+      "to": "orders-table",
+      "action": "write",
+      "meta": {},
+      "verdict": "pass"
+    },
+    {
+      "id": "i4",
+      "from": "orders-fn",
+      "to": "uploads",
+      "action": "write",
+      "meta": {},
+      "verdict": "fail"
+    }
+  ],
+  "totals": {
+    "components": 5,
+    "intents": 4,
+    "byType": {
+      "aws.api-gateway": 1,
+      "aws.dynamodb": 1,
+      "aws.lambda": 1,
+      "aws.s3": 1,
+      "core.internet": 1
+    },
+    "byCategory": {
+      "compute": 1,
+      "data-store": 2,
+      "edge": 1,
+      "external": 1
+    },
+    "byVerdict": {
+      "pass": 3,
+      "fail": 1,
+      "undecidable": 0
+    }
+  }
+}

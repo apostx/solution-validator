@@ -1,0 +1,33 @@
+{
+  "$schema": "../../../schemas/task.schema.json",
+  "schemaVersion": 1,
+  "id": "orders-api",
+  "title": "Orders API",
+  "packs": ["core", "aws"],
+  "provided": [{ "id": "users", "type": "core.internet", "locked": true }],
+  "requirements": [
+    {
+      "id": "r1",
+      "type": "reachable",
+      "description": "Users on the internet can write to a data store.",
+      "from": { "id": "users" },
+      "to": { "category": "data-store" },
+      "action": "write",
+      "meta": { "points": 3 }
+    },
+    {
+      "id": "r2",
+      "type": "not-reachable",
+      "description": "No object storage is directly accessible from the internet.",
+      "from": { "id": "users" },
+      "to": { "type": "aws.s3" }
+    },
+    {
+      "id": "r3",
+      "type": "uses",
+      "description": "The solution uses AWS Lambda.",
+      "select": { "type": "aws.lambda" }
+    }
+  ],
+  "meta": { "difficulty": "easy" }
+}
