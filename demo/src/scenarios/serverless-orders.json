@@ -1,7 +1,7 @@
 {
   "id": "serverless-orders",
   "title": "Serverless orders API",
-  "description": "A minimal serverless application: API Gateway, Lambda and DynamoDB, plus an S3 bucket. The function is connected to the bucket but has no permission on it.",
+  "description": "A minimal serverless application: API Gateway, Lambda and DynamoDB, plus an S3 bucket. The function is connected to the bucket but has no permission on it. The task asks that users can write to a data store, that no bucket is directly accessible from the internet, and that the solution uses Lambda.",
   "packs": ["core", "aws"],
   "solution": {
     "schemaVersion": 1,
@@ -110,5 +110,57 @@
         "action": "write"
       }
     ]
+  },
+  "task": {
+    "schemaVersion": 1,
+    "id": "orders-api",
+    "title": "Orders API",
+    "packs": ["core", "aws"],
+    "provided": [
+      {
+        "id": "users",
+        "type": "core.internet",
+        "locked": true
+      }
+    ],
+    "requirements": [
+      {
+        "id": "r1",
+        "type": "reachable",
+        "description": "Users on the internet can write to a data store.",
+        "from": {
+          "id": "users"
+        },
+        "to": {
+          "category": "data-store"
+        },
+        "action": "write",
+        "meta": {
+          "points": 3
+        }
+      },
+      {
+        "id": "r2",
+        "type": "not-reachable",
+        "description": "No object storage is directly accessible from the internet.",
+        "from": {
+          "id": "users"
+        },
+        "to": {
+          "type": "aws.s3"
+        }
+      },
+      {
+        "id": "r3",
+        "type": "uses",
+        "description": "The solution uses AWS Lambda.",
+        "select": {
+          "type": "aws.lambda"
+        }
+      }
+    ],
+    "meta": {
+      "difficulty": "easy"
+    }
   }
 }
