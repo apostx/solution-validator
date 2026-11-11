@@ -1,6 +1,7 @@
 import { ReactFlowProvider } from "@xyflow/react";
 import { useMemo, useState } from "react";
 import {
+  type AnalysisLevel,
   type AssumptionPolicy,
   createRegistry,
   parseTask,
@@ -35,6 +36,7 @@ export function App() {
   const [selection, setSelection] = useState<Selection>(null);
   const [tab, setTab] = useState<Tab>("properties");
   const [policy, setPolicy] = useState<AssumptionPolicy>("strict");
+  const [level, setLevel] = useState<AnalysisLevel>("logical");
 
   const registry = useMemo(
     () => createRegistry(scenario.packs.flatMap((id) => (PACKS[id] ? [PACKS[id]] : []))),
@@ -46,8 +48,8 @@ export function App() {
   );
   const task = parsedTask?.ok ? parsedTask.task : undefined;
   const evaluation = useMemo(
-    () => evaluate(registry, document, policy, task),
-    [registry, document, policy, task],
+    () => evaluate(registry, document, policy, task, level),
+    [registry, document, policy, task, level],
   );
   const lockedIds = useMemo(
     () => (task?.provided ?? []).filter((c) => c.locked).map((c) => c.id),
@@ -101,6 +103,16 @@ export function App() {
         >
           Reset
         </button>
+        <label
+          className="scenario-picker"
+          title="logical: decided from logical settings. detailed: also checks address spaces, address ranges in rules and routes, and port ranges."
+        >
+          <span>Level</span>
+          <select value={level} onChange={(event) => setLevel(event.target.value as AnalysisLevel)}>
+            <option value="logical">logical</option>
+            <option value="detailed">detailed (addresses)</option>
+          </select>
+        </label>
         <label
           className="scenario-picker"
           title="strict: unset properties make verdicts undecidable. pack-defaults: the packs' documented defaults are assumed and listed."
