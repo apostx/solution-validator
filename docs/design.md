@@ -147,7 +147,7 @@ ArchitectMate would likely use `pack-defaults`, and detailed feasibility checks 
   - once network traits are implemented: zone placement, public vs. private reachability through routers and gateways, and the role of traffic filters with symbolic sources and ports.
 
   No IP addresses are needed.
-- **Detailed** (opt-in, later): CIDR containment and overlaps, longest-prefix route matching, and port and CIDR rule evaluation, using the concrete values given.
+- **Detailed** (opt-in, implemented in Iteration 6 for IPv4): CIDR containment and overlaps, longest-prefix route matching, and port and CIDR rule evaluation, using the concrete values given. See [formats.md](formats.md#detailed-level).
 
 The detailed level is a static feasibility check of the planned configuration. It does not simulate runtime behavior or guarantee a successful deployment.
 
@@ -319,6 +319,13 @@ These details implement the decisions above. They are not product decisions; ope
 - **Honest verdicts.** An invalid placement, unset routes, targets or rules (under `strict`), or a port-limited filter when the port is unknown make connectivity `undecidable`, never `pass`.
 - **Model validity** checks network wiring: routes to gateways, routers and gateways on zones, filters attached to the kinds their `attachTo` allows, and rule peers that exist.
 
+### Implementation notes (Iteration 6)
+
+- **The detailed level** adds the `address-plan` analysis and makes `access` use address spaces, address ranges and port ranges (Q18–Q20). `analyze(model, { level: "detailed" })` runs all four analyses by default; `address-plan` does not run at the logical level.
+- **No new trait parameters.** `zone.addressSpace` already existed; rule peers and ports and route destinations accept more value forms. The `aws` pack 0.3.0 binds `cidrBlock` on VPCs and subnets and accepts IPv4 route destinations.
+- **Logical results are unchanged** except that an address range other than `0.0.0.0/0` in a rule is `undecidable` at the logical level, where it was an unknown reference before.
+- **IPv4 arithmetic** uses plain integers, so results are identical in every runtime.
+
 ## 11. Out of scope for the first version
 
 - Scoring, weighting and complexity metrics (consumers build these; see [§7](#7-requirements-metadata-and-facts))
@@ -348,4 +355,7 @@ These details implement the decisions above. They are not product decisions; ope
 | Q14 | SPDX license identifier in `package.json`. `AGPL-3.0-only` is implemented. `AGPL-3.0-or-later` would let users apply later AGPL versions. To confirm before the first npm release. | Proposed | §10 |
 | Q15 | How traffic filters and routers are attached: the filter or router lists what it applies to (`traffic-filter.targets`, `router.zones`), keeping all network wiring in the network traits; this matches how AWS associates network ACLs and route tables. | Decided (initial) | [formats.md](formats.md#trait-parameters-vocabulary-2) |
 | Q16 | Filter rule vocabulary: `direction`, `peer` (`any`, `internet` or the id of a component, zone or filter), optional `ports` and `effect`; rules in order, first match decides, then the default policy; stateless filters also check the return traffic. | Decided (initial) | [formats.md](formats.md#trait-parameters-vocabulary-2) |
+| Q18 | Address family for the detailed level: IPv4 only for now; IPv6 can follow as its own step. | Decided (initial) | §6 |
+| Q19 | Return traffic through stateless filters at the detailed level uses the ephemeral ports 1024–65535; a rule must cover the whole range. | Decided (initial) | [formats.md](formats.md#detailed-level) |
+| Q20 | Matching address ranges when an address is unknown (parties outside every zone, or a range that covers part of a zone): `undecidable`, never a guess; route choice for internet traffic is `undecidable` when a more specific public route leads elsewhere. | Decided (initial) | [formats.md](formats.md#detailed-level) |
 | Q17 | Groups and multiple placements: an intent through a group or a component in several zones passes only if every member or placement passes. | Decided (initial) | [formats.md](formats.md#access-checks-logical-level) |

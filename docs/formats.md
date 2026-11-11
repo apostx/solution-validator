@@ -121,8 +121,8 @@ Vocabulary 2 added `endpoint.via`, `router.zones` and `traffic-filter.targets`, 
 | Field | Meaning |
 |---|---|
 | `direction` | `inbound` or `outbound`, seen from what the filter protects |
-| `peer` | `any`; `internet` (anything outside the protected side's network); or the id of a component, a zone (anything placed in it, at any depth) or a filter (anything it is attached to) |
-| `ports` | Port ids, or port numbers as strings. Omitted: all ports |
+| `peer` | `any`; `internet` (anything outside the protected side's network); the id of a component, a zone (anything placed in it, at any depth) or a filter (anything it is attached to); or an IPv4 range such as `10.0.0.0/16` (see [the detailed level](#detailed-level)) |
+| `ports` | Port ids (`https`), port numbers (`"443"`) or ranges (`"1024-65535"`). Omitted: all ports |
 | `effect` | `allow` (default) or `deny` |
 
 Stateless filters (`stateful: false`) also check the return traffic in the opposite direction, on any port, so they need a rule without `ports` for the replies.
@@ -156,6 +156,7 @@ Findings and evidence codes are described in [finding-codes.md](finding-codes.md
 | `model-validity` | `valid` (no error findings), `findings` |
 | `connection-validity` | `intents` (one verdict per intent, sorted by id), `summary` (count per verdict), `findings` |
 | `access` | `intents` (with every check that applies), `summary`, `exposure` (one fact per component with an endpoint, sorted by id), `assumptions` (pack defaults used), `findings` |
+| `address-plan` | `zones` (address space and size per zone, sorted by id), `findings`; detailed level only |
 
 An intent verdict has the shape below. A verdict is never a boolean: `pass` is proven from the data, `fail` is disproven, and `undecidable` means the data, the packs or the supported analyses are not enough. A check's evidence says why.
 
@@ -207,6 +208,26 @@ An intent verdict has the shape below. A verdict is never a boolean: `pass` is p
 ```json
 { "component": "uploads", "exposure": "exposed", "actions": ["read"], "evidence": [ … ] }
 ```
+
+## Detailed level
+
+`analyze(model, { level: "detailed" })` uses concrete values as well. It is a static feasibility check of the planned configuration; it does not simulate runtime behavior. Only IPv4 is supported.
+
+| What | Detailed behavior |
+|---|---|
+| Address spaces | A zone's `addressSpace` (for example a VPC's `cidrBlock`) is an IPv4 range. The `address-plan` analysis checks it. |
+| Rule peers with ranges | A range covers a party inside a zone when it contains the address space of the party's innermost zone that has one; it does not when they do not overlap; it is `undecidable` when it covers only part of it. Parties outside every zone have unknown public addresses: `0.0.0.0/0` covers them, ranges without public addresses do not, and other ranges are `undecidable`. At the logical level only `0.0.0.0/0` decides; other ranges are `undecidable`. |
+| Port ranges | Rules may list ranges such as `"8080-8090"`, at both levels. |
+| Return traffic | Stateless filters must allow the replies on the ephemeral ports `1024-65535`: a rule matches when its ports cover that whole range or it lists no ports. (At the logical level only rules without ports match.) |
+| Route destinations | `internet` and `0.0.0.0/0` are default routes at both levels. At the detailed level a more specific route whose range contains public addresses may catch internet traffic; since the destination's address is not known, such a route to a different gateway makes the verdict `undecidable`. Ranges without public addresses never carry internet traffic, and the local route always wins inside the network's own address space. |
+
+The `address-plan` report lists every zone with its `space` and `size`, and these findings:
+
+- `ADDRESS_SPACE_MISSING`, `ADDRESS_SPACE_INVALID` and `ADDRESS_SPACE_HOST_BITS`;
+- `ADDRESS_SPACE_OUTSIDE_PARENT`: a subnet outside its VPC's range;
+- `ADDRESS_SPACE_OVERLAP`: zones in the same zone that overlap;
+- `NETWORK_OVERLAP`: networks that overlap and so cannot be connected;
+- `ROUTE_DESTINATION_INVALID` and `ROUTE_SHADOWED`: a route inside the network's own range, which the local route overrides.
 
 ## Task
 
