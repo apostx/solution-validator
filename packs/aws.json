@@ -1,11 +1,13 @@
 {
   "$schema": "../schemas/pack.schema.json",
   "id": "aws",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "label": "Amazon Web Services",
-  "description": "A minimal serverless subset: API Gateway, Lambda, DynamoDB and S3.",
-  "vocabulary": 1,
-  "requires": { "core": "^0.1.0" },
+  "description": "Serverless (API Gateway, Lambda, DynamoDB, S3) and networking (VPC, subnets, gateways, route tables, security groups, network ACLs, Auto Scaling groups).",
+  "vocabulary": 2,
+  "requires": {
+    "core": "^0.1.0"
+  },
   "types": [
     {
       "id": "aws.api-gateway",
@@ -13,10 +15,25 @@
       "description": "A managed HTTPS API that routes requests to integrations such as Lambda functions.",
       "category": "edge",
       "traits": {
-        "endpoint": { "visibility": { "property": "endpoint" }, "ports": ["https"] },
-        "forwarder": { "routes": { "property": "routes" }, "authorizes": true }
+        "endpoint": {
+          "visibility": {
+            "property": "endpoint"
+          },
+          "ports": ["https"]
+        },
+        "forwarder": {
+          "routes": {
+            "property": "routes"
+          },
+          "authorizes": true
+        }
       },
-      "accepts": [{ "actions": ["invoke"], "ports": ["https"] }],
+      "accepts": [
+        {
+          "actions": ["invoke"],
+          "ports": ["https"]
+        }
+      ],
       "properties": {
         "endpoint": {
           "type": "string",
@@ -32,8 +49,16 @@
           "items": {
             "type": "object",
             "properties": {
-              "path": { "type": "string", "title": "Path", "minLength": 1 },
-              "target": { "type": "string", "title": "Target", "x-component-ref": true }
+              "path": {
+                "type": "string",
+                "title": "Path",
+                "minLength": 1
+              },
+              "target": {
+                "type": "string",
+                "title": "Target",
+                "x-component-ref": true
+              }
             },
             "required": ["path", "target"]
           },
@@ -44,16 +69,37 @@
     {
       "id": "aws.lambda",
       "label": "Lambda function",
-      "description": "Runs code on demand. Its execution role decides what it may access.",
+      "description": "Runs code on demand. Its execution role decides what it may access. It is invoked through the Lambda API; placed in a VPC's subnets, its outbound traffic goes through the VPC.",
       "category": "compute",
       "traits": {
-        "endpoint": { "visibility": "public" },
-        "principal": { "grants": { "property": "permissions" } },
-        "access-controlled": { "levels": { "invoke": ["invoke"] } }
+        "endpoint": {
+          "visibility": "public",
+          "via": "provider"
+        },
+        "principal": {
+          "grants": {
+            "property": "permissions"
+          }
+        },
+        "access-controlled": {
+          "levels": {
+            "invoke": ["invoke"]
+          }
+        }
       },
       "accepts": [
-        { "from": { "type": "aws.api-gateway" }, "actions": ["invoke"] },
-        { "from": { "category": "compute" }, "actions": ["invoke"] }
+        {
+          "from": {
+            "type": "aws.api-gateway"
+          },
+          "actions": ["invoke"]
+        },
+        {
+          "from": {
+            "category": "compute"
+          },
+          "actions": ["invoke"]
+        }
       ],
       "properties": {
         "runtime": {
@@ -68,7 +114,11 @@
           "items": {
             "type": "object",
             "properties": {
-              "resource": { "type": "string", "title": "Resource", "x-component-ref": true },
+              "resource": {
+                "type": "string",
+                "title": "Resource",
+                "x-component-ref": true
+              },
               "access": {
                 "type": "string",
                 "title": "Access",
@@ -87,12 +137,26 @@
       "description": "A managed NoSQL table. Access requires a permission grant.",
       "category": "data-store",
       "traits": {
-        "endpoint": { "visibility": "public", "ports": ["https"] },
+        "endpoint": {
+          "visibility": "public",
+          "ports": ["https"]
+        },
         "access-controlled": {
-          "levels": { "read": ["read"], "write": ["write"], "read-write": ["read", "write"] }
+          "levels": {
+            "read": ["read"],
+            "write": ["write"],
+            "read-write": ["read", "write"]
+          }
         }
       },
-      "accepts": [{ "from": { "category": "compute" }, "actions": ["read", "write"] }]
+      "accepts": [
+        {
+          "from": {
+            "category": "compute"
+          },
+          "actions": ["read", "write"]
+        }
+      ]
     },
     {
       "id": "aws.s3",
@@ -100,16 +164,36 @@
       "description": "Object storage. Access requires a permission grant unless public access is enabled.",
       "category": "data-store",
       "traits": {
-        "endpoint": { "visibility": "public", "ports": ["https"] },
+        "endpoint": {
+          "visibility": "public",
+          "ports": ["https"]
+        },
         "access-controlled": {
-          "levels": { "read": ["read"], "write": ["write"], "read-write": ["read", "write"] },
-          "public": { "property": "publicAccess" },
+          "levels": {
+            "read": ["read"],
+            "write": ["write"],
+            "read-write": ["read", "write"]
+          },
+          "public": {
+            "property": "publicAccess"
+          },
           "publicActions": ["read"]
         }
       },
       "accepts": [
-        { "from": { "category": "compute" }, "actions": ["read", "write"] },
-        { "from": { "category": "external" }, "actions": ["read"], "ports": ["https"] }
+        {
+          "from": {
+            "category": "compute"
+          },
+          "actions": ["read", "write"]
+        },
+        {
+          "from": {
+            "category": "external"
+          },
+          "actions": ["read"],
+          "ports": ["https"]
+        }
       ],
       "properties": {
         "publicAccess": {
@@ -117,6 +201,338 @@
           "title": "Public access",
           "description": "Whether anyone on the internet may read objects. New buckets block public access by default.",
           "default": false
+        }
+      }
+    },
+    {
+      "id": "aws.vpc",
+      "label": "VPC",
+      "description": "A private network. Components placed in its subnets reach each other through local routes, subject to security groups and network ACLs.",
+      "category": "network",
+      "traits": {
+        "zone": {}
+      },
+      "accepts": []
+    },
+    {
+      "id": "aws.subnet",
+      "label": "Subnet",
+      "description": "A part of a VPC; place it in the VPC. Its route table decides whether it reaches the internet, and its network ACL filters traffic that enters or leaves it.",
+      "category": "network",
+      "traits": {
+        "zone": {}
+      },
+      "accepts": []
+    },
+    {
+      "id": "aws.internet-gateway",
+      "label": "Internet gateway",
+      "description": "Connects a VPC to the internet in both directions. A subnet whose route table sends internet traffic here is a public subnet.",
+      "category": "network",
+      "traits": {
+        "gateway": {
+          "direction": "both",
+          "connects": {
+            "property": "attachedTo"
+          }
+        }
+      },
+      "accepts": [],
+      "properties": {
+        "attachedTo": {
+          "type": "array",
+          "title": "Attached to",
+          "description": "The VPC the gateway is attached to.",
+          "items": {
+            "type": "string",
+            "x-component-ref": true
+          },
+          "default": [],
+          "maxItems": 1
+        }
+      }
+    },
+    {
+      "id": "aws.nat-gateway",
+      "label": "NAT gateway",
+      "description": "Lets private subnets open connections to the internet, but not the other way round. Place it in a public subnet.",
+      "category": "network",
+      "traits": {
+        "gateway": {
+          "direction": "outbound-only"
+        }
+      },
+      "accepts": []
+    },
+    {
+      "id": "aws.route-table",
+      "label": "Route table",
+      "description": "Decides where traffic leaving its subnets goes. Associated with the VPC itself, it is the main route table for subnets without their own.",
+      "category": "network",
+      "traits": {
+        "router": {
+          "routes": {
+            "property": "routes"
+          },
+          "zones": {
+            "property": "associations"
+          }
+        }
+      },
+      "accepts": [],
+      "properties": {
+        "routes": {
+          "type": "array",
+          "title": "Routes",
+          "description": "Routes besides the local route of the VPC.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "destination": {
+                "type": "string",
+                "title": "Destination",
+                "enum": ["internet"]
+              },
+              "gateway": {
+                "type": "string",
+                "title": "Gateway",
+                "x-component-ref": true
+              }
+            },
+            "required": ["destination", "gateway"]
+          },
+          "default": []
+        },
+        "associations": {
+          "type": "array",
+          "title": "Associations",
+          "description": "The subnets (or the VPC) this route table serves.",
+          "items": {
+            "type": "string",
+            "x-component-ref": true
+          },
+          "default": []
+        }
+      }
+    },
+    {
+      "id": "aws.security-group",
+      "label": "Security group",
+      "description": "A stateful firewall for the components it is attached to: replies to allowed traffic are allowed automatically.",
+      "category": "network",
+      "traits": {
+        "traffic-filter": {
+          "stateful": true,
+          "attachTo": ["component"],
+          "rules": {
+            "property": "rules"
+          },
+          "targets": {
+            "property": "attachedTo"
+          },
+          "default": {
+            "inbound": "deny",
+            "outbound": "deny"
+          }
+        }
+      },
+      "accepts": [],
+      "properties": {
+        "rules": {
+          "type": "array",
+          "title": "Rules",
+          "description": "Allowed traffic. peer: any, internet, or the id of a component, subnet, VPC or security group. A new security group allows all outbound traffic and no inbound traffic.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "direction": {
+                "type": "string",
+                "title": "Direction",
+                "enum": ["inbound", "outbound"]
+              },
+              "peer": {
+                "type": "string",
+                "title": "Peer",
+                "minLength": 1
+              },
+              "ports": {
+                "type": "array",
+                "title": "Ports",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": ["direction", "peer"]
+          },
+          "default": [
+            {
+              "direction": "outbound",
+              "peer": "any"
+            }
+          ]
+        },
+        "attachedTo": {
+          "type": "array",
+          "title": "Attached to",
+          "description": "The components the security group protects.",
+          "items": {
+            "type": "string",
+            "x-component-ref": true
+          },
+          "default": []
+        }
+      }
+    },
+    {
+      "id": "aws.network-acl",
+      "label": "Network ACL",
+      "description": "A stateless firewall for the subnets it is associated with: rules are checked in order, and replies need rules of their own.",
+      "category": "network",
+      "traits": {
+        "traffic-filter": {
+          "stateful": false,
+          "attachTo": ["zone"],
+          "rules": {
+            "property": "rules"
+          },
+          "targets": {
+            "property": "subnets"
+          },
+          "default": {
+            "inbound": "deny",
+            "outbound": "deny"
+          }
+        }
+      },
+      "accepts": [],
+      "properties": {
+        "rules": {
+          "type": "array",
+          "title": "Rules",
+          "description": "Checked in order; the first match decides. The default network ACL allows everything.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "direction": {
+                "type": "string",
+                "title": "Direction",
+                "enum": ["inbound", "outbound"]
+              },
+              "peer": {
+                "type": "string",
+                "title": "Peer",
+                "minLength": 1
+              },
+              "ports": {
+                "type": "array",
+                "title": "Ports",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "effect": {
+                "type": "string",
+                "title": "Effect",
+                "enum": ["allow", "deny"]
+              }
+            },
+            "required": ["direction", "peer"]
+          },
+          "default": [
+            {
+              "direction": "inbound",
+              "peer": "any",
+              "effect": "allow"
+            },
+            {
+              "direction": "outbound",
+              "peer": "any",
+              "effect": "allow"
+            }
+          ]
+        },
+        "subnets": {
+          "type": "array",
+          "title": "Subnets",
+          "description": "The subnets the network ACL is associated with.",
+          "items": {
+            "type": "string",
+            "x-component-ref": true
+          },
+          "default": []
+        }
+      }
+    },
+    {
+      "id": "aws.autoscaling-group",
+      "label": "Auto Scaling group",
+      "description": "A group of equivalent EC2 instances running an application. Place it in one or more subnets; attach security groups to it.",
+      "category": "compute",
+      "traits": {
+        "endpoint": {
+          "visibility": {
+            "property": "endpoint"
+          }
+        },
+        "group": {
+          "size": {
+            "property": "desiredCapacity"
+          }
+        },
+        "principal": {
+          "grants": {
+            "property": "permissions"
+          }
+        }
+      },
+      "accepts": [
+        {
+          "actions": ["connect", "invoke"],
+          "ports": ["http", "https"]
+        },
+        {
+          "from": {
+            "category": "compute"
+          },
+          "actions": ["invoke"]
+        }
+      ],
+      "properties": {
+        "endpoint": {
+          "type": "string",
+          "title": "Endpoint",
+          "description": "public: the instances have public addresses. private: they are reachable only inside the VPC.",
+          "enum": ["public", "private"],
+          "default": "private"
+        },
+        "desiredCapacity": {
+          "type": "integer",
+          "title": "Desired capacity",
+          "minimum": 0,
+          "default": 2
+        },
+        "permissions": {
+          "type": "array",
+          "title": "Permissions",
+          "description": "What the instances' role may do.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "resource": {
+                "type": "string",
+                "title": "Resource",
+                "x-component-ref": true
+              },
+              "access": {
+                "type": "string",
+                "title": "Access",
+                "enum": ["read", "write", "read-write", "invoke"]
+              }
+            },
+            "required": ["resource", "access"]
+          },
+          "default": []
         }
       }
     }
