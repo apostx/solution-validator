@@ -24,7 +24,7 @@ SolutionValidator is a deterministic, provider-neutral validator. It analyzes a 
 | Distribution | This repository contains the library and its official packs, published to npm as `solution-validator`. ArchitectMate lives in a separate repository and uses the npm package. | Decided |
 | Input format | JSON, described by TypeScript types and validated with JSON Schema. | Decided |
 | Relationship semantics | A relationship is an *intent*: "A must be able to reach B for purpose P". The engine proves or disproves it. | Decided |
-| Generic component model | AWS is not the target. Component types are JSON configuration that composes a fixed vocabulary of behaviors (*traits*) implemented in the engine. See [component-model.md](component-model.md). | Decided (vocabulary initial, Q10) |
+| Generic component model | AWS is not the target. Component types are JSON configuration that composes a fixed vocabulary of behaviors (*traits*) implemented in the engine. See [component-model.md](component-model.md). | Decided (vocabulary initial, Q10; version 2 since Iteration 5) |
 | Packs | Component types come in loadable packs: AWS, Azure, on-premises and custom packs. A consumer pulls in the packs it needs. | Decided (distribution initial, Q11) |
 | Scoring | Not part of the library. The library validates: things work, fail or cannot be decided. Consumers decide how to score. This supersedes the vision's mentions of task-specific scoring. | Decided |
 | Metadata | Components, intents, types, requirements and the solution can carry free-form `meta`. The library never interprets it; a query returns it together with structural facts. | Decided (query API initial, Q12) |
@@ -311,6 +311,14 @@ These details implement the decisions above. They are not product decisions; ope
 - **Provided components.** A missing or retyped provided component is a finding and makes the overall verdict `fail`, so removing the source cannot make a `not-reachable` requirement pass. `locked` is enforced by consumers (the demo does).
 - **`collect`** merges the type's `meta` with the instance's, reports exposure and the most complete intent verdict, and sorts every list and key. It never interprets `meta`.
 
+### Implementation notes (Iteration 5)
+
+- **Trait vocabulary 2.** The network traits got their behavior. `router.zones` and `traffic-filter.targets` were added (Q15), `group.zones` was removed because placement already says where a group runs, and `endpoint.via` was added: a provider-managed endpoint (`via: "provider"`) is reached outside every zone even when the component is placed, so a function attached to a private network is still invoked through the provider's API while its outbound traffic goes through the network. The version 1 network parameters had no behavior, as documented, so no pack relied on them.
+- **Logical routing.** Routes only distinguish `internet`; traffic inside a network uses the implicit local routes. Inbound internet traffic needs a `both` gateway attached to the network; outbound traffic may use an `outbound-only` gateway that is placed in a zone with such a route. Detailed addresses, route matching and other destinations (peering, VPN, private service endpoints) stay out of scope.
+- **Filters** follow Q16. Zone filters apply to the zones the traffic leaves or enters, not to traffic that stays inside one zone. Component filters also apply to the members of a group they are attached to.
+- **Honest verdicts.** An invalid placement, unset routes, targets or rules (under `strict`), or a port-limited filter when the port is unknown make connectivity `undecidable`, never `pass`.
+- **Model validity** checks network wiring: routes to gateways, routers and gateways on zones, filters attached to the kinds their `attachTo` allows, and rule peers that exist.
+
 ## 11. Out of scope for the first version
 
 - Scoring, weighting and complexity metrics (consumers build these; see [§7](#7-requirements-metadata-and-facts))
@@ -338,3 +346,6 @@ These details implement the decisions above. They are not product decisions; ope
 | Q12 | Shape of the metadata and facts query. | Decided (initial) | §7 |
 | Q13 | Build tool: tsup's README now says it is no longer actively maintained and recommends tsdown. tsup 9 works, with TypeScript 6. Proposal: switch to tsdown when the build needs more than tsup offers, or before TypeScript 6 stops being supported. | Proposed | §10 |
 | Q14 | SPDX license identifier in `package.json`. `AGPL-3.0-only` is implemented. `AGPL-3.0-or-later` would let users apply later AGPL versions. To confirm before the first npm release. | Proposed | §10 |
+| Q15 | How traffic filters and routers are attached: the filter or router lists what it applies to (`traffic-filter.targets`, `router.zones`), keeping all network wiring in the network traits; this matches how AWS associates network ACLs and route tables. | Decided (initial) | [formats.md](formats.md#trait-parameters-vocabulary-2) |
+| Q16 | Filter rule vocabulary: `direction`, `peer` (`any`, `internet` or the id of a component, zone or filter), optional `ports` and `effect`; rules in order, first match decides, then the default policy; stateless filters also check the return traffic. | Decided (initial) | [formats.md](formats.md#trait-parameters-vocabulary-2) |
+| Q17 | Groups and multiple placements: an intent through a group or a component in several zones passes only if every member or placement passes. | Decided (initial) | [formats.md](formats.md#access-checks-logical-level) |

@@ -46,6 +46,7 @@ Semantic checks of a parsed solution.
 | `TYPE_UNKNOWN` | error | Component {component} has the unknown type {type}. | A component's type is not defined by any loaded pack. |
 | `TYPE_PACK_NOT_LISTED` | error | Component {component} uses type {type} from pack {pack}, which the solution does not list. | A component's type comes from a pack that is neither listed in the solution's packs nor required by a listed pack. |
 | `PROPERTY_UNKNOWN` | error | Component {component} sets property {property}, which type {type} does not define. | A component sets a property that its type does not declare. |
+| `NETWORK_REFERENCE_INVALID` | error | {path} must refer to {expected}; {id} does not qualify. | A router, gateway, traffic filter or rule refers to a component of the wrong kind: for example a route to a component that is not a gateway. |
 | `REFERENCE_UNKNOWN` | error | {path} refers to {id}, which is not a component of the solution. | An intent, a placement or a property refers to a component id that does not exist. |
 | `PLACEMENT_NOT_ZONE` | error | Component {component} is placed in {zone}, which is not a zone. | A component can only be placed in components that have the zone trait. |
 | `PLACEMENT_CYCLE` | error | Component {component} is placed inside itself: {chain}. | Placements form a cycle. |
@@ -70,11 +71,11 @@ Logical access: forwarding, connectivity and authorization for every intent, and
 | Code | Severity | Message template | Meaning |
 |---|---|---|---|
 | `ACCESS_ROUTE_MISSING` | error | Intent {intent}: {from} has no route to {to}. | The source forwards requests, but none of its routes leads to the target. |
+| `ACCESS_PORT_UNKNOWN` | warning | Intent {intent} cannot be decided: a traffic filter limits ports, and the intent's port is not known. | The intent states no port, its target's endpoint lists none, and a filter on the way only allows some ports. |
 | `ACCESS_NOT_REACHABLE` | error | Intent {intent}: {to} cannot be reached from {from}. | The target's endpoint does not let the source reach it: it is private or has none, or it does not listen on the intent's port. |
 | `ACCESS_PERMISSION_MISSING` | error | Intent {intent}: {from} has no permission to {action} {to}. | The target controls access, and neither a grant, a forwarder's route nor public access allows the action. |
 | `ACCESS_PROPERTY_UNSET` | warning | Intent {intent} cannot be decided: {component} does not set {property}. | Under the strict assumption policy, a property the verdict depends on is not set. The pack-defaults policy would use the pack's documented default. |
 | `ACCESS_ACTION_MISSING` | warning | Intent {intent} cannot be decided: {to} controls access per action, but the intent states no action. | Authorization is decided per action, and the intent only states a port. |
-| `ACCESS_ZONES_UNSUPPORTED` | warning | Intent {intent} cannot be decided: placement in zones is not analyzed yet. | A private endpoint or a placed component needs the network traits, which are not implemented yet. |
 | `EXPOSED_TO_INTERNET` | info | {component} is directly accessible from the internet. | An anonymous caller outside the solution can reach the component and is allowed to use it. |
 
 ## Tasks and requirements
@@ -112,12 +113,11 @@ Evidence explains an intent's verdict: each check lists the evidence it used. Ev
 | `ROUTE_FOUND` | {from} has a route to {to}. | One of the forwarder's routes targets the intent's target. |
 | `ROUTE_MISSING` | {from} has no route to {to}. | None of the forwarder's routes targets the intent's target. |
 | `ENDPOINT_PUBLIC` | {to} has a public endpoint. | The target can be reached from anywhere. |
-| `ENDPOINT_PRIVATE` | {to} has a private endpoint, and {from} is not inside a private network. | A private endpoint can only be reached from inside a private network. |
+| `ENDPOINT_PRIVATE` | {to} has a private endpoint, and {from} is not inside its network. | A private endpoint can only be reached from inside the same network. |
 | `ENDPOINT_NONE` | {to} has no network endpoint. | The target cannot be called over the network. |
 | `ENDPOINT_FORWARDED` | {to} has no network endpoint of its own, but {from} forwards to it. | A component without an endpoint is reached through a forwarder's integration. |
 | `PORT_OPEN` | {to} listens on port {port}. | The intent's port is one of the endpoint's ports. |
 | `PORT_CLOSED` | {to} does not listen on port {port}; it listens on {ports}. | The intent's port is not one of the endpoint's ports. |
-| `ZONES_UNSUPPORTED` | Placement in zones is not analyzed yet. | The network traits are not implemented yet. |
 | `FORWARDER_AUTHORIZED` | {from}'s route to {to} also authorizes it. | A forwarder whose routes authorize their targets may use them. |
 | `GRANT_FOUND` | {from} has {access} access to {to}, which allows {action}. | A grant of the source allows the action on the target. |
 | `GRANT_MISSING` | {from} has no grant on {to} that allows {action}. | None of the source's grants allows the action on the target. |
@@ -125,6 +125,23 @@ Evidence explains an intent's verdict: each check lists the evidence it used. Ev
 | `PUBLIC_ALLOWED` | {to} allows public {action}. | Public access is on and covers the action. |
 | `PUBLIC_DENIED` | {to} does not allow public {action}. | Public access is off, or it does not cover the action. |
 | `ACTION_REQUIRED` | {to} controls access per action, but the intent states no action. | Authorization needs the intent's action. |
+| `PLACEMENT_INVALID` | {component} is placed in {zone}, which is not a zone of the solution. | The component's placement is invalid, so its network position is unknown. |
+| `SAME_NETWORK` | {from} and {to} are in the same network, {network}. | Both sides are placed in zones of the same outermost zone; local routes connect them. |
+| `LOCAL_ROUTES_ONLY` | {zone} has no router, so it only has local routes. | No router serves the zone or the zones it is placed in. |
+| `INTERNET_ROUTE_MISSING` | {router}, the router of {zone}, has no route to the internet. | The zone's router has no route with the destination internet. |
+| `INTERNET_ROUTE` | {zone} reaches the internet through {gateway}. | The zone's internet route uses a gateway that allows both directions. |
+| `NAT_ROUTE` | {zone} reaches the internet through {gateway}, for outbound connections only. | The zone's internet route uses an outbound-only gateway. |
+| `GATEWAY_INVALID` | {gateway} is not a gateway. | A route points to a component without the gateway trait. |
+| `GATEWAY_NOT_ATTACHED` | {gateway} is not attached to the network {network}. | A route points to a gateway of another network. |
+| `GATEWAY_OUTBOUND_ONLY` | {gateway} only allows outbound connections, so {zone} cannot be reached from the internet. | Inbound traffic needs a gateway that allows both directions. |
+| `NAT_WITHOUT_INTERNET` | {gateway} sits in {zone}, which has no route to the internet through a gateway that allows both directions. | An outbound-only gateway needs a route to the internet itself. |
+| `FILTER_ALLOWS` | {filter} allows {direction} traffic with {peer} (rule {rule}). | The first matching rule of a traffic filter allows the traffic. |
+| `FILTER_DENIES` | {filter} denies {direction} traffic with {peer} (rule {rule}). | The first matching rule of a traffic filter denies the traffic. |
+| `FILTER_DEFAULT_ALLOWS` | No rule of {filter} matches {direction} traffic with {peer}; its default allows it. | No rule matches, and the filter's default policy allows. |
+| `FILTER_DEFAULT_DENIES` | No rule of {filter} matches {direction} traffic with {peer}; its default denies it. | No rule matches, and the filter's default policy denies. |
+| `FILTER_PORT_UNKNOWN` | Rule {rule} of {filter} limits ports, but the traffic's port is not known. | The intent states no port and the target's endpoint lists none. |
+| `STATELESS_RETURN` | {filter} is stateless, so the return traffic needs a rule of its own. | Stateless filters check the replies as well, on any port. |
+| `NOT_REACHABLE_FROM_INTERNET` | {component} cannot be reached from the internet on any port. | Routes, gateways or traffic filters keep outside callers out. |
 | `ANONYMOUS_ALLOWED` | {component} does not control access. | Anyone who can reach the component may use it. |
 | `ENDPOINT_NOT_PUBLIC` | {component} has no public endpoint. | Its endpoint is private or it has none, so it cannot be reached from outside. |
 | `PUBLIC_ACCESS_ON` | {component} allows public {actions}. | Anonymous callers may perform these actions. |

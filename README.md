@@ -2,13 +2,13 @@
 
 A deterministic, provider-neutral library that analyzes designed software and infrastructure solutions. It answers two questions: does the solution work, and does it meet a task's requirements?
 
-> **Status: 0.x.** Iterations 1–4 of the [roadmap](docs/roadmap.md) are implemented: the model and pack format, the `model-validity`, `connection-validity` and logical `access` analyses, requirement checks and the metadata query. The API may change before 1.0.
+> **Status: 0.x.** Iterations 1–5 of the [roadmap](docs/roadmap.md) are implemented: the model and pack format, the `model-validity`, `connection-validity` and logical `access` analyses (including networks: zones, routes, gateways, security groups and network ACLs), requirement checks and the metadata query. The API may change before 1.0.
 
 ## What it does
 
 - Checks relationships, not just components. A connection between an application and a database does not prove that the application can reach it. An API route, a permission or a public access setting decides that.
 - Returns three-state verdicts: `pass`, `fail` or `undecidable`. It never claims more than the input supports.
-- Takes component types from JSON packs. The first pack describes a minimal AWS serverless application. The engine itself contains no provider-specific logic.
+- Takes component types from JSON packs. The `aws` pack covers a serverless subset (API Gateway, Lambda, DynamoDB, S3) and networking (VPC, subnets, gateways, route tables, security groups, network ACLs, Auto Scaling groups). The engine itself contains no provider-specific logic.
 - Runs in browsers and in Node.js, with no backend.
 - Is deterministic: no randomness, clock, network access or AI. It does not score; consumers build scoring from its verdicts, metadata and facts.
 
