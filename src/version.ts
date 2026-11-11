@@ -3,4 +3,4 @@
  *
  * release-please keeps it in sync with `package.json` (see `release-please-config.json`).
  */
-export const VERSION = "0.3.0"; // x-release-please-version
+export const VERSION = "0.4.0"; // x-release-please-version
