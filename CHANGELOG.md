@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.0](https://github.com/apostx/solution-validator/compare/v0.3.0...v0.4.0) (2026-11-11)
+
+
+### Features
+
+* requirement checks and metadata query (iteration 4) ([#8](https://github.com/apostx/solution-validator/issues/8)) ([d23a9b5](https://github.com/apostx/solution-validator/commit/d23a9b506c3d39179574c2e7f087601955d45dc0))
+
 ## [0.3.0](https://github.com/apostx/solution-validator/compare/v0.2.0...v0.3.0) (2026-11-11)
 
 
