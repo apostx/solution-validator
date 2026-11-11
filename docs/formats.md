@@ -100,7 +100,7 @@ This document describes the implemented JSON formats. The reasoning behind them 
 - **`properties`** use a subset of JSON Schema: `string` (with `enum`, `minLength`, `maxLength`, `pattern`), `number`, `integer`, `boolean`, arrays of those or of objects, and objects whose fields are scalars or arrays of scalars. Objects are closed. `default` documents the value the `pack-defaults` assumption policy uses. `"x-component-ref": true` marks a string as a component id; references are checked.
 - **`required`** lists properties every component of the type must set. Most properties are optional: a missing property limits what can be decided but does not make the model invalid.
 
-### Trait parameters (vocabulary 2)
+### Trait parameters (vocabulary 3)
 
 | Trait | Parameters |
 |---|---|
@@ -109,12 +109,12 @@ This document describes the implemented JSON formats. The reasoning behind them 
 | `principal` | `grants`: binding to the grants array; `resourceField` (default `resource`); `accessField` (default `access`) |
 | `access-controlled` | `levels`: access level → actions it allows; `public`: anonymous access (bindable boolean); `publicActions`: actions allowed when public |
 | `zone` | `addressSpace` (bindable string, detailed level) |
-| `gateway` | `direction`: `both` or `outbound-only` (bindable); `connects`: binding to the zones it is attached to (without it, the gateway belongs to the network of the zone it is placed in) |
-| `router` | `routes`: binding to routes `{ destination: "internet", gateway }`; `zones`: binding to the zones it serves |
+| `gateway` | `direction`: `both` or `outbound-only` (bindable); `connects`: binding to the zones it is attached to (without it, the gateway belongs to the network of the zone it is placed in); `services`: binding to the provider services it reaches privately |
+| `router` | `routes`: binding to routes `{ destination, gateway }`, where the destination is `internet`, an IPv4 range, or the id of a service; `zones`: binding to the zones it serves |
 | `traffic-filter` | `stateful`; `attachTo`: `component`, `zone` and/or `self`; `rules`: binding to the rules (below); `targets`: binding to what it is attached to; `default`: `{ inbound, outbound }` of `allow` or `deny` (default: deny) |
 | `group` | `members`: binding to component references; `size` (bindable integer, informational) |
 
-Vocabulary 2 added `endpoint.via`, `router.zones` and `traffic-filter.targets`, removed `group.zones` (placement says where a group runs), and gave the network traits their behavior. Packs that need it declare `"vocabulary": 2`.
+Vocabulary 2 added `endpoint.via`, `router.zones` and `traffic-filter.targets`, removed `group.zones` (placement says where a group runs), and gave the network traits their behavior. Vocabulary 3 added `gateway.services`. Packs declare the version they need, for example `"vocabulary": 3`.
 
 **Traffic filter rules** are objects, checked in order; the first rule that matches the traffic's direction, peer and ports decides, and the `default` policy decides when none matches:
 
@@ -196,6 +196,7 @@ An intent verdict has the shape below. A verdict is never a boolean: `pass` is p
 **Connectivity.** A component's position is the zone it is placed in; components without placement are outside every zone (the internet, and provider services such as object storage). The outermost zone of a position is its network.
 
 - **Same network:** public and private endpoints are reachable through the local routes.
+- **Private service routes:** traffic from a network to a service outside it uses a route whose destination is that service, if the zone's router has one; its gateway must be attached to the network and list the service in `services`. No internet route is needed then.
 - **Between networks, or with the outside:** the endpoint must be public. A source inside a network needs a route to the internet in its router: through a `both` gateway attached to its network, or through an `outbound-only` gateway placed in a zone that itself routes to a `both` gateway. A target inside a network needs a route to the internet through a `both` gateway; `outbound-only` gateways do not let traffic in. A zone without a router uses the router of the nearest zone it is placed in; with none, it only has local routes.
 - **Traffic filters on the way:** the filters attached to the source and to the target, and the zone filters of every zone the traffic leaves or enters, must allow it; `self` filters on a gateway the traffic passes apply too.
 - **`none`:** reachable only through a forwarder whose routes target B.

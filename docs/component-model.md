@@ -128,6 +128,7 @@ The table below checks whether the proposed vocabulary covers the components the
 | Network area | VPC, Subnet | VNet, Subnet | LAN, VLAN | `zone` |
 | Internet access | Internet Gateway | Public IP | Edge router | `gateway` |
 | Outbound-only internet | NAT Gateway | NAT Gateway | NAT on the edge router | `gateway` (`outbound-only`) |
+| Private access to provider services | Gateway VPC endpoint | Service endpoint | — | `gateway` (`services`) |
 | Routing | Route table | Route table (UDR) | Router | `router` |
 | Instance-level firewall | Security Group | NSG on a NIC | Host firewall | `traffic-filter` (`component`) |
 | Subnet-level firewall | Network ACL | NSG on a subnet | — | `traffic-filter` (`zone`) |
