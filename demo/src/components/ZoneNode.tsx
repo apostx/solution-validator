@@ -9,6 +9,8 @@ export type ZoneNodeData = {
   typeLabel: string;
   severity?: Severity | undefined;
   attachments: Attachment[];
+  /** The zone's address space, when it has one. */
+  addressSpace?: string | undefined;
 };
 
 export type ZoneNodeType = Node<ZoneNodeData, "zone">;
@@ -23,6 +25,7 @@ export function ZoneNode({ data, selected }: NodeProps<ZoneNodeType>) {
       <NodeResizer isVisible={selected} minWidth={180} minHeight={120} />
       <div className="zone-title">
         <strong>{data.label}</strong> <span className="node-type">{data.typeLabel}</span>
+        {data.addressSpace && <code className="address-space">{data.addressSpace}</code>}
       </div>
       <AttachmentBadges attachments={data.attachments} />
     </div>

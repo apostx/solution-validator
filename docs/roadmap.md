@@ -1,6 +1,6 @@
 # Roadmap
 
-> **Status:** Approved (initial) · 2026-11-10 · **Current iteration: none — Iterations 0–5 are done; the next step is chosen from the backlog**
+> **Status:** Approved (initial) · 2026-11-10 · **Current iteration: none — Iterations 0–6 are done; the next step is chosen from the backlog**
 >
 > Iterations 0–4 are approved. Only the current iteration is a commitment. The scope of later iterations may still change and is confirmed before each one starts. Open questions (Q1, Q2, …) are listed in [design.md](design.md#12-open-questions).
 
@@ -38,6 +38,7 @@ Trade-off: the vision's own example (network placement, Security Group and ACL r
 | 3 | Logical access analysis | 0.3.0 | — | Done |
 | 4 | Requirement checks and metadata query | 0.4.0 | Q4, Q5, Q12 | Done |
 | 5 | Network traits | 0.5.0 | Q15, Q16, Q17 | Done |
+| 6 | Detailed level (IPv4) | 0.6.0 | Q18, Q19, Q20 | Done |
 
 ### Iteration 0 — Foundations
 
@@ -109,10 +110,20 @@ Implements `zone`, `gateway`, `router`, `traffic-filter` and `group` at the logi
 - **Demo:** zones drawn as nested areas; components dragged into them; filters shown on the components or zones they attach to.
 - **Decisions:** (a) the filter or router lists what it applies to (Q15); (b) rules with `direction`, `peer` (`any`, `internet`, or an id), `ports` and `effect`, first match wins (Q16); (c) a verdict through a group or several placements requires every member or placement to pass (Q17). `endpoint.via` was added so that a function placed in a VPC is still invoked through the provider.
 
+### Iteration 6 — Detailed level (0.6.0)
+
+Chosen by the product owner from the backlog after Iteration 5.
+
+- **Library:** the opt-in `detailed` analysis level for IPv4 (Q18):
+  - the `address-plan` analysis: valid address spaces, subnets within their network, overlaps between sibling zones and between networks, invalid and shadowed route destinations;
+  - `access` at the detailed level: address ranges as rule peers, matched against address spaces (Q20); port ranges; replies through stateless filters on the ephemeral ports (Q19); longest-prefix choice of the internet route.
+- **Packs:** `aws` 0.3.0 with `cidrBlock` on VPCs and subnets and IPv4 route destinations.
+- **Demo:** a level switch, address spaces on zones, address plan findings.
+
 ## Backlog (not scheduled; each item needs approval)
 
 - A second pack (Azure or on-premises), to prove in practice that the model is generic
-- Detailed level: CIDR, route matching, port and CIDR rules
+- IPv6 for the detailed level
 - More AWS types: CloudFront, ALB, EC2, RDS, VPC endpoints
 - Availability analysis: multi-AZ, single points of failure
 - Terraform export

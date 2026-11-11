@@ -5,8 +5,10 @@
  * @packageDocumentation
  */
 
+export type { AddressFact } from "./analysis/address-plan";
 export {
   type AccessReport,
+  type AddressPlanReport,
   ANALYSIS_IDS,
   type AnalysisId,
   type AnalysisLevel,

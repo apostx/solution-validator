@@ -1,4 +1,5 @@
 import {
+  type AnalysisLevel,
   type AnalysisResult,
   type Assumption,
   type AssumptionPolicy,
@@ -46,6 +47,7 @@ export function evaluate(
   document: unknown,
   assumptions: AssumptionPolicy,
   task?: Task,
+  level: AnalysisLevel = "logical",
 ): Evaluation {
   const parsed = parseSolution(document, registry);
   if (!parsed.ok) {
@@ -57,7 +59,7 @@ export function evaluate(
       assumptions: [],
     };
   }
-  const result = analyze(parsed.model, { assumptions });
+  const result = analyze(parsed.model, { assumptions, level });
   const findings = listFindings(result);
   const severityBySubject = new Map<string, Severity>();
   for (const finding of findings) {

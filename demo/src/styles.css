@@ -757,3 +757,8 @@ label.checkbox {
 label.checkbox input {
   width: auto;
 }
+
+.address-space {
+  margin-left: 0.4rem;
+  font-size: 0.75rem;
+}

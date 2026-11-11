@@ -76,7 +76,23 @@ Logical access: forwarding, connectivity and authorization for every intent, and
 | `ACCESS_PERMISSION_MISSING` | error | Intent {intent}: {from} has no permission to {action} {to}. | The target controls access, and neither a grant, a forwarder's route nor public access allows the action. |
 | `ACCESS_PROPERTY_UNSET` | warning | Intent {intent} cannot be decided: {component} does not set {property}. | Under the strict assumption policy, a property the verdict depends on is not set. The pack-defaults policy would use the pack's documented default. |
 | `ACCESS_ACTION_MISSING` | warning | Intent {intent} cannot be decided: {to} controls access per action, but the intent states no action. | Authorization is decided per action, and the intent only states a port. |
+| `ACCESS_ADDRESS_UNDECIDABLE` | warning | Intent {intent} cannot be decided: an address range in a traffic filter or route cannot be matched with the addresses given. | A rule or route uses an address range, and the level or the known addresses are not enough to tell whether it applies. |
 | `EXPOSED_TO_INTERNET` | info | {component} is directly accessible from the internet. | An anonymous caller outside the solution can reach the component and is allowed to use it. |
+
+## Analysis: address-plan (detailed level)
+
+Checks the address plan: zones' IPv4 address spaces, their nesting and overlaps, and route destinations.
+
+| Code | Severity | Message template | Meaning |
+|---|---|---|---|
+| `ADDRESS_SPACE_MISSING` | warning | Zone {zone} has no address space, so its address plan cannot be checked. | The detailed level needs the zone's address space. |
+| `ADDRESS_SPACE_INVALID` | error | Zone {zone} has the address space {value}, which is not an IPv4 range such as 10.0.0.0/16. | Address spaces are IPv4 ranges in CIDR notation; IPv6 is not supported yet. |
+| `ADDRESS_SPACE_HOST_BITS` | warning | The address space {value} of zone {zone} is not a network address; it stands for {network}. | The range has host bits set; most providers reject it. |
+| `ADDRESS_SPACE_OUTSIDE_PARENT` | error | The address space {space} of zone {zone} is not within {parentSpace}, the address space of {parent}. | A zone's address space must lie within the address space of the zone it is placed in. |
+| `ADDRESS_SPACE_OVERLAP` | error | {zone} ({space}) overlaps {other} ({otherSpace}), which is placed in the same zone. | Zones placed in the same zone must not share addresses. |
+| `NETWORK_OVERLAP` | warning | The networks {zone} ({space}) and {other} ({otherSpace}) overlap, so they cannot be connected directly. | Overlapping networks cannot be peered or routed to each other. |
+| `ROUTE_DESTINATION_INVALID` | error | Route {index} of {router} has the destination {destination}, which is neither internet nor an IPv4 range. | Route destinations are internet or IPv4 ranges in CIDR notation. |
+| `ROUTE_SHADOWED` | warning | Route {destination} of {router} lies within {space}, the address space of {network}; the local route takes that traffic. | A route inside the network's own address space never applies. |
 
 ## Tasks and requirements
 
@@ -141,6 +157,10 @@ Evidence explains an intent's verdict: each check lists the evidence it used. Ev
 | `FILTER_DEFAULT_DENIES` | No rule of {filter} matches {direction} traffic with {peer}; its default denies it. | No rule matches, and the filter's default policy denies. |
 | `FILTER_PORT_UNKNOWN` | Rule {rule} of {filter} limits ports, but the traffic's port is not known. | The intent states no port and the target's endpoint lists none. |
 | `STATELESS_RETURN` | {filter} is stateless, so the return traffic needs a rule of its own. | Stateless filters check the replies as well, on any port. |
+| `CIDR_NEEDS_DETAILED` | A rule names the address range {cidr}; comparing it with {party} needs the detailed level. | Address ranges other than 0.0.0.0/0 are only matched at the detailed level. |
+| `PEER_ADDRESS_UNKNOWN` | The address of {party} is not known, so it cannot be compared with {cidr}. | The party is outside every zone, or its zones have no address space. |
+| `CIDR_PARTLY_COVERS` | {cidr} covers only part of {zone} ({space}). | Some addresses of the zone match the rule and some do not. |
+| `ROUTE_AMBIGUOUS` | {router}, the router of {zone}, sends some public address ranges to another gateway, and the destination's address is not known. | A more specific route may catch the traffic. |
 | `NOT_REACHABLE_FROM_INTERNET` | {component} cannot be reached from the internet on any port. | Routes, gateways or traffic filters keep outside callers out. |
 | `ANONYMOUS_ALLOWED` | {component} does not control access. | Anyone who can reach the component may use it. |
 | `ENDPOINT_NOT_PUBLIC` | {component} has no public endpoint. | Its endpoint is private or it has none, so it cannot be reached from outside. |

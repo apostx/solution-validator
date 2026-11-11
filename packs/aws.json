@@ -1,7 +1,7 @@
 {
   "$schema": "../schemas/pack.schema.json",
   "id": "aws",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "label": "Amazon Web Services",
   "description": "Serverless (API Gateway, Lambda, DynamoDB, S3) and networking (VPC, subnets, gateways, route tables, security groups, network ACLs, Auto Scaling groups).",
   "vocabulary": 2,
@@ -210,9 +210,21 @@
       "description": "A private network. Components placed in its subnets reach each other through local routes, subject to security groups and network ACLs.",
       "category": "network",
       "traits": {
-        "zone": {}
+        "zone": {
+          "addressSpace": {
+            "property": "cidrBlock"
+          }
+        }
       },
-      "accepts": []
+      "accepts": [],
+      "properties": {
+        "cidrBlock": {
+          "type": "string",
+          "title": "CIDR block",
+          "description": "The VPC's IPv4 address range, for example 10.0.0.0/16. Used by the detailed analysis level.",
+          "pattern": "^([0-9]{1,3}\\.){3}[0-9]{1,3}/[0-9]{1,2}$"
+        }
+      }
     },
     {
       "id": "aws.subnet",
@@ -220,9 +232,21 @@
       "description": "A part of a VPC; place it in the VPC. Its route table decides whether it reaches the internet, and its network ACL filters traffic that enters or leaves it.",
       "category": "network",
       "traits": {
-        "zone": {}
+        "zone": {
+          "addressSpace": {
+            "property": "cidrBlock"
+          }
+        }
       },
-      "accepts": []
+      "accepts": [],
+      "properties": {
+        "cidrBlock": {
+          "type": "string",
+          "title": "CIDR block",
+          "description": "The subnet's IPv4 address range within its VPC, for example 10.0.1.0/24. Used by the detailed analysis level.",
+          "pattern": "^([0-9]{1,3}\\.){3}[0-9]{1,3}/[0-9]{1,2}$"
+        }
+      }
     },
     {
       "id": "aws.internet-gateway",
@@ -291,7 +315,8 @@
               "destination": {
                 "type": "string",
                 "title": "Destination",
-                "enum": ["internet"]
+                "pattern": "^(internet|([0-9]{1,3}\\.){3}[0-9]{1,3}/[0-9]{1,2})$",
+                "description": "internet, or an IPv4 range such as 0.0.0.0/0 (the detailed level matches the longest prefix)."
               },
               "gateway": {
                 "type": "string",
@@ -353,14 +378,16 @@
               "peer": {
                 "type": "string",
                 "title": "Peer",
-                "minLength": 1
+                "minLength": 1,
+                "description": "any, internet, the id of a component, subnet, VPC or security group, or an IPv4 range such as 10.0.0.0/16 (matched at the detailed level)."
               },
               "ports": {
                 "type": "array",
                 "title": "Ports",
                 "items": {
                   "type": "string"
-                }
+                },
+                "description": "Port ids (https), numbers (443) or ranges (1024-65535). Omitted: all ports."
               }
             },
             "required": ["direction", "peer"]
@@ -410,7 +437,7 @@
         "rules": {
           "type": "array",
           "title": "Rules",
-          "description": "Checked in order; the first match decides. The default network ACL allows everything.",
+          "description": "Checked in order; the first match decides. Replies need rules of their own: at the detailed level they use the ephemeral ports 1024-65535. The default network ACL allows everything.",
           "items": {
             "type": "object",
             "properties": {
@@ -422,14 +449,16 @@
               "peer": {
                 "type": "string",
                 "title": "Peer",
-                "minLength": 1
+                "minLength": 1,
+                "description": "any, internet, the id of a component, subnet, VPC or security group, or an IPv4 range such as 10.0.0.0/16 (matched at the detailed level)."
               },
               "ports": {
                 "type": "array",
                 "title": "Ports",
                 "items": {
                   "type": "string"
-                }
+                },
+                "description": "Port ids (https), numbers (443) or ranges (1024-65535). Omitted: all ports."
               },
               "effect": {
                 "type": "string",

@@ -27,8 +27,12 @@ export interface AccessAnalysis {
  * connectivity, authorization), and decides which components are directly accessible from the
  * internet. Compatibility failures are reported by `connection-validity`.
  */
-export function checkAccess(model: SolutionModel, policy: AssumptionPolicy): AccessAnalysis {
-  const context: AccessContext = { model, resolver: new ParameterResolver(policy) };
+export function checkAccess(
+  model: SolutionModel,
+  policy: AssumptionPolicy,
+  level: "logical" | "detailed" = "logical",
+): AccessAnalysis {
+  const context: AccessContext = { model, resolver: new ParameterResolver(policy), level };
   const intents: IntentVerdict[] = [];
   const findings: Finding[] = [];
 
@@ -77,6 +81,11 @@ export function checkAccess(model: SolutionModel, policy: AssumptionPolicy): Acc
               component: missing.component,
               property: missing.property,
             }),
+          );
+        }
+        if (outcome.addressUnknown) {
+          findings.push(
+            createFinding("ACCESS_ADDRESS_UNDECIDABLE", [intent.id], { intent: intent.id }),
           );
         }
         if (outcome.portUnknown) {

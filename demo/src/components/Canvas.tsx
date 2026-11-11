@@ -37,6 +37,14 @@ const COMPONENT_SIZE: Size = { width: 170, height: 64 };
 
 type CanvasNode = ComponentNodeType | ZoneNodeType;
 
+/** The zone's address space: a fixed value of its type, or the property it is bound to. */
+function addressSpaceOf(registry: Registry, component: Component): string | undefined {
+  const parameter = registry.getType(component.type)?.traits.zone?.addressSpace;
+  if (typeof parameter === "string") return parameter;
+  const value = parameter ? component.properties?.[parameter.property] : undefined;
+  return typeof value === "string" ? value : undefined;
+}
+
 interface CanvasProps {
   solution: Solution;
   registry: Registry;
@@ -123,6 +131,7 @@ export function Canvas({
             typeLabel: type?.label ?? component.type,
             severity: evaluation.severityBySubject.get(component.id),
             attachments: attachments.get(component.id) ?? [],
+            addressSpace: addressSpaceOf(registry, component),
           },
         };
       })

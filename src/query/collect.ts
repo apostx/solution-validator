@@ -58,7 +58,7 @@ export function collect(model: SolutionModel, analysis?: AnalysisResult): Facts 
   const intentVerdicts = new Map<string, Verdict>();
   const exposure = new Map<string, ExposureFact["exposure"]>();
   for (const report of analysis?.analyses ?? []) {
-    if (report.id === "model-validity") continue;
+    if (report.id === "model-validity" || report.id === "address-plan") continue;
     // Later reports are more complete, so they win.
     const seen = new Set<string>();
     for (const intent of report.intents) {

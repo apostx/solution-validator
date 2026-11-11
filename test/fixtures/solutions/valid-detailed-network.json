@@ -1,0 +1,181 @@
+{
+  "$schema": "../../../schemas/solution.schema.json",
+  "schemaVersion": 1,
+  "packs": ["core", "aws"],
+  "components": [
+    {
+      "id": "users",
+      "type": "core.internet"
+    },
+    {
+      "id": "vpc",
+      "type": "aws.vpc",
+      "properties": {
+        "cidrBlock": "10.0.0.0/16"
+      }
+    },
+    {
+      "id": "web-subnet",
+      "type": "aws.subnet",
+      "placement": ["vpc"],
+      "properties": {
+        "cidrBlock": "10.0.1.0/24"
+      }
+    },
+    {
+      "id": "app-subnet",
+      "type": "aws.subnet",
+      "placement": ["vpc"],
+      "properties": {
+        "cidrBlock": "10.0.2.0/24"
+      }
+    },
+    {
+      "id": "overlapping",
+      "type": "aws.subnet",
+      "placement": ["vpc"],
+      "properties": {
+        "cidrBlock": "10.0.2.128/25"
+      }
+    },
+    {
+      "id": "outside",
+      "type": "aws.subnet",
+      "placement": ["vpc"],
+      "properties": {
+        "cidrBlock": "10.1.0.0/24"
+      }
+    },
+    {
+      "id": "other-vpc",
+      "type": "aws.vpc",
+      "properties": {
+        "cidrBlock": "10.0.128.0/17"
+      }
+    },
+    {
+      "id": "igw",
+      "type": "aws.internet-gateway",
+      "properties": {
+        "attachedTo": ["vpc"]
+      }
+    },
+    {
+      "id": "rt",
+      "type": "aws.route-table",
+      "properties": {
+        "routes": [
+          {
+            "destination": "0.0.0.0/0",
+            "gateway": "igw"
+          },
+          {
+            "destination": "10.0.5.0/24",
+            "gateway": "igw"
+          },
+          {
+            "destination": "10.0.0.0/33",
+            "gateway": "igw"
+          }
+        ],
+        "associations": ["web-subnet", "app-subnet"]
+      }
+    },
+    {
+      "id": "web",
+      "type": "aws.autoscaling-group",
+      "placement": ["web-subnet"],
+      "properties": {
+        "endpoint": "public",
+        "permissions": []
+      }
+    },
+    {
+      "id": "app",
+      "type": "aws.autoscaling-group",
+      "placement": ["app-subnet"],
+      "properties": {
+        "endpoint": "private",
+        "permissions": []
+      }
+    },
+    {
+      "id": "web-sg",
+      "type": "aws.security-group",
+      "properties": {
+        "rules": [
+          {
+            "direction": "inbound",
+            "peer": "0.0.0.0/0",
+            "ports": ["443"]
+          },
+          {
+            "direction": "outbound",
+            "peer": "10.0.2.0/24",
+            "ports": ["8080-8090"]
+          }
+        ],
+        "attachedTo": ["web"]
+      }
+    },
+    {
+      "id": "app-sg",
+      "type": "aws.security-group",
+      "properties": {
+        "rules": [
+          {
+            "direction": "inbound",
+            "peer": "10.0.1.0/24",
+            "ports": ["8080"]
+          },
+          {
+            "direction": "inbound",
+            "peer": "10.0.0.0/23",
+            "ports": ["9090"]
+          }
+        ],
+        "attachedTo": ["app"]
+      }
+    },
+    {
+      "id": "app-acl",
+      "type": "aws.network-acl",
+      "properties": {
+        "rules": [
+          {
+            "direction": "inbound",
+            "peer": "10.0.1.0/24"
+          },
+          {
+            "direction": "outbound",
+            "peer": "10.0.1.0/24",
+            "ports": ["1024-65535"]
+          }
+        ],
+        "subnets": ["app-subnet"]
+      }
+    }
+  ],
+  "intents": [
+    {
+      "id": "users-web",
+      "from": "users",
+      "to": "web",
+      "port": 443
+    },
+    {
+      "id": "web-app",
+      "from": "web",
+      "to": "app",
+      "action": "invoke",
+      "port": 8080
+    },
+    {
+      "id": "web-app-metrics",
+      "from": "web",
+      "to": "app",
+      "action": "invoke",
+      "port": 9090
+    }
+  ]
+}

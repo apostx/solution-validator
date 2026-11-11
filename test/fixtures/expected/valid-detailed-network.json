@@ -1,0 +1,1360 @@
+{
+  "parse": {
+    "ok": true,
+    "findings": []
+  },
+  "analysis": {
+    "strict": {
+      "library": {
+        "name": "solution-validator",
+        "version": "<version>"
+      },
+      "vocabulary": 2,
+      "packs": [
+        {
+          "id": "aws",
+          "version": "0.3.0"
+        },
+        {
+          "id": "core",
+          "version": "0.1.0"
+        }
+      ],
+      "options": {
+        "level": "logical",
+        "analyses": [
+          "model-validity",
+          "connection-validity",
+          "access"
+        ],
+        "assumptions": "strict"
+      },
+      "analyses": [
+        {
+          "id": "model-validity",
+          "valid": true,
+          "findings": []
+        },
+        {
+          "id": "connection-validity",
+          "intents": [
+            {
+              "intent": "users-web",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "aws.autoscaling-group",
+                        "purpose": "port 443",
+                        "rule": 0
+                      },
+                      "message": "aws.autoscaling-group accepts port 443 from core.internet (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "web-app",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.autoscaling-group",
+                        "toType": "aws.autoscaling-group",
+                        "purpose": "invoke on port 8080",
+                        "rule": 1
+                      },
+                      "message": "aws.autoscaling-group accepts invoke on port 8080 from aws.autoscaling-group (accepts rule 1)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "web-app-metrics",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.autoscaling-group",
+                        "toType": "aws.autoscaling-group",
+                        "purpose": "invoke on port 9090",
+                        "rule": 1
+                      },
+                      "message": "aws.autoscaling-group accepts invoke on port 9090 from aws.autoscaling-group (accepts rule 1)."
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "summary": {
+            "pass": 3,
+            "fail": 0,
+            "undecidable": 0
+          },
+          "findings": []
+        },
+        {
+          "id": "access",
+          "intents": [
+            {
+              "intent": "users-web",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "aws.autoscaling-group",
+                        "purpose": "port 443",
+                        "rule": 0
+                      },
+                      "message": "aws.autoscaling-group accepts port 443 from core.internet (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "INTERNET_ROUTE",
+                      "params": {
+                        "zone": "web-subnet",
+                        "gateway": "igw"
+                      },
+                      "message": "web-subnet reaches the internet through igw."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "web-sg",
+                        "direction": "inbound",
+                        "peer": "users",
+                        "rule": 0
+                      },
+                      "message": "web-sg allows inbound traffic with users (rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "web-app",
+              "verdict": "undecidable",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.autoscaling-group",
+                        "toType": "aws.autoscaling-group",
+                        "purpose": "invoke on port 8080",
+                        "rule": 1
+                      },
+                      "message": "aws.autoscaling-group accepts invoke on port 8080 from aws.autoscaling-group (accepts rule 1)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "undecidable",
+                  "evidence": [
+                    {
+                      "code": "SAME_NETWORK",
+                      "params": {
+                        "from": "web",
+                        "to": "app",
+                        "network": "vpc"
+                      },
+                      "message": "web and app are in the same network, vpc."
+                    },
+                    {
+                      "code": "CIDR_NEEDS_DETAILED",
+                      "params": {
+                        "cidr": "10.0.2.0/24",
+                        "party": "app"
+                      },
+                      "message": "A rule names the address range 10.0.2.0/24; comparing it with app needs the detailed level."
+                    },
+                    {
+                      "code": "CIDR_NEEDS_DETAILED",
+                      "params": {
+                        "cidr": "10.0.1.0/24",
+                        "party": "web"
+                      },
+                      "message": "A rule names the address range 10.0.1.0/24; comparing it with web needs the detailed level."
+                    },
+                    {
+                      "code": "CIDR_NEEDS_DETAILED",
+                      "params": {
+                        "cidr": "10.0.1.0/24",
+                        "party": "web"
+                      },
+                      "message": "A rule names the address range 10.0.1.0/24; comparing it with web needs the detailed level."
+                    },
+                    {
+                      "code": "STATELESS_RETURN",
+                      "params": {
+                        "filter": "app-acl"
+                      },
+                      "message": "app-acl is stateless, so the return traffic needs a rule of its own."
+                    },
+                    {
+                      "code": "CIDR_NEEDS_DETAILED",
+                      "params": {
+                        "cidr": "10.0.1.0/24",
+                        "party": "web"
+                      },
+                      "message": "A rule names the address range 10.0.1.0/24; comparing it with web needs the detailed level."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "web-app-metrics",
+              "verdict": "undecidable",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.autoscaling-group",
+                        "toType": "aws.autoscaling-group",
+                        "purpose": "invoke on port 9090",
+                        "rule": 1
+                      },
+                      "message": "aws.autoscaling-group accepts invoke on port 9090 from aws.autoscaling-group (accepts rule 1)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "undecidable",
+                  "evidence": [
+                    {
+                      "code": "SAME_NETWORK",
+                      "params": {
+                        "from": "web",
+                        "to": "app",
+                        "network": "vpc"
+                      },
+                      "message": "web and app are in the same network, vpc."
+                    },
+                    {
+                      "code": "CIDR_NEEDS_DETAILED",
+                      "params": {
+                        "cidr": "10.0.2.0/24",
+                        "party": "app"
+                      },
+                      "message": "A rule names the address range 10.0.2.0/24; comparing it with app needs the detailed level."
+                    },
+                    {
+                      "code": "CIDR_NEEDS_DETAILED",
+                      "params": {
+                        "cidr": "10.0.1.0/24",
+                        "party": "web"
+                      },
+                      "message": "A rule names the address range 10.0.1.0/24; comparing it with web needs the detailed level."
+                    },
+                    {
+                      "code": "CIDR_NEEDS_DETAILED",
+                      "params": {
+                        "cidr": "10.0.1.0/24",
+                        "party": "web"
+                      },
+                      "message": "A rule names the address range 10.0.1.0/24; comparing it with web needs the detailed level."
+                    },
+                    {
+                      "code": "STATELESS_RETURN",
+                      "params": {
+                        "filter": "app-acl"
+                      },
+                      "message": "app-acl is stateless, so the return traffic needs a rule of its own."
+                    },
+                    {
+                      "code": "CIDR_NEEDS_DETAILED",
+                      "params": {
+                        "cidr": "10.0.1.0/24",
+                        "party": "web"
+                      },
+                      "message": "A rule names the address range 10.0.1.0/24; comparing it with web needs the detailed level."
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "summary": {
+            "pass": 1,
+            "fail": 0,
+            "undecidable": 2
+          },
+          "exposure": [
+            {
+              "component": "app",
+              "exposure": "not-exposed",
+              "evidence": [
+                {
+                  "code": "ENDPOINT_NOT_PUBLIC",
+                  "params": {
+                    "component": "app"
+                  },
+                  "message": "app has no public endpoint."
+                }
+              ]
+            },
+            {
+              "component": "web",
+              "exposure": "exposed",
+              "ports": [
+                "https"
+              ],
+              "evidence": [
+                {
+                  "code": "ENDPOINT_PUBLIC",
+                  "params": {
+                    "from": "the internet",
+                    "to": "web"
+                  },
+                  "message": "web has a public endpoint."
+                },
+                {
+                  "code": "INTERNET_ROUTE",
+                  "params": {
+                    "zone": "web-subnet",
+                    "gateway": "igw"
+                  },
+                  "message": "web-subnet reaches the internet through igw."
+                },
+                {
+                  "code": "FILTER_ALLOWS",
+                  "params": {
+                    "filter": "web-sg",
+                    "direction": "inbound",
+                    "peer": "the internet",
+                    "rule": 0
+                  },
+                  "message": "web-sg allows inbound traffic with the internet (rule 0)."
+                },
+                {
+                  "code": "ANONYMOUS_ALLOWED",
+                  "params": {
+                    "component": "web"
+                  },
+                  "message": "web does not control access."
+                }
+              ]
+            }
+          ],
+          "assumptions": [],
+          "findings": [
+            {
+              "code": "EXPOSED_TO_INTERNET",
+              "severity": "info",
+              "subjects": [
+                "web"
+              ],
+              "params": {
+                "component": "web"
+              },
+              "message": "web is directly accessible from the internet."
+            },
+            {
+              "code": "ACCESS_ADDRESS_UNDECIDABLE",
+              "severity": "warning",
+              "subjects": [
+                "web-app"
+              ],
+              "params": {
+                "intent": "web-app"
+              },
+              "message": "Intent web-app cannot be decided: an address range in a traffic filter or route cannot be matched with the addresses given."
+            },
+            {
+              "code": "ACCESS_ADDRESS_UNDECIDABLE",
+              "severity": "warning",
+              "subjects": [
+                "web-app-metrics"
+              ],
+              "params": {
+                "intent": "web-app-metrics"
+              },
+              "message": "Intent web-app-metrics cannot be decided: an address range in a traffic filter or route cannot be matched with the addresses given."
+            }
+          ]
+        }
+      ]
+    },
+    "pack-defaults": {
+      "library": {
+        "name": "solution-validator",
+        "version": "<version>"
+      },
+      "vocabulary": 2,
+      "packs": [
+        {
+          "id": "aws",
+          "version": "0.3.0"
+        },
+        {
+          "id": "core",
+          "version": "0.1.0"
+        }
+      ],
+      "options": {
+        "level": "logical",
+        "analyses": [
+          "model-validity",
+          "connection-validity",
+          "access"
+        ],
+        "assumptions": "pack-defaults"
+      },
+      "analyses": [
+        {
+          "id": "model-validity",
+          "valid": true,
+          "findings": []
+        },
+        {
+          "id": "connection-validity",
+          "intents": [
+            {
+              "intent": "users-web",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "aws.autoscaling-group",
+                        "purpose": "port 443",
+                        "rule": 0
+                      },
+                      "message": "aws.autoscaling-group accepts port 443 from core.internet (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "web-app",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.autoscaling-group",
+                        "toType": "aws.autoscaling-group",
+                        "purpose": "invoke on port 8080",
+                        "rule": 1
+                      },
+                      "message": "aws.autoscaling-group accepts invoke on port 8080 from aws.autoscaling-group (accepts rule 1)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "web-app-metrics",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.autoscaling-group",
+                        "toType": "aws.autoscaling-group",
+                        "purpose": "invoke on port 9090",
+                        "rule": 1
+                      },
+                      "message": "aws.autoscaling-group accepts invoke on port 9090 from aws.autoscaling-group (accepts rule 1)."
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "summary": {
+            "pass": 3,
+            "fail": 0,
+            "undecidable": 0
+          },
+          "findings": []
+        },
+        {
+          "id": "access",
+          "intents": [
+            {
+              "intent": "users-web",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "aws.autoscaling-group",
+                        "purpose": "port 443",
+                        "rule": 0
+                      },
+                      "message": "aws.autoscaling-group accepts port 443 from core.internet (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "INTERNET_ROUTE",
+                      "params": {
+                        "zone": "web-subnet",
+                        "gateway": "igw"
+                      },
+                      "message": "web-subnet reaches the internet through igw."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "web-sg",
+                        "direction": "inbound",
+                        "peer": "users",
+                        "rule": 0
+                      },
+                      "message": "web-sg allows inbound traffic with users (rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "web-app",
+              "verdict": "undecidable",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.autoscaling-group",
+                        "toType": "aws.autoscaling-group",
+                        "purpose": "invoke on port 8080",
+                        "rule": 1
+                      },
+                      "message": "aws.autoscaling-group accepts invoke on port 8080 from aws.autoscaling-group (accepts rule 1)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "undecidable",
+                  "evidence": [
+                    {
+                      "code": "SAME_NETWORK",
+                      "params": {
+                        "from": "web",
+                        "to": "app",
+                        "network": "vpc"
+                      },
+                      "message": "web and app are in the same network, vpc."
+                    },
+                    {
+                      "code": "CIDR_NEEDS_DETAILED",
+                      "params": {
+                        "cidr": "10.0.2.0/24",
+                        "party": "app"
+                      },
+                      "message": "A rule names the address range 10.0.2.0/24; comparing it with app needs the detailed level."
+                    },
+                    {
+                      "code": "CIDR_NEEDS_DETAILED",
+                      "params": {
+                        "cidr": "10.0.1.0/24",
+                        "party": "web"
+                      },
+                      "message": "A rule names the address range 10.0.1.0/24; comparing it with web needs the detailed level."
+                    },
+                    {
+                      "code": "CIDR_NEEDS_DETAILED",
+                      "params": {
+                        "cidr": "10.0.1.0/24",
+                        "party": "web"
+                      },
+                      "message": "A rule names the address range 10.0.1.0/24; comparing it with web needs the detailed level."
+                    },
+                    {
+                      "code": "STATELESS_RETURN",
+                      "params": {
+                        "filter": "app-acl"
+                      },
+                      "message": "app-acl is stateless, so the return traffic needs a rule of its own."
+                    },
+                    {
+                      "code": "CIDR_NEEDS_DETAILED",
+                      "params": {
+                        "cidr": "10.0.1.0/24",
+                        "party": "web"
+                      },
+                      "message": "A rule names the address range 10.0.1.0/24; comparing it with web needs the detailed level."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "web-app-metrics",
+              "verdict": "undecidable",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.autoscaling-group",
+                        "toType": "aws.autoscaling-group",
+                        "purpose": "invoke on port 9090",
+                        "rule": 1
+                      },
+                      "message": "aws.autoscaling-group accepts invoke on port 9090 from aws.autoscaling-group (accepts rule 1)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "undecidable",
+                  "evidence": [
+                    {
+                      "code": "SAME_NETWORK",
+                      "params": {
+                        "from": "web",
+                        "to": "app",
+                        "network": "vpc"
+                      },
+                      "message": "web and app are in the same network, vpc."
+                    },
+                    {
+                      "code": "CIDR_NEEDS_DETAILED",
+                      "params": {
+                        "cidr": "10.0.2.0/24",
+                        "party": "app"
+                      },
+                      "message": "A rule names the address range 10.0.2.0/24; comparing it with app needs the detailed level."
+                    },
+                    {
+                      "code": "CIDR_NEEDS_DETAILED",
+                      "params": {
+                        "cidr": "10.0.1.0/24",
+                        "party": "web"
+                      },
+                      "message": "A rule names the address range 10.0.1.0/24; comparing it with web needs the detailed level."
+                    },
+                    {
+                      "code": "CIDR_NEEDS_DETAILED",
+                      "params": {
+                        "cidr": "10.0.1.0/24",
+                        "party": "web"
+                      },
+                      "message": "A rule names the address range 10.0.1.0/24; comparing it with web needs the detailed level."
+                    },
+                    {
+                      "code": "STATELESS_RETURN",
+                      "params": {
+                        "filter": "app-acl"
+                      },
+                      "message": "app-acl is stateless, so the return traffic needs a rule of its own."
+                    },
+                    {
+                      "code": "CIDR_NEEDS_DETAILED",
+                      "params": {
+                        "cidr": "10.0.1.0/24",
+                        "party": "web"
+                      },
+                      "message": "A rule names the address range 10.0.1.0/24; comparing it with web needs the detailed level."
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "summary": {
+            "pass": 1,
+            "fail": 0,
+            "undecidable": 2
+          },
+          "exposure": [
+            {
+              "component": "app",
+              "exposure": "not-exposed",
+              "evidence": [
+                {
+                  "code": "ENDPOINT_NOT_PUBLIC",
+                  "params": {
+                    "component": "app"
+                  },
+                  "message": "app has no public endpoint."
+                }
+              ]
+            },
+            {
+              "component": "web",
+              "exposure": "exposed",
+              "ports": [
+                "https"
+              ],
+              "evidence": [
+                {
+                  "code": "ENDPOINT_PUBLIC",
+                  "params": {
+                    "from": "the internet",
+                    "to": "web"
+                  },
+                  "message": "web has a public endpoint."
+                },
+                {
+                  "code": "INTERNET_ROUTE",
+                  "params": {
+                    "zone": "web-subnet",
+                    "gateway": "igw"
+                  },
+                  "message": "web-subnet reaches the internet through igw."
+                },
+                {
+                  "code": "FILTER_ALLOWS",
+                  "params": {
+                    "filter": "web-sg",
+                    "direction": "inbound",
+                    "peer": "the internet",
+                    "rule": 0
+                  },
+                  "message": "web-sg allows inbound traffic with the internet (rule 0)."
+                },
+                {
+                  "code": "ANONYMOUS_ALLOWED",
+                  "params": {
+                    "component": "web"
+                  },
+                  "message": "web does not control access."
+                }
+              ]
+            }
+          ],
+          "assumptions": [],
+          "findings": [
+            {
+              "code": "EXPOSED_TO_INTERNET",
+              "severity": "info",
+              "subjects": [
+                "web"
+              ],
+              "params": {
+                "component": "web"
+              },
+              "message": "web is directly accessible from the internet."
+            },
+            {
+              "code": "ACCESS_ADDRESS_UNDECIDABLE",
+              "severity": "warning",
+              "subjects": [
+                "web-app"
+              ],
+              "params": {
+                "intent": "web-app"
+              },
+              "message": "Intent web-app cannot be decided: an address range in a traffic filter or route cannot be matched with the addresses given."
+            },
+            {
+              "code": "ACCESS_ADDRESS_UNDECIDABLE",
+              "severity": "warning",
+              "subjects": [
+                "web-app-metrics"
+              ],
+              "params": {
+                "intent": "web-app-metrics"
+              },
+              "message": "Intent web-app-metrics cannot be decided: an address range in a traffic filter or route cannot be matched with the addresses given."
+            }
+          ]
+        }
+      ]
+    },
+    "detailed": {
+      "library": {
+        "name": "solution-validator",
+        "version": "<version>"
+      },
+      "vocabulary": 2,
+      "packs": [
+        {
+          "id": "aws",
+          "version": "0.3.0"
+        },
+        {
+          "id": "core",
+          "version": "0.1.0"
+        }
+      ],
+      "options": {
+        "level": "detailed",
+        "analyses": [
+          "model-validity",
+          "connection-validity",
+          "access",
+          "address-plan"
+        ],
+        "assumptions": "strict"
+      },
+      "analyses": [
+        {
+          "id": "model-validity",
+          "valid": true,
+          "findings": []
+        },
+        {
+          "id": "connection-validity",
+          "intents": [
+            {
+              "intent": "users-web",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "aws.autoscaling-group",
+                        "purpose": "port 443",
+                        "rule": 0
+                      },
+                      "message": "aws.autoscaling-group accepts port 443 from core.internet (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "web-app",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.autoscaling-group",
+                        "toType": "aws.autoscaling-group",
+                        "purpose": "invoke on port 8080",
+                        "rule": 1
+                      },
+                      "message": "aws.autoscaling-group accepts invoke on port 8080 from aws.autoscaling-group (accepts rule 1)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "web-app-metrics",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.autoscaling-group",
+                        "toType": "aws.autoscaling-group",
+                        "purpose": "invoke on port 9090",
+                        "rule": 1
+                      },
+                      "message": "aws.autoscaling-group accepts invoke on port 9090 from aws.autoscaling-group (accepts rule 1)."
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "summary": {
+            "pass": 3,
+            "fail": 0,
+            "undecidable": 0
+          },
+          "findings": []
+        },
+        {
+          "id": "access",
+          "intents": [
+            {
+              "intent": "users-web",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "aws.autoscaling-group",
+                        "purpose": "port 443",
+                        "rule": 0
+                      },
+                      "message": "aws.autoscaling-group accepts port 443 from core.internet (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "INTERNET_ROUTE",
+                      "params": {
+                        "zone": "web-subnet",
+                        "gateway": "igw"
+                      },
+                      "message": "web-subnet reaches the internet through igw."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "web-sg",
+                        "direction": "inbound",
+                        "peer": "users",
+                        "rule": 0
+                      },
+                      "message": "web-sg allows inbound traffic with users (rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "web-app",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.autoscaling-group",
+                        "toType": "aws.autoscaling-group",
+                        "purpose": "invoke on port 8080",
+                        "rule": 1
+                      },
+                      "message": "aws.autoscaling-group accepts invoke on port 8080 from aws.autoscaling-group (accepts rule 1)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "SAME_NETWORK",
+                      "params": {
+                        "from": "web",
+                        "to": "app",
+                        "network": "vpc"
+                      },
+                      "message": "web and app are in the same network, vpc."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "web-sg",
+                        "direction": "outbound",
+                        "peer": "app",
+                        "rule": 1
+                      },
+                      "message": "web-sg allows outbound traffic with app (rule 1)."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "app-sg",
+                        "direction": "inbound",
+                        "peer": "web",
+                        "rule": 0
+                      },
+                      "message": "app-sg allows inbound traffic with web (rule 0)."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "app-acl",
+                        "direction": "inbound",
+                        "peer": "web",
+                        "rule": 0
+                      },
+                      "message": "app-acl allows inbound traffic with web (rule 0)."
+                    },
+                    {
+                      "code": "STATELESS_RETURN",
+                      "params": {
+                        "filter": "app-acl"
+                      },
+                      "message": "app-acl is stateless, so the return traffic needs a rule of its own."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "app-acl",
+                        "direction": "outbound",
+                        "peer": "web",
+                        "rule": 1
+                      },
+                      "message": "app-acl allows outbound traffic with web (rule 1)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "web-app-metrics",
+              "verdict": "fail",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.autoscaling-group",
+                        "toType": "aws.autoscaling-group",
+                        "purpose": "invoke on port 9090",
+                        "rule": 1
+                      },
+                      "message": "aws.autoscaling-group accepts invoke on port 9090 from aws.autoscaling-group (accepts rule 1)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "fail",
+                  "evidence": [
+                    {
+                      "code": "SAME_NETWORK",
+                      "params": {
+                        "from": "web",
+                        "to": "app",
+                        "network": "vpc"
+                      },
+                      "message": "web and app are in the same network, vpc."
+                    },
+                    {
+                      "code": "FILTER_DEFAULT_DENIES",
+                      "params": {
+                        "filter": "web-sg",
+                        "direction": "outbound",
+                        "peer": "app"
+                      },
+                      "message": "No rule of web-sg matches outbound traffic with app; its default denies it."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "app-sg",
+                        "direction": "inbound",
+                        "peer": "web",
+                        "rule": 1
+                      },
+                      "message": "app-sg allows inbound traffic with web (rule 1)."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "app-acl",
+                        "direction": "inbound",
+                        "peer": "web",
+                        "rule": 0
+                      },
+                      "message": "app-acl allows inbound traffic with web (rule 0)."
+                    },
+                    {
+                      "code": "STATELESS_RETURN",
+                      "params": {
+                        "filter": "app-acl"
+                      },
+                      "message": "app-acl is stateless, so the return traffic needs a rule of its own."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "app-acl",
+                        "direction": "outbound",
+                        "peer": "web",
+                        "rule": 1
+                      },
+                      "message": "app-acl allows outbound traffic with web (rule 1)."
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "summary": {
+            "pass": 2,
+            "fail": 1,
+            "undecidable": 0
+          },
+          "exposure": [
+            {
+              "component": "app",
+              "exposure": "not-exposed",
+              "evidence": [
+                {
+                  "code": "ENDPOINT_NOT_PUBLIC",
+                  "params": {
+                    "component": "app"
+                  },
+                  "message": "app has no public endpoint."
+                }
+              ]
+            },
+            {
+              "component": "web",
+              "exposure": "exposed",
+              "ports": [
+                "https"
+              ],
+              "evidence": [
+                {
+                  "code": "ENDPOINT_PUBLIC",
+                  "params": {
+                    "from": "the internet",
+                    "to": "web"
+                  },
+                  "message": "web has a public endpoint."
+                },
+                {
+                  "code": "INTERNET_ROUTE",
+                  "params": {
+                    "zone": "web-subnet",
+                    "gateway": "igw"
+                  },
+                  "message": "web-subnet reaches the internet through igw."
+                },
+                {
+                  "code": "FILTER_ALLOWS",
+                  "params": {
+                    "filter": "web-sg",
+                    "direction": "inbound",
+                    "peer": "the internet",
+                    "rule": 0
+                  },
+                  "message": "web-sg allows inbound traffic with the internet (rule 0)."
+                },
+                {
+                  "code": "ANONYMOUS_ALLOWED",
+                  "params": {
+                    "component": "web"
+                  },
+                  "message": "web does not control access."
+                }
+              ]
+            }
+          ],
+          "assumptions": [],
+          "findings": [
+            {
+              "code": "EXPOSED_TO_INTERNET",
+              "severity": "info",
+              "subjects": [
+                "web"
+              ],
+              "params": {
+                "component": "web"
+              },
+              "message": "web is directly accessible from the internet."
+            },
+            {
+              "code": "ACCESS_NOT_REACHABLE",
+              "severity": "error",
+              "subjects": [
+                "web-app-metrics"
+              ],
+              "params": {
+                "intent": "web-app-metrics",
+                "from": "web",
+                "to": "app"
+              },
+              "message": "Intent web-app-metrics: app cannot be reached from web."
+            }
+          ]
+        },
+        {
+          "id": "address-plan",
+          "zones": [
+            {
+              "zone": "app-subnet",
+              "parent": "vpc",
+              "space": "10.0.2.0/24",
+              "size": 256
+            },
+            {
+              "zone": "other-vpc",
+              "space": "10.0.128.0/17",
+              "size": 32768
+            },
+            {
+              "zone": "outside",
+              "parent": "vpc",
+              "space": "10.1.0.0/24",
+              "size": 256
+            },
+            {
+              "zone": "overlapping",
+              "parent": "vpc",
+              "space": "10.0.2.128/25",
+              "size": 128
+            },
+            {
+              "zone": "vpc",
+              "space": "10.0.0.0/16",
+              "size": 65536
+            },
+            {
+              "zone": "web-subnet",
+              "parent": "vpc",
+              "space": "10.0.1.0/24",
+              "size": 256
+            }
+          ],
+          "findings": [
+            {
+              "code": "ADDRESS_SPACE_OVERLAP",
+              "severity": "error",
+              "subjects": [
+                "app-subnet",
+                "overlapping"
+              ],
+              "params": {
+                "zone": "app-subnet",
+                "space": "10.0.2.0/24",
+                "other": "overlapping",
+                "otherSpace": "10.0.2.128/25"
+              },
+              "message": "app-subnet (10.0.2.0/24) overlaps overlapping (10.0.2.128/25), which is placed in the same zone."
+            },
+            {
+              "code": "NETWORK_OVERLAP",
+              "severity": "warning",
+              "subjects": [
+                "other-vpc",
+                "vpc"
+              ],
+              "params": {
+                "zone": "other-vpc",
+                "space": "10.0.128.0/17",
+                "other": "vpc",
+                "otherSpace": "10.0.0.0/16"
+              },
+              "message": "The networks other-vpc (10.0.128.0/17) and vpc (10.0.0.0/16) overlap, so they cannot be connected directly."
+            },
+            {
+              "code": "ADDRESS_SPACE_OUTSIDE_PARENT",
+              "severity": "error",
+              "subjects": [
+                "outside"
+              ],
+              "params": {
+                "zone": "outside",
+                "space": "10.1.0.0/24",
+                "parent": "vpc",
+                "parentSpace": "10.0.0.0/16"
+              },
+              "message": "The address space 10.1.0.0/24 of zone outside is not within 10.0.0.0/16, the address space of vpc."
+            },
+            {
+              "code": "ROUTE_DESTINATION_INVALID",
+              "severity": "error",
+              "subjects": [
+                "rt"
+              ],
+              "params": {
+                "router": "rt",
+                "index": 2,
+                "destination": "10.0.0.0/33"
+              },
+              "message": "Route 2 of rt has the destination 10.0.0.0/33, which is neither internet nor an IPv4 range."
+            },
+            {
+              "code": "ROUTE_SHADOWED",
+              "severity": "warning",
+              "subjects": [
+                "rt"
+              ],
+              "params": {
+                "router": "rt",
+                "destination": "10.0.5.0/24",
+                "network": "vpc",
+                "space": "10.0.0.0/16"
+              },
+              "message": "Route 10.0.5.0/24 of rt lies within 10.0.0.0/16, the address space of vpc; the local route takes that traffic."
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

@@ -13,7 +13,7 @@
       "packs": [
         {
           "id": "aws",
-          "version": "0.2.0"
+          "version": "0.3.0"
         },
         {
           "id": "core",
@@ -1293,7 +1293,7 @@
       "packs": [
         {
           "id": "aws",
-          "version": "0.2.0"
+          "version": "0.3.0"
         },
         {
           "id": "core",
@@ -2737,6 +2737,1292 @@
               "message": "Intent users-write-bucket: users has no permission to write bucket."
             }
           ]
+        }
+      ]
+    },
+    "detailed": {
+      "library": {
+        "name": "solution-validator",
+        "version": "<version>"
+      },
+      "vocabulary": 2,
+      "packs": [
+        {
+          "id": "aws",
+          "version": "0.3.0"
+        },
+        {
+          "id": "core",
+          "version": "0.1.0"
+        }
+      ],
+      "options": {
+        "level": "detailed",
+        "analyses": [
+          "model-validity",
+          "connection-validity",
+          "access",
+          "address-plan"
+        ],
+        "assumptions": "strict"
+      },
+      "analyses": [
+        {
+          "id": "model-validity",
+          "valid": true,
+          "findings": []
+        },
+        {
+          "id": "connection-validity",
+          "intents": [
+            {
+              "intent": "api-on-http",
+              "verdict": "fail",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "fail",
+                  "evidence": [
+                    {
+                      "code": "NOT_ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "aws.api-gateway",
+                        "purpose": "port http"
+                      },
+                      "message": "aws.api-gateway does not accept port http from core.internet."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "api-to-fn",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.api-gateway",
+                        "toType": "aws.lambda",
+                        "purpose": "invoke",
+                        "rule": 0
+                      },
+                      "message": "aws.lambda accepts invoke from aws.api-gateway (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "bucket-to-table",
+              "verdict": "fail",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "fail",
+                  "evidence": [
+                    {
+                      "code": "NOT_ACCEPTED",
+                      "params": {
+                        "fromType": "aws.s3",
+                        "toType": "aws.dynamodb",
+                        "purpose": "write"
+                      },
+                      "message": "aws.dynamodb does not accept write from aws.s3."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "fn-to-internet",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.lambda",
+                        "toType": "core.internet",
+                        "purpose": "connect on port https",
+                        "rule": 0
+                      },
+                      "message": "core.internet accepts connect on port https from aws.lambda (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "fn-to-table",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.lambda",
+                        "toType": "aws.dynamodb",
+                        "purpose": "write",
+                        "rule": 0
+                      },
+                      "message": "aws.dynamodb accepts write from aws.lambda (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "fn-to-table-https",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.lambda",
+                        "toType": "aws.dynamodb",
+                        "purpose": "read on port https",
+                        "rule": 0
+                      },
+                      "message": "aws.dynamodb accepts read on port https from aws.lambda (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "fn-to-worker",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.lambda",
+                        "toType": "aws.lambda",
+                        "purpose": "invoke",
+                        "rule": 1
+                      },
+                      "message": "aws.lambda accepts invoke from aws.lambda (accepts rule 1)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "users-read-bucket",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "aws.s3",
+                        "purpose": "read on port https",
+                        "rule": 1
+                      },
+                      "message": "aws.s3 accepts read on port https from core.internet (accepts rule 1)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "users-to-api",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "aws.api-gateway",
+                        "purpose": "port https",
+                        "rule": 0
+                      },
+                      "message": "aws.api-gateway accepts port https from core.internet (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "users-to-api-invoke",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "aws.api-gateway",
+                        "purpose": "invoke on port 443",
+                        "rule": 0
+                      },
+                      "message": "aws.api-gateway accepts invoke on port 443 from core.internet (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "users-to-fn",
+              "verdict": "fail",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "fail",
+                  "evidence": [
+                    {
+                      "code": "NOT_ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "aws.lambda",
+                        "purpose": "invoke"
+                      },
+                      "message": "aws.lambda does not accept invoke from core.internet."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "users-to-table",
+              "verdict": "fail",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "fail",
+                  "evidence": [
+                    {
+                      "code": "NOT_ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "aws.dynamodb",
+                        "purpose": "read"
+                      },
+                      "message": "aws.dynamodb does not accept read from core.internet."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "users-write-bucket",
+              "verdict": "fail",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "fail",
+                  "evidence": [
+                    {
+                      "code": "NOT_ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "aws.s3",
+                        "purpose": "write"
+                      },
+                      "message": "aws.s3 does not accept write from core.internet."
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "summary": {
+            "pass": 8,
+            "fail": 5,
+            "undecidable": 0
+          },
+          "findings": [
+            {
+              "code": "CONNECTION_NOT_ACCEPTED",
+              "severity": "error",
+              "subjects": [
+                "api-on-http"
+              ],
+              "params": {
+                "intent": "api-on-http",
+                "fromType": "core.internet",
+                "toType": "aws.api-gateway",
+                "purpose": "port http"
+              },
+              "message": "Intent api-on-http: aws.api-gateway does not accept port http from core.internet."
+            },
+            {
+              "code": "CONNECTION_NOT_ACCEPTED",
+              "severity": "error",
+              "subjects": [
+                "bucket-to-table"
+              ],
+              "params": {
+                "intent": "bucket-to-table",
+                "fromType": "aws.s3",
+                "toType": "aws.dynamodb",
+                "purpose": "write"
+              },
+              "message": "Intent bucket-to-table: aws.dynamodb does not accept write from aws.s3."
+            },
+            {
+              "code": "CONNECTION_NOT_ACCEPTED",
+              "severity": "error",
+              "subjects": [
+                "users-to-fn"
+              ],
+              "params": {
+                "intent": "users-to-fn",
+                "fromType": "core.internet",
+                "toType": "aws.lambda",
+                "purpose": "invoke"
+              },
+              "message": "Intent users-to-fn: aws.lambda does not accept invoke from core.internet."
+            },
+            {
+              "code": "CONNECTION_NOT_ACCEPTED",
+              "severity": "error",
+              "subjects": [
+                "users-to-table"
+              ],
+              "params": {
+                "intent": "users-to-table",
+                "fromType": "core.internet",
+                "toType": "aws.dynamodb",
+                "purpose": "read"
+              },
+              "message": "Intent users-to-table: aws.dynamodb does not accept read from core.internet."
+            },
+            {
+              "code": "CONNECTION_NOT_ACCEPTED",
+              "severity": "error",
+              "subjects": [
+                "users-write-bucket"
+              ],
+              "params": {
+                "intent": "users-write-bucket",
+                "fromType": "core.internet",
+                "toType": "aws.s3",
+                "purpose": "write"
+              },
+              "message": "Intent users-write-bucket: aws.s3 does not accept write from core.internet."
+            }
+          ]
+        },
+        {
+          "id": "access",
+          "intents": [
+            {
+              "intent": "api-on-http",
+              "verdict": "fail",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "fail",
+                  "evidence": [
+                    {
+                      "code": "NOT_ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "aws.api-gateway",
+                        "purpose": "port http"
+                      },
+                      "message": "aws.api-gateway does not accept port http from core.internet."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "undecidable",
+                  "evidence": [
+                    {
+                      "code": "PROPERTY_UNSET",
+                      "params": {
+                        "component": "api",
+                        "property": "endpoint"
+                      },
+                      "message": "api does not set endpoint."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "api-to-fn",
+              "verdict": "undecidable",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.api-gateway",
+                        "toType": "aws.lambda",
+                        "purpose": "invoke",
+                        "rule": 0
+                      },
+                      "message": "aws.lambda accepts invoke from aws.api-gateway (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "forwarding",
+                  "verdict": "undecidable",
+                  "evidence": [
+                    {
+                      "code": "PROPERTY_UNSET",
+                      "params": {
+                        "component": "api",
+                        "property": "routes"
+                      },
+                      "message": "api does not set routes."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ENDPOINT_PUBLIC",
+                      "params": {
+                        "from": "api",
+                        "to": "fn"
+                      },
+                      "message": "fn has a public endpoint."
+                    }
+                  ]
+                },
+                {
+                  "check": "authorization",
+                  "verdict": "undecidable",
+                  "evidence": [
+                    {
+                      "code": "PROPERTY_UNSET",
+                      "params": {
+                        "component": "api",
+                        "property": "routes"
+                      },
+                      "message": "api does not set routes."
+                    },
+                    {
+                      "code": "NOT_PRINCIPAL",
+                      "params": {
+                        "from": "api"
+                      },
+                      "message": "api has no identity that can be granted access."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "bucket-to-table",
+              "verdict": "fail",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "fail",
+                  "evidence": [
+                    {
+                      "code": "NOT_ACCEPTED",
+                      "params": {
+                        "fromType": "aws.s3",
+                        "toType": "aws.dynamodb",
+                        "purpose": "write"
+                      },
+                      "message": "aws.dynamodb does not accept write from aws.s3."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ENDPOINT_PUBLIC",
+                      "params": {
+                        "from": "bucket",
+                        "to": "table"
+                      },
+                      "message": "table has a public endpoint."
+                    }
+                  ]
+                },
+                {
+                  "check": "authorization",
+                  "verdict": "fail",
+                  "evidence": [
+                    {
+                      "code": "NOT_PRINCIPAL",
+                      "params": {
+                        "from": "bucket"
+                      },
+                      "message": "bucket has no identity that can be granted access."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "fn-to-internet",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.lambda",
+                        "toType": "core.internet",
+                        "purpose": "connect on port https",
+                        "rule": 0
+                      },
+                      "message": "core.internet accepts connect on port https from aws.lambda (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ENDPOINT_PUBLIC",
+                      "params": {
+                        "from": "fn",
+                        "to": "users"
+                      },
+                      "message": "users has a public endpoint."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "fn-to-table",
+              "verdict": "undecidable",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.lambda",
+                        "toType": "aws.dynamodb",
+                        "purpose": "write",
+                        "rule": 0
+                      },
+                      "message": "aws.dynamodb accepts write from aws.lambda (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ENDPOINT_PUBLIC",
+                      "params": {
+                        "from": "fn",
+                        "to": "table"
+                      },
+                      "message": "table has a public endpoint."
+                    }
+                  ]
+                },
+                {
+                  "check": "authorization",
+                  "verdict": "undecidable",
+                  "evidence": [
+                    {
+                      "code": "PROPERTY_UNSET",
+                      "params": {
+                        "component": "fn",
+                        "property": "permissions"
+                      },
+                      "message": "fn does not set permissions."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "fn-to-table-https",
+              "verdict": "undecidable",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.lambda",
+                        "toType": "aws.dynamodb",
+                        "purpose": "read on port https",
+                        "rule": 0
+                      },
+                      "message": "aws.dynamodb accepts read on port https from aws.lambda (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ENDPOINT_PUBLIC",
+                      "params": {
+                        "from": "fn",
+                        "to": "table"
+                      },
+                      "message": "table has a public endpoint."
+                    },
+                    {
+                      "code": "PORT_OPEN",
+                      "params": {
+                        "to": "table",
+                        "port": "https"
+                      },
+                      "message": "table listens on port https."
+                    }
+                  ]
+                },
+                {
+                  "check": "authorization",
+                  "verdict": "undecidable",
+                  "evidence": [
+                    {
+                      "code": "PROPERTY_UNSET",
+                      "params": {
+                        "component": "fn",
+                        "property": "permissions"
+                      },
+                      "message": "fn does not set permissions."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "fn-to-worker",
+              "verdict": "undecidable",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.lambda",
+                        "toType": "aws.lambda",
+                        "purpose": "invoke",
+                        "rule": 1
+                      },
+                      "message": "aws.lambda accepts invoke from aws.lambda (accepts rule 1)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ENDPOINT_PUBLIC",
+                      "params": {
+                        "from": "fn",
+                        "to": "worker"
+                      },
+                      "message": "worker has a public endpoint."
+                    }
+                  ]
+                },
+                {
+                  "check": "authorization",
+                  "verdict": "undecidable",
+                  "evidence": [
+                    {
+                      "code": "PROPERTY_UNSET",
+                      "params": {
+                        "component": "fn",
+                        "property": "permissions"
+                      },
+                      "message": "fn does not set permissions."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "users-read-bucket",
+              "verdict": "undecidable",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "aws.s3",
+                        "purpose": "read on port https",
+                        "rule": 1
+                      },
+                      "message": "aws.s3 accepts read on port https from core.internet (accepts rule 1)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ENDPOINT_PUBLIC",
+                      "params": {
+                        "from": "users",
+                        "to": "bucket"
+                      },
+                      "message": "bucket has a public endpoint."
+                    },
+                    {
+                      "code": "PORT_OPEN",
+                      "params": {
+                        "to": "bucket",
+                        "port": "https"
+                      },
+                      "message": "bucket listens on port https."
+                    }
+                  ]
+                },
+                {
+                  "check": "authorization",
+                  "verdict": "undecidable",
+                  "evidence": [
+                    {
+                      "code": "NOT_PRINCIPAL",
+                      "params": {
+                        "from": "users"
+                      },
+                      "message": "users has no identity that can be granted access."
+                    },
+                    {
+                      "code": "PROPERTY_UNSET",
+                      "params": {
+                        "component": "bucket",
+                        "property": "publicAccess"
+                      },
+                      "message": "bucket does not set publicAccess."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "users-to-api",
+              "verdict": "undecidable",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "aws.api-gateway",
+                        "purpose": "port https",
+                        "rule": 0
+                      },
+                      "message": "aws.api-gateway accepts port https from core.internet (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "undecidable",
+                  "evidence": [
+                    {
+                      "code": "PROPERTY_UNSET",
+                      "params": {
+                        "component": "api",
+                        "property": "endpoint"
+                      },
+                      "message": "api does not set endpoint."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "users-to-api-invoke",
+              "verdict": "undecidable",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "aws.api-gateway",
+                        "purpose": "invoke on port 443",
+                        "rule": 0
+                      },
+                      "message": "aws.api-gateway accepts invoke on port 443 from core.internet (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "undecidable",
+                  "evidence": [
+                    {
+                      "code": "PROPERTY_UNSET",
+                      "params": {
+                        "component": "api",
+                        "property": "endpoint"
+                      },
+                      "message": "api does not set endpoint."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "users-to-fn",
+              "verdict": "fail",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "fail",
+                  "evidence": [
+                    {
+                      "code": "NOT_ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "aws.lambda",
+                        "purpose": "invoke"
+                      },
+                      "message": "aws.lambda does not accept invoke from core.internet."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ENDPOINT_PUBLIC",
+                      "params": {
+                        "from": "users",
+                        "to": "fn"
+                      },
+                      "message": "fn has a public endpoint."
+                    }
+                  ]
+                },
+                {
+                  "check": "authorization",
+                  "verdict": "fail",
+                  "evidence": [
+                    {
+                      "code": "NOT_PRINCIPAL",
+                      "params": {
+                        "from": "users"
+                      },
+                      "message": "users has no identity that can be granted access."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "users-to-table",
+              "verdict": "fail",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "fail",
+                  "evidence": [
+                    {
+                      "code": "NOT_ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "aws.dynamodb",
+                        "purpose": "read"
+                      },
+                      "message": "aws.dynamodb does not accept read from core.internet."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ENDPOINT_PUBLIC",
+                      "params": {
+                        "from": "users",
+                        "to": "table"
+                      },
+                      "message": "table has a public endpoint."
+                    }
+                  ]
+                },
+                {
+                  "check": "authorization",
+                  "verdict": "fail",
+                  "evidence": [
+                    {
+                      "code": "NOT_PRINCIPAL",
+                      "params": {
+                        "from": "users"
+                      },
+                      "message": "users has no identity that can be granted access."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "users-write-bucket",
+              "verdict": "fail",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "fail",
+                  "evidence": [
+                    {
+                      "code": "NOT_ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "aws.s3",
+                        "purpose": "write"
+                      },
+                      "message": "aws.s3 does not accept write from core.internet."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ENDPOINT_PUBLIC",
+                      "params": {
+                        "from": "users",
+                        "to": "bucket"
+                      },
+                      "message": "bucket has a public endpoint."
+                    }
+                  ]
+                },
+                {
+                  "check": "authorization",
+                  "verdict": "undecidable",
+                  "evidence": [
+                    {
+                      "code": "NOT_PRINCIPAL",
+                      "params": {
+                        "from": "users"
+                      },
+                      "message": "users has no identity that can be granted access."
+                    },
+                    {
+                      "code": "PROPERTY_UNSET",
+                      "params": {
+                        "component": "bucket",
+                        "property": "publicAccess"
+                      },
+                      "message": "bucket does not set publicAccess."
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "summary": {
+            "pass": 1,
+            "fail": 5,
+            "undecidable": 7
+          },
+          "exposure": [
+            {
+              "component": "api",
+              "exposure": "undecidable",
+              "evidence": [
+                {
+                  "code": "PROPERTY_UNSET",
+                  "params": {
+                    "component": "api",
+                    "property": "endpoint"
+                  },
+                  "message": "api does not set endpoint."
+                }
+              ]
+            },
+            {
+              "component": "bucket",
+              "exposure": "undecidable",
+              "evidence": [
+                {
+                  "code": "ENDPOINT_PUBLIC",
+                  "params": {
+                    "from": "the internet",
+                    "to": "bucket"
+                  },
+                  "message": "bucket has a public endpoint."
+                },
+                {
+                  "code": "PROPERTY_UNSET",
+                  "params": {
+                    "component": "bucket",
+                    "property": "publicAccess"
+                  },
+                  "message": "bucket does not set publicAccess."
+                }
+              ]
+            },
+            {
+              "component": "fn",
+              "exposure": "not-exposed",
+              "evidence": [
+                {
+                  "code": "ENDPOINT_PUBLIC",
+                  "params": {
+                    "from": "the internet",
+                    "to": "fn"
+                  },
+                  "message": "fn has a public endpoint."
+                },
+                {
+                  "code": "PUBLIC_ACCESS_OFF",
+                  "params": {
+                    "component": "fn"
+                  },
+                  "message": "fn does not allow public access."
+                }
+              ]
+            },
+            {
+              "component": "table",
+              "exposure": "not-exposed",
+              "evidence": [
+                {
+                  "code": "ENDPOINT_PUBLIC",
+                  "params": {
+                    "from": "the internet",
+                    "to": "table"
+                  },
+                  "message": "table has a public endpoint."
+                },
+                {
+                  "code": "PUBLIC_ACCESS_OFF",
+                  "params": {
+                    "component": "table"
+                  },
+                  "message": "table does not allow public access."
+                }
+              ]
+            },
+            {
+              "component": "worker",
+              "exposure": "not-exposed",
+              "evidence": [
+                {
+                  "code": "ENDPOINT_PUBLIC",
+                  "params": {
+                    "from": "the internet",
+                    "to": "worker"
+                  },
+                  "message": "worker has a public endpoint."
+                },
+                {
+                  "code": "PUBLIC_ACCESS_OFF",
+                  "params": {
+                    "component": "worker"
+                  },
+                  "message": "worker does not allow public access."
+                }
+              ]
+            }
+          ],
+          "assumptions": [],
+          "findings": [
+            {
+              "code": "ACCESS_PROPERTY_UNSET",
+              "severity": "warning",
+              "subjects": [
+                "api-to-fn"
+              ],
+              "params": {
+                "intent": "api-to-fn",
+                "component": "api",
+                "property": "routes"
+              },
+              "message": "Intent api-to-fn cannot be decided: api does not set routes."
+            },
+            {
+              "code": "ACCESS_PERMISSION_MISSING",
+              "severity": "error",
+              "subjects": [
+                "bucket-to-table"
+              ],
+              "params": {
+                "intent": "bucket-to-table",
+                "from": "bucket",
+                "to": "table",
+                "action": "write"
+              },
+              "message": "Intent bucket-to-table: bucket has no permission to write table."
+            },
+            {
+              "code": "ACCESS_PROPERTY_UNSET",
+              "severity": "warning",
+              "subjects": [
+                "fn-to-table"
+              ],
+              "params": {
+                "intent": "fn-to-table",
+                "component": "fn",
+                "property": "permissions"
+              },
+              "message": "Intent fn-to-table cannot be decided: fn does not set permissions."
+            },
+            {
+              "code": "ACCESS_PROPERTY_UNSET",
+              "severity": "warning",
+              "subjects": [
+                "fn-to-table-https"
+              ],
+              "params": {
+                "intent": "fn-to-table-https",
+                "component": "fn",
+                "property": "permissions"
+              },
+              "message": "Intent fn-to-table-https cannot be decided: fn does not set permissions."
+            },
+            {
+              "code": "ACCESS_PROPERTY_UNSET",
+              "severity": "warning",
+              "subjects": [
+                "fn-to-worker"
+              ],
+              "params": {
+                "intent": "fn-to-worker",
+                "component": "fn",
+                "property": "permissions"
+              },
+              "message": "Intent fn-to-worker cannot be decided: fn does not set permissions."
+            },
+            {
+              "code": "ACCESS_PROPERTY_UNSET",
+              "severity": "warning",
+              "subjects": [
+                "users-read-bucket"
+              ],
+              "params": {
+                "intent": "users-read-bucket",
+                "component": "bucket",
+                "property": "publicAccess"
+              },
+              "message": "Intent users-read-bucket cannot be decided: bucket does not set publicAccess."
+            },
+            {
+              "code": "ACCESS_PROPERTY_UNSET",
+              "severity": "warning",
+              "subjects": [
+                "users-to-api"
+              ],
+              "params": {
+                "intent": "users-to-api",
+                "component": "api",
+                "property": "endpoint"
+              },
+              "message": "Intent users-to-api cannot be decided: api does not set endpoint."
+            },
+            {
+              "code": "ACCESS_PROPERTY_UNSET",
+              "severity": "warning",
+              "subjects": [
+                "users-to-api-invoke"
+              ],
+              "params": {
+                "intent": "users-to-api-invoke",
+                "component": "api",
+                "property": "endpoint"
+              },
+              "message": "Intent users-to-api-invoke cannot be decided: api does not set endpoint."
+            },
+            {
+              "code": "ACCESS_PERMISSION_MISSING",
+              "severity": "error",
+              "subjects": [
+                "users-to-fn"
+              ],
+              "params": {
+                "intent": "users-to-fn",
+                "from": "users",
+                "to": "fn",
+                "action": "invoke"
+              },
+              "message": "Intent users-to-fn: users has no permission to invoke fn."
+            },
+            {
+              "code": "ACCESS_PERMISSION_MISSING",
+              "severity": "error",
+              "subjects": [
+                "users-to-table"
+              ],
+              "params": {
+                "intent": "users-to-table",
+                "from": "users",
+                "to": "table",
+                "action": "read"
+              },
+              "message": "Intent users-to-table: users has no permission to read table."
+            }
+          ]
+        },
+        {
+          "id": "address-plan",
+          "zones": [],
+          "findings": []
         }
       ]
     }

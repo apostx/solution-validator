@@ -8,6 +8,7 @@ export type FindingSource =
   | "model-validity"
   | "connection-validity"
   | "access"
+  | "address-plan"
   | "requirements";
 
 export interface FindingCodeDefinition {
@@ -279,12 +280,77 @@ export const FINDING_CODES = {
       "Intent {intent} cannot be decided: {to} controls access per action, but the intent states no action.",
     description: "Authorization is decided per action, and the intent only states a port.",
   },
+  ACCESS_ADDRESS_UNDECIDABLE: {
+    severity: "warning",
+    source: "access",
+    template:
+      "Intent {intent} cannot be decided: an address range in a traffic filter or route cannot be matched with the addresses given.",
+    description:
+      "A rule or route uses an address range, and the level or the known addresses are not enough to tell whether it applies.",
+  },
   EXPOSED_TO_INTERNET: {
     severity: "info",
     source: "access",
     template: "{component} is directly accessible from the internet.",
     description:
       "An anonymous caller outside the solution can reach the component and is allowed to use it.",
+  },
+
+  // Analysis: address-plan (detailed level)
+  ADDRESS_SPACE_MISSING: {
+    severity: "warning",
+    source: "address-plan",
+    template: "Zone {zone} has no address space, so its address plan cannot be checked.",
+    description: "The detailed level needs the zone's address space.",
+  },
+  ADDRESS_SPACE_INVALID: {
+    severity: "error",
+    source: "address-plan",
+    template:
+      "Zone {zone} has the address space {value}, which is not an IPv4 range such as 10.0.0.0/16.",
+    description: "Address spaces are IPv4 ranges in CIDR notation; IPv6 is not supported yet.",
+  },
+  ADDRESS_SPACE_HOST_BITS: {
+    severity: "warning",
+    source: "address-plan",
+    template:
+      "The address space {value} of zone {zone} is not a network address; it stands for {network}.",
+    description: "The range has host bits set; most providers reject it.",
+  },
+  ADDRESS_SPACE_OUTSIDE_PARENT: {
+    severity: "error",
+    source: "address-plan",
+    template:
+      "The address space {space} of zone {zone} is not within {parentSpace}, the address space of {parent}.",
+    description:
+      "A zone's address space must lie within the address space of the zone it is placed in.",
+  },
+  ADDRESS_SPACE_OVERLAP: {
+    severity: "error",
+    source: "address-plan",
+    template: "{zone} ({space}) overlaps {other} ({otherSpace}), which is placed in the same zone.",
+    description: "Zones placed in the same zone must not share addresses.",
+  },
+  NETWORK_OVERLAP: {
+    severity: "warning",
+    source: "address-plan",
+    template:
+      "The networks {zone} ({space}) and {other} ({otherSpace}) overlap, so they cannot be connected directly.",
+    description: "Overlapping networks cannot be peered or routed to each other.",
+  },
+  ROUTE_DESTINATION_INVALID: {
+    severity: "error",
+    source: "address-plan",
+    template:
+      "Route {index} of {router} has the destination {destination}, which is neither internet nor an IPv4 range.",
+    description: "Route destinations are internet or IPv4 ranges in CIDR notation.",
+  },
+  ROUTE_SHADOWED: {
+    severity: "warning",
+    source: "address-plan",
+    template:
+      "Route {destination} of {router} lies within {space}, the address space of {network}; the local route takes that traffic.",
+    description: "A route inside the network's own address space never applies.",
   },
 
   // Tasks and requirement checks
@@ -526,6 +592,24 @@ export const EVIDENCE_CODES = {
   STATELESS_RETURN: {
     template: "{filter} is stateless, so the return traffic needs a rule of its own.",
     description: "Stateless filters check the replies as well, on any port.",
+  },
+  CIDR_NEEDS_DETAILED: {
+    template:
+      "A rule names the address range {cidr}; comparing it with {party} needs the detailed level.",
+    description: "Address ranges other than 0.0.0.0/0 are only matched at the detailed level.",
+  },
+  PEER_ADDRESS_UNKNOWN: {
+    template: "The address of {party} is not known, so it cannot be compared with {cidr}.",
+    description: "The party is outside every zone, or its zones have no address space.",
+  },
+  CIDR_PARTLY_COVERS: {
+    template: "{cidr} covers only part of {zone} ({space}).",
+    description: "Some addresses of the zone match the rule and some do not.",
+  },
+  ROUTE_AMBIGUOUS: {
+    template:
+      "{router}, the router of {zone}, sends some public address ranges to another gateway, and the destination's address is not known.",
+    description: "A more specific route may catch the traffic.",
   },
   NOT_REACHABLE_FROM_INTERNET: {
     template: "{component} cannot be reached from the internet on any port.",

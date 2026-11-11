@@ -1,7 +1,7 @@
 {
   "id": "web-and-workers",
   "title": "Web tier and private workers (VPC)",
-  "description": "A VPC with a public subnet (web servers, NAT gateway), a private subnet (app servers, a VPC-attached worker function) and an isolated subnet. Drag components between subnets, edit security group rules and route tables, and watch the arrows: the batch job in the isolated subnet cannot reach DynamoDB, and the users cannot reach the private app servers.",
+  "description": "A VPC with a public subnet (web servers, NAT gateway), a private subnet (app servers, a VPC-attached worker function) and an isolated subnet. Drag components between subnets, edit security group rules and route tables, and watch the arrows: the batch job in the isolated subnet cannot reach DynamoDB, and the users cannot reach the private app servers. Switch the level to detailed to check the address plan as well: try an overlapping subnet range or a security group rule with an address range.",
   "packs": ["core", "aws"],
   "solution": {
     "schemaVersion": 1,
@@ -31,6 +31,9 @@
             "width": 1020,
             "height": 560
           }
+        },
+        "properties": {
+          "cidrBlock": "10.0.0.0/16"
         }
       },
       {
@@ -47,6 +50,9 @@
             "width": 450,
             "height": 230
           }
+        },
+        "properties": {
+          "cidrBlock": "10.0.1.0/24"
         }
       },
       {
@@ -63,6 +69,9 @@
             "width": 460,
             "height": 230
           }
+        },
+        "properties": {
+          "cidrBlock": "10.0.2.0/24"
         }
       },
       {
@@ -79,6 +88,9 @@
             "width": 460,
             "height": 220
           }
+        },
+        "properties": {
+          "cidrBlock": "10.0.3.0/24"
         }
       },
       {

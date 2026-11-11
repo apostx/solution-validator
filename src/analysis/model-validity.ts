@@ -4,6 +4,7 @@ import { issuesToFindings, validateSchema } from "../core/schema-issues";
 import type { Component } from "../core/solution-schema";
 import { createFinding, type Finding } from "../messages/finding";
 import { compareStrings } from "../util/compare";
+import { isCidr } from "../util/ipv4";
 
 /**
  * Checks what the solution schema alone cannot: packs, unique ids, known types, property values
@@ -268,7 +269,7 @@ function checkNetworkReferences(model: SolutionModel): Finding[] {
           typeof rule === "object" && rule !== null
             ? (rule as Record<string, unknown>).peer
             : undefined;
-        if (typeof peer !== "string" || RULE_PEERS.includes(peer)) return;
+        if (typeof peer !== "string" || RULE_PEERS.includes(peer) || isCidr(peer)) return;
         if (model.getComponent(peer) === undefined) {
           findings.push(
             createFinding("REFERENCE_UNKNOWN", [component.id], {
