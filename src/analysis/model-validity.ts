@@ -14,6 +14,7 @@ export function checkModelValidity(model: SolutionModel): Finding[] {
     ...checkPacks(model),
     ...checkIds(model),
     ...checkComponents(model),
+    ...checkNetworkReferences(model),
     ...checkIntents(model),
   ];
 }
@@ -188,6 +189,95 @@ function checkIntents(model: SolutionModel): Finding[] {
       findings.push(
         createFinding("PORT_UNKNOWN", [intent.id], { intent: intent.id, port: intent.port }),
       );
+    }
+  });
+  return findings;
+}
+
+const RULE_PEERS = ["any", "internet"];
+
+/**
+ * Checks what network traits refer to: routers serve zones and route to gateways, gateways
+ * connect zones, traffic filters attach to the kinds their `attachTo` allows, and rule peers are
+ * `any`, `internet` or an existing id. Missing ids are reported by the property schemas.
+ */
+function checkNetworkReferences(model: SolutionModel): Finding[] {
+  const findings: Finding[] = [];
+  const isZone = (id: string) => {
+    const component = model.getComponent(id);
+    return component !== undefined && model.getType(component)?.traits.zone !== undefined;
+  };
+  const isGateway = (id: string) => {
+    const component = model.getComponent(id);
+    return component !== undefined && model.getType(component)?.traits.gateway !== undefined;
+  };
+
+  model.components.forEach((component, index) => {
+    const type = model.getType(component);
+    if (!type) return;
+    const properties = component.properties ?? {};
+    const base = `/components/${index}/properties`;
+    const values = (binding: { property: string } | undefined) =>
+      binding && Array.isArray(properties[binding.property])
+        ? (properties[binding.property] as unknown[])
+        : [];
+    const invalid = (path: string, expected: string, id: string) =>
+      findings.push(
+        createFinding("NETWORK_REFERENCE_INVALID", [component.id], { path, expected, id }),
+      );
+    const check = (
+      binding: { property: string } | undefined,
+      expected: string,
+      valid: (id: string) => boolean,
+      field?: string,
+    ) => {
+      values(binding).forEach((item, position) => {
+        const value =
+          field === undefined
+            ? item
+            : typeof item === "object" && item !== null
+              ? (item as Record<string, unknown>)[field]
+              : undefined;
+        if (typeof value !== "string" || model.getComponent(value) === undefined) return;
+        if (!valid(value)) {
+          const path = `${base}/${binding?.property}/${position}${field ? `/${field}` : ""}`;
+          invalid(path, expected, value);
+        }
+      });
+    };
+
+    const { router, gateway } = type.traits;
+    const filter = type.traits["traffic-filter"];
+    if (router) {
+      check(router.zones, "a zone", isZone);
+      check(router.routes, "a gateway", isGateway, "gateway");
+    }
+    if (gateway) check(gateway.connects, "a zone", isZone);
+    if (filter) {
+      const zones = filter.attachTo.includes("zone");
+      const components = filter.attachTo.includes("component");
+      const expected =
+        zones && components
+          ? "a component or a zone"
+          : zones
+            ? "a zone"
+            : "a component that is not a zone";
+      check(filter.targets, expected, (id) => (isZone(id) ? zones : components));
+      values(filter.rules).forEach((rule, position) => {
+        const peer =
+          typeof rule === "object" && rule !== null
+            ? (rule as Record<string, unknown>).peer
+            : undefined;
+        if (typeof peer !== "string" || RULE_PEERS.includes(peer)) return;
+        if (model.getComponent(peer) === undefined) {
+          findings.push(
+            createFinding("REFERENCE_UNKNOWN", [component.id], {
+              path: `${base}/${filter.rules?.property}/${position}/peer`,
+              id: peer,
+            }),
+          );
+        }
+      });
     }
   });
   return findings;

@@ -3,10 +3,15 @@ import { LevelName, Name, PropertyName } from "./ids";
 
 /**
  * The version of the trait vocabulary this library implements. A pack declares the version it
- * needs; loading fails if it is newer. The vocabulary only grows: new traits and new optional
- * parameters raise the version, existing meanings do not change.
+ * needs; loading fails if it is newer. The vocabulary grows: new traits and new optional
+ * parameters raise the version, and the meaning of implemented behavior does not change.
+ *
+ * - 1: all nine traits; behavior for endpoint, forwarder, principal and access-controlled.
+ * - 2: behavior for the network traits (zone, gateway, router, traffic-filter, group);
+ *   `endpoint.via`, `router.zones` and `traffic-filter.targets` added; `group.zones` removed
+ *   (placement says where a group runs). Version 1 packs used no network trait behavior.
  */
-export const TRAIT_VOCABULARY_VERSION = 1;
+export const TRAIT_VOCABULARY_VERSION = 2;
 
 /** Binds a trait parameter to a property of the component, for example its endpoint type. */
 export const Binding = Type.Object({ property: PropertyName }, { additionalProperties: false });
@@ -21,6 +26,7 @@ const closed = { additionalProperties: false } as const;
 export const VISIBILITIES = ["public", "private", "none"] as const;
 export const GATEWAY_DIRECTIONS = ["both", "outbound-only"] as const;
 export const FILTER_ATTACHMENTS = ["component", "zone", "self"] as const;
+export const ENDPOINT_LOCATIONS = ["placement", "provider"] as const;
 
 /**
  * Parameter schemas of the traits. Behavior is implemented per iteration (see the roadmap);
@@ -33,6 +39,13 @@ export const TraitParameters = {
       visibility: bindable(Type.Enum([...VISIBILITIES])),
       /** Ports the endpoint listens on. Omitted: any port. */
       ports: Type.Optional(Type.Array(Name, { minItems: 1 })),
+      /**
+       * Where the endpoint is reached. `placement` (default): inside the zones the component is
+       * placed in. `provider`: at a provider-managed service endpoint outside every zone, even
+       * when the component is placed; placement then only affects the component's own outbound
+       * traffic (for example a function attached to a private network).
+       */
+      via: Type.Optional(Type.Enum([...ENDPOINT_LOCATIONS])),
     },
     closed,
   ),
@@ -80,11 +93,17 @@ export const TraitParameters = {
     },
     closed,
   ),
-  /** Connects a zone to another zone or to an external network. */
+  /**
+   * Connects networks to the internet. `both`: traffic may enter and leave. `outbound-only`:
+   * connections may only be opened from inside (network address translation).
+   */
   gateway: Type.Object(
     {
       direction: bindable(Type.Enum([...GATEWAY_DIRECTIONS])),
-      /** Array property with the ids of the components the gateway connects. */
+      /**
+       * Array property with the ids of the zones the gateway is attached to. A gateway without it
+       * belongs to the network of the zone it is placed in.
+       */
       connects: Type.Optional(Binding),
     },
     closed,
@@ -92,18 +111,36 @@ export const TraitParameters = {
   /** Decides which gateway traffic leaving a zone uses. */
   router: Type.Object(
     {
-      /** Array property with the routes (destination and gateway). */
+      /**
+       * Array property with the routes: objects with `destination` (`internet`) and `gateway`
+       * (a component id).
+       */
       routes: Binding,
+      /**
+       * Array property with the ids of the zones the router serves. A zone without its own router
+       * uses the router of the nearest zone it is placed in.
+       */
+      zones: Type.Optional(Binding),
     },
     closed,
   ),
   /** Allows or denies traffic by source, destination and port. */
   "traffic-filter": Type.Object(
     {
+      /** Stateful filters allow the return traffic of allowed connections. */
       stateful: Type.Boolean(),
+      /** What the filter can be attached to; `self` filters traffic passing through it. */
       attachTo: Type.Array(Type.Enum([...FILTER_ATTACHMENTS]), { minItems: 1 }),
-      /** Array property with the rules. */
+      /**
+       * Array property with the rules, evaluated in order, the first match deciding: objects with
+       * `direction` (`inbound` or `outbound`), `peer` (`any`, `internet`, or the id of a
+       * component, zone or filter), optional `ports` (port ids; omitted: all ports) and optional
+       * `effect` (`allow`, the default, or `deny`).
+       */
       rules: Type.Optional(Binding),
+      /** Array property with the ids of the components or zones the filter is attached to. */
+      targets: Type.Optional(Binding),
+      /** What happens to traffic no rule matches. Default: deny in both directions. */
       default: Type.Optional(
         Type.Object(
           { inbound: Type.Enum(["allow", "deny"]), outbound: Type.Enum(["allow", "deny"]) },
@@ -116,11 +153,14 @@ export const TraitParameters = {
   /** A set of equivalent instances. */
   group: Type.Object(
     {
-      /** Array property with the member component ids. */
+      /**
+       * Array property with the member component ids. An intent to or from the group stands for
+       * every member. Without members, the group runs its instances in the zones it is placed
+       * in.
+       */
       members: Type.Optional(Binding),
+      /** Number of instances; informational. */
       size: Type.Optional(bindable(Type.Integer({ minimum: 0 }))),
-      /** Array property with the ids of the zones the group spans. */
-      zones: Type.Optional(Binding),
     },
     closed,
   ),
@@ -206,13 +246,30 @@ export function bindingSlots(traits: Traits): BindingSlot[] {
     add("gateway", "direction", t.gateway.direction, { kind: "enum", values: GATEWAY_DIRECTIONS });
     add("gateway", "connects", t.gateway.connects, { kind: "references" });
   }
-  if (t.router) add("router", "routes", t.router.routes, { kind: "objects", fields: [] });
+  if (t.router) {
+    add("router", "routes", t.router.routes, {
+      kind: "objects",
+      fields: [
+        { name: "destination", reference: false },
+        { name: "gateway", reference: true },
+      ],
+    });
+    add("router", "zones", t.router.zones, { kind: "references" });
+  }
   const filter = t["traffic-filter"];
-  if (filter) add("traffic-filter", "rules", filter.rules, { kind: "objects", fields: [] });
+  if (filter) {
+    add("traffic-filter", "rules", filter.rules, {
+      kind: "objects",
+      fields: [
+        { name: "direction", reference: false },
+        { name: "peer", reference: false },
+      ],
+    });
+    add("traffic-filter", "targets", filter.targets, { kind: "references" });
+  }
   if (t.group) {
     add("group", "members", t.group.members, { kind: "references" });
     add("group", "size", t.group.size, { kind: "integer" });
-    add("group", "zones", t.group.zones, { kind: "references" });
   }
   return slots;
 }
