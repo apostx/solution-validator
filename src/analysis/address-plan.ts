@@ -157,7 +157,8 @@ function checkRoutes(
     routes.value.forEach((route, index) => {
       if (!isObject(route) || typeof route.destination !== "string") return;
       const destination = route.destination;
-      if (destination === "internet") return;
+      // Internet routes and service routes (a component id) carry no address range.
+      if (destination === "internet" || model.getComponent(destination) !== undefined) return;
       const cidr = parseCidr(destination);
       if (!cidr) {
         findings.push(

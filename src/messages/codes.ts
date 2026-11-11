@@ -564,6 +564,15 @@ export const EVIDENCE_CODES = {
       "{gateway} only allows outbound connections, so {zone} cannot be reached from the internet.",
     description: "Inbound traffic needs a gateway that allows both directions.",
   },
+  PRIVATE_SERVICE_ROUTE: {
+    template: "{zone} reaches {service} privately through {gateway}.",
+    description:
+      "A route names the service, and its gateway reaches the service without the internet.",
+  },
+  SERVICE_NOT_SERVED: {
+    template: "{gateway} does not reach {service}.",
+    description: "A route sends traffic for a service to a gateway that does not list it.",
+  },
   NAT_WITHOUT_INTERNET: {
     template:
       "{gateway} sits in {zone}, which has no route to the internet through a gateway that allows both directions.",

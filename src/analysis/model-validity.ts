@@ -252,6 +252,29 @@ function checkNetworkReferences(model: SolutionModel): Finding[] {
     if (router) {
       check(router.zones, "a zone", isZone);
       check(router.routes, "a gateway", isGateway, "gateway");
+      values(router.routes).forEach((route, position) => {
+        const destination =
+          typeof route === "object" && route !== null
+            ? (route as Record<string, unknown>).destination
+            : undefined;
+        // Address ranges, valid or not, are the address plan's concern.
+        if (
+          typeof destination !== "string" ||
+          destination === "internet" ||
+          isCidr(destination) ||
+          /^[0-9.]+\/[0-9]+$/.test(destination)
+        ) {
+          return;
+        }
+        if (model.getComponent(destination) === undefined) {
+          findings.push(
+            createFinding("REFERENCE_UNKNOWN", [component.id], {
+              path: `${base}/${router.routes?.property}/${position}/destination`,
+              id: destination,
+            }),
+          );
+        }
+      });
     }
     if (gateway) check(gateway.connects, "a zone", isZone);
     if (filter) {
