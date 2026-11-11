@@ -97,6 +97,18 @@ Trade-off: the vision's own example (network placement, Security Group and ACL r
 
 Implements `zone`, `gateway`, `router`, `traffic-filter` and `group` at the logical level. Adds the AWS network types to the `aws` pack: VPC, subnet, internet gateway, NAT gateway, route table, security group, network ACL and Auto Scaling group, plus Lambda placed in a VPC. This covers the vision's simple-mode example. To be scoped when Iteration 4 is done.
 
+**Proposed scope (awaiting approval):**
+
+- **Library:** behavior for the network traits at the logical level.
+  - Zones: membership through `placement`, nested zones (subnet in VPC). A private endpoint becomes reachable from components in the same network.
+  - Gateways and routers: internet access only through a route to an internet gateway; `outbound-only` gateways (NAT) allow outbound connections but not inbound ones.
+  - Traffic filters: rules with symbolic sources and destinations (`internet`, a zone, a component or a filter) and ports, stateful versus stateless, attached to components, zones or themselves.
+  - Groups: an intent to or from a group stands for its members.
+  - The connectivity check and the exposure facts use all of the above; the detailed level (CIDR, route matching) stays out.
+- **Packs:** `aws` gains VPC, subnet, internet gateway, NAT gateway, route table, security group, network ACL and Auto Scaling group; Lambda can be placed in a VPC with security groups.
+- **Demo:** zones drawn as nested areas; components dragged into them; filters shown on the components or zones they attach to.
+- **Open questions to decide first:** (a) how a filter is attached: a property of the protected component or zone that lists filter ids, or the filter's own property that lists its targets; (b) the symbolic source vocabulary for rules; (c) whether a verdict through a group requires every member or at least one member to pass.
+
 ## Backlog (not scheduled; each item needs approval)
 
 - A second pack (Azure or on-premises), to prove in practice that the model is generic
