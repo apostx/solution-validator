@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.0](https://github.com/apostx/solution-validator/compare/v0.4.0...v0.5.0) (2026-11-11)
+
+
+### Features
+
+* network traits (iteration 5) ([#10](https://github.com/apostx/solution-validator/issues/10)) ([e665eb9](https://github.com/apostx/solution-validator/commit/e665eb97a49f5e0049a037ad215889f503f24295))
+
 ## [0.4.0](https://github.com/apostx/solution-validator/compare/v0.3.0...v0.4.0) (2026-11-11)
 
 
