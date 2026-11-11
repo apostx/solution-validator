@@ -1,0 +1,3209 @@
+{
+  "parse": {
+    "ok": true,
+    "findings": []
+  },
+  "analysis": {
+    "strict": {
+      "library": {
+        "name": "solution-validator",
+        "version": "<version>"
+      },
+      "vocabulary": 3,
+      "packs": [
+        {
+          "id": "aws",
+          "version": "0.4.0"
+        },
+        {
+          "id": "core",
+          "version": "0.2.0"
+        }
+      ],
+      "options": {
+        "level": "logical",
+        "analyses": [
+          "model-validity",
+          "connection-validity",
+          "access"
+        ],
+        "assumptions": "strict"
+      },
+      "analyses": [
+        {
+          "id": "model-validity",
+          "valid": true,
+          "findings": []
+        },
+        {
+          "id": "connection-validity",
+          "intents": [
+            {
+              "intent": "alb-app",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.alb",
+                        "toType": "aws.autoscaling-group",
+                        "purpose": "invoke on port http",
+                        "rule": 0
+                      },
+                      "message": "aws.autoscaling-group accepts invoke on port http from aws.alb (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "app-db",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.autoscaling-group",
+                        "toType": "aws.rds",
+                        "purpose": "read on port postgresql",
+                        "rule": 0
+                      },
+                      "message": "aws.rds accepts read on port postgresql from aws.autoscaling-group (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "cdn-alb",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.cloudfront",
+                        "toType": "aws.alb",
+                        "purpose": "invoke on port https",
+                        "rule": 0
+                      },
+                      "message": "aws.alb accepts invoke on port https from aws.cloudfront (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "cdn-assets",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.cloudfront",
+                        "toType": "aws.s3",
+                        "purpose": "read",
+                        "rule": 2
+                      },
+                      "message": "aws.s3 accepts read from aws.cloudfront (accepts rule 2)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "users-assets",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "aws.s3",
+                        "purpose": "read on port https",
+                        "rule": 1
+                      },
+                      "message": "aws.s3 accepts read on port https from core.internet (accepts rule 1)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "users-cdn",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "aws.cloudfront",
+                        "purpose": "port https",
+                        "rule": 0
+                      },
+                      "message": "aws.cloudfront accepts port https from core.internet (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "users-db",
+              "verdict": "fail",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "fail",
+                  "evidence": [
+                    {
+                      "code": "NOT_ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "aws.rds",
+                        "purpose": "read on port postgresql"
+                      },
+                      "message": "aws.rds does not accept read on port postgresql from core.internet."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "worker-orders",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.lambda",
+                        "toType": "aws.dynamodb",
+                        "purpose": "write",
+                        "rule": 0
+                      },
+                      "message": "aws.dynamodb accepts write from aws.lambda (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "worker-reports",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.lambda",
+                        "toType": "aws.dynamodb",
+                        "purpose": "read",
+                        "rule": 0
+                      },
+                      "message": "aws.dynamodb accepts read from aws.lambda (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "summary": {
+            "pass": 8,
+            "fail": 1,
+            "undecidable": 0
+          },
+          "findings": [
+            {
+              "code": "CONNECTION_NOT_ACCEPTED",
+              "severity": "error",
+              "subjects": [
+                "users-db"
+              ],
+              "params": {
+                "intent": "users-db",
+                "fromType": "core.internet",
+                "toType": "aws.rds",
+                "purpose": "read on port postgresql"
+              },
+              "message": "Intent users-db: aws.rds does not accept read on port postgresql from core.internet."
+            }
+          ]
+        },
+        {
+          "id": "access",
+          "intents": [
+            {
+              "intent": "alb-app",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.alb",
+                        "toType": "aws.autoscaling-group",
+                        "purpose": "invoke on port http",
+                        "rule": 0
+                      },
+                      "message": "aws.autoscaling-group accepts invoke on port http from aws.alb (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "forwarding",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ROUTE_FOUND",
+                      "params": {
+                        "from": "alb",
+                        "to": "app"
+                      },
+                      "message": "alb has a route to app."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "SAME_NETWORK",
+                      "params": {
+                        "from": "alb",
+                        "to": "app",
+                        "network": "vpc"
+                      },
+                      "message": "alb and app are in the same network, vpc."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "alb-sg",
+                        "direction": "outbound",
+                        "peer": "app",
+                        "rule": 1
+                      },
+                      "message": "alb-sg allows outbound traffic with app (rule 1)."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "app-sg",
+                        "direction": "inbound",
+                        "peer": "alb",
+                        "rule": 0
+                      },
+                      "message": "app-sg allows inbound traffic with alb (rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "app-db",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.autoscaling-group",
+                        "toType": "aws.rds",
+                        "purpose": "read on port postgresql",
+                        "rule": 0
+                      },
+                      "message": "aws.rds accepts read on port postgresql from aws.autoscaling-group (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "SAME_NETWORK",
+                      "params": {
+                        "from": "app",
+                        "to": "db",
+                        "network": "vpc"
+                      },
+                      "message": "app and db are in the same network, vpc."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "app-sg",
+                        "direction": "outbound",
+                        "peer": "db",
+                        "rule": 1
+                      },
+                      "message": "app-sg allows outbound traffic with db (rule 1)."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "db-sg",
+                        "direction": "inbound",
+                        "peer": "app",
+                        "rule": 0
+                      },
+                      "message": "db-sg allows inbound traffic with app (rule 0)."
+                    },
+                    {
+                      "code": "PORT_OPEN",
+                      "params": {
+                        "to": "db",
+                        "port": "postgresql"
+                      },
+                      "message": "db listens on port postgresql."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "cdn-alb",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.cloudfront",
+                        "toType": "aws.alb",
+                        "purpose": "invoke on port https",
+                        "rule": 0
+                      },
+                      "message": "aws.alb accepts invoke on port https from aws.cloudfront (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "forwarding",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ROUTE_FOUND",
+                      "params": {
+                        "from": "cdn",
+                        "to": "alb"
+                      },
+                      "message": "cdn has a route to alb."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "INTERNET_ROUTE",
+                      "params": {
+                        "zone": "public",
+                        "gateway": "igw"
+                      },
+                      "message": "public reaches the internet through igw."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "alb-sg",
+                        "direction": "inbound",
+                        "peer": "cdn",
+                        "rule": 0
+                      },
+                      "message": "alb-sg allows inbound traffic with cdn (rule 0)."
+                    },
+                    {
+                      "code": "PORT_OPEN",
+                      "params": {
+                        "to": "alb",
+                        "port": "https"
+                      },
+                      "message": "alb listens on port https."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "cdn-assets",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.cloudfront",
+                        "toType": "aws.s3",
+                        "purpose": "read",
+                        "rule": 2
+                      },
+                      "message": "aws.s3 accepts read from aws.cloudfront (accepts rule 2)."
+                    }
+                  ]
+                },
+                {
+                  "check": "forwarding",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ROUTE_FOUND",
+                      "params": {
+                        "from": "cdn",
+                        "to": "assets"
+                      },
+                      "message": "cdn has a route to assets."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ENDPOINT_PUBLIC",
+                      "params": {
+                        "from": "cdn",
+                        "to": "assets"
+                      },
+                      "message": "assets has a public endpoint."
+                    }
+                  ]
+                },
+                {
+                  "check": "authorization",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "FORWARDER_AUTHORIZED",
+                      "params": {
+                        "from": "cdn",
+                        "to": "assets"
+                      },
+                      "message": "cdn's route to assets also authorizes it."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "users-assets",
+              "verdict": "fail",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "aws.s3",
+                        "purpose": "read on port https",
+                        "rule": 1
+                      },
+                      "message": "aws.s3 accepts read on port https from core.internet (accepts rule 1)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ENDPOINT_PUBLIC",
+                      "params": {
+                        "from": "users",
+                        "to": "assets"
+                      },
+                      "message": "assets has a public endpoint."
+                    },
+                    {
+                      "code": "PORT_OPEN",
+                      "params": {
+                        "to": "assets",
+                        "port": "https"
+                      },
+                      "message": "assets listens on port https."
+                    }
+                  ]
+                },
+                {
+                  "check": "authorization",
+                  "verdict": "fail",
+                  "evidence": [
+                    {
+                      "code": "NOT_PRINCIPAL",
+                      "params": {
+                        "from": "users"
+                      },
+                      "message": "users has no identity that can be granted access."
+                    },
+                    {
+                      "code": "PUBLIC_DENIED",
+                      "params": {
+                        "to": "assets",
+                        "action": "read"
+                      },
+                      "message": "assets does not allow public read."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "users-cdn",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "aws.cloudfront",
+                        "purpose": "port https",
+                        "rule": 0
+                      },
+                      "message": "aws.cloudfront accepts port https from core.internet (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ENDPOINT_PUBLIC",
+                      "params": {
+                        "from": "users",
+                        "to": "cdn"
+                      },
+                      "message": "cdn has a public endpoint."
+                    },
+                    {
+                      "code": "PORT_OPEN",
+                      "params": {
+                        "to": "cdn",
+                        "port": "https"
+                      },
+                      "message": "cdn listens on port https."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "users-db",
+              "verdict": "fail",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "fail",
+                  "evidence": [
+                    {
+                      "code": "NOT_ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "aws.rds",
+                        "purpose": "read on port postgresql"
+                      },
+                      "message": "aws.rds does not accept read on port postgresql from core.internet."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "fail",
+                  "evidence": [
+                    {
+                      "code": "ENDPOINT_PRIVATE",
+                      "params": {
+                        "from": "users",
+                        "to": "db"
+                      },
+                      "message": "db has a private endpoint, and users is not inside its network."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "worker-orders",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.lambda",
+                        "toType": "aws.dynamodb",
+                        "purpose": "write",
+                        "rule": 0
+                      },
+                      "message": "aws.dynamodb accepts write from aws.lambda (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "PRIVATE_SERVICE_ROUTE",
+                      "params": {
+                        "zone": "private",
+                        "gateway": "ddb-endpoint",
+                        "service": "orders"
+                      },
+                      "message": "private reaches orders privately through ddb-endpoint."
+                    },
+                    {
+                      "code": "ENDPOINT_PUBLIC",
+                      "params": {
+                        "from": "worker",
+                        "to": "orders"
+                      },
+                      "message": "orders has a public endpoint."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "worker-sg",
+                        "direction": "outbound",
+                        "peer": "orders",
+                        "rule": 0
+                      },
+                      "message": "worker-sg allows outbound traffic with orders (rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "authorization",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "GRANT_FOUND",
+                      "params": {
+                        "from": "worker",
+                        "to": "orders",
+                        "access": "read-write",
+                        "action": "write"
+                      },
+                      "message": "worker has read-write access to orders, which allows write."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "worker-reports",
+              "verdict": "fail",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.lambda",
+                        "toType": "aws.dynamodb",
+                        "purpose": "read",
+                        "rule": 0
+                      },
+                      "message": "aws.dynamodb accepts read from aws.lambda (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "fail",
+                  "evidence": [
+                    {
+                      "code": "SERVICE_NOT_SERVED",
+                      "params": {
+                        "gateway": "ddb-endpoint",
+                        "service": "reports"
+                      },
+                      "message": "ddb-endpoint does not reach reports."
+                    },
+                    {
+                      "code": "ENDPOINT_PUBLIC",
+                      "params": {
+                        "from": "worker",
+                        "to": "reports"
+                      },
+                      "message": "reports has a public endpoint."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "worker-sg",
+                        "direction": "outbound",
+                        "peer": "reports",
+                        "rule": 0
+                      },
+                      "message": "worker-sg allows outbound traffic with reports (rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "authorization",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "GRANT_FOUND",
+                      "params": {
+                        "from": "worker",
+                        "to": "reports",
+                        "access": "read",
+                        "action": "read"
+                      },
+                      "message": "worker has read access to reports, which allows read."
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "summary": {
+            "pass": 6,
+            "fail": 3,
+            "undecidable": 0
+          },
+          "exposure": [
+            {
+              "component": "alb",
+              "exposure": "exposed",
+              "ports": [
+                "https"
+              ],
+              "evidence": [
+                {
+                  "code": "ENDPOINT_PUBLIC",
+                  "params": {
+                    "from": "the internet",
+                    "to": "alb"
+                  },
+                  "message": "alb has a public endpoint."
+                },
+                {
+                  "code": "INTERNET_ROUTE",
+                  "params": {
+                    "zone": "public",
+                    "gateway": "igw"
+                  },
+                  "message": "public reaches the internet through igw."
+                },
+                {
+                  "code": "FILTER_ALLOWS",
+                  "params": {
+                    "filter": "alb-sg",
+                    "direction": "inbound",
+                    "peer": "the internet",
+                    "rule": 0
+                  },
+                  "message": "alb-sg allows inbound traffic with the internet (rule 0)."
+                },
+                {
+                  "code": "ANONYMOUS_ALLOWED",
+                  "params": {
+                    "component": "alb"
+                  },
+                  "message": "alb does not control access."
+                }
+              ]
+            },
+            {
+              "component": "app",
+              "exposure": "not-exposed",
+              "evidence": [
+                {
+                  "code": "ENDPOINT_NOT_PUBLIC",
+                  "params": {
+                    "component": "app"
+                  },
+                  "message": "app has no public endpoint."
+                }
+              ]
+            },
+            {
+              "component": "assets",
+              "exposure": "not-exposed",
+              "evidence": [
+                {
+                  "code": "ENDPOINT_PUBLIC",
+                  "params": {
+                    "from": "the internet",
+                    "to": "assets"
+                  },
+                  "message": "assets has a public endpoint."
+                },
+                {
+                  "code": "PUBLIC_ACCESS_OFF",
+                  "params": {
+                    "component": "assets"
+                  },
+                  "message": "assets does not allow public access."
+                }
+              ]
+            },
+            {
+              "component": "cdn",
+              "exposure": "exposed",
+              "evidence": [
+                {
+                  "code": "ENDPOINT_PUBLIC",
+                  "params": {
+                    "from": "the internet",
+                    "to": "cdn"
+                  },
+                  "message": "cdn has a public endpoint."
+                },
+                {
+                  "code": "ANONYMOUS_ALLOWED",
+                  "params": {
+                    "component": "cdn"
+                  },
+                  "message": "cdn does not control access."
+                }
+              ]
+            },
+            {
+              "component": "db",
+              "exposure": "not-exposed",
+              "evidence": [
+                {
+                  "code": "ENDPOINT_NOT_PUBLIC",
+                  "params": {
+                    "component": "db"
+                  },
+                  "message": "db has no public endpoint."
+                }
+              ]
+            },
+            {
+              "component": "orders",
+              "exposure": "not-exposed",
+              "evidence": [
+                {
+                  "code": "ENDPOINT_PUBLIC",
+                  "params": {
+                    "from": "the internet",
+                    "to": "orders"
+                  },
+                  "message": "orders has a public endpoint."
+                },
+                {
+                  "code": "PUBLIC_ACCESS_OFF",
+                  "params": {
+                    "component": "orders"
+                  },
+                  "message": "orders does not allow public access."
+                }
+              ]
+            },
+            {
+              "component": "reports",
+              "exposure": "not-exposed",
+              "evidence": [
+                {
+                  "code": "ENDPOINT_PUBLIC",
+                  "params": {
+                    "from": "the internet",
+                    "to": "reports"
+                  },
+                  "message": "reports has a public endpoint."
+                },
+                {
+                  "code": "PUBLIC_ACCESS_OFF",
+                  "params": {
+                    "component": "reports"
+                  },
+                  "message": "reports does not allow public access."
+                }
+              ]
+            },
+            {
+              "component": "worker",
+              "exposure": "not-exposed",
+              "evidence": [
+                {
+                  "code": "ENDPOINT_PUBLIC",
+                  "params": {
+                    "from": "the internet",
+                    "to": "worker"
+                  },
+                  "message": "worker has a public endpoint."
+                },
+                {
+                  "code": "PUBLIC_ACCESS_OFF",
+                  "params": {
+                    "component": "worker"
+                  },
+                  "message": "worker does not allow public access."
+                }
+              ]
+            }
+          ],
+          "assumptions": [],
+          "findings": [
+            {
+              "code": "EXPOSED_TO_INTERNET",
+              "severity": "info",
+              "subjects": [
+                "alb"
+              ],
+              "params": {
+                "component": "alb"
+              },
+              "message": "alb is directly accessible from the internet."
+            },
+            {
+              "code": "EXPOSED_TO_INTERNET",
+              "severity": "info",
+              "subjects": [
+                "cdn"
+              ],
+              "params": {
+                "component": "cdn"
+              },
+              "message": "cdn is directly accessible from the internet."
+            },
+            {
+              "code": "ACCESS_PERMISSION_MISSING",
+              "severity": "error",
+              "subjects": [
+                "users-assets"
+              ],
+              "params": {
+                "intent": "users-assets",
+                "from": "users",
+                "to": "assets",
+                "action": "read"
+              },
+              "message": "Intent users-assets: users has no permission to read assets."
+            },
+            {
+              "code": "ACCESS_NOT_REACHABLE",
+              "severity": "error",
+              "subjects": [
+                "users-db"
+              ],
+              "params": {
+                "intent": "users-db",
+                "from": "users",
+                "to": "db"
+              },
+              "message": "Intent users-db: db cannot be reached from users."
+            },
+            {
+              "code": "ACCESS_NOT_REACHABLE",
+              "severity": "error",
+              "subjects": [
+                "worker-reports"
+              ],
+              "params": {
+                "intent": "worker-reports",
+                "from": "worker",
+                "to": "reports"
+              },
+              "message": "Intent worker-reports: reports cannot be reached from worker."
+            }
+          ]
+        }
+      ]
+    },
+    "pack-defaults": {
+      "library": {
+        "name": "solution-validator",
+        "version": "<version>"
+      },
+      "vocabulary": 3,
+      "packs": [
+        {
+          "id": "aws",
+          "version": "0.4.0"
+        },
+        {
+          "id": "core",
+          "version": "0.2.0"
+        }
+      ],
+      "options": {
+        "level": "logical",
+        "analyses": [
+          "model-validity",
+          "connection-validity",
+          "access"
+        ],
+        "assumptions": "pack-defaults"
+      },
+      "analyses": [
+        {
+          "id": "model-validity",
+          "valid": true,
+          "findings": []
+        },
+        {
+          "id": "connection-validity",
+          "intents": [
+            {
+              "intent": "alb-app",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.alb",
+                        "toType": "aws.autoscaling-group",
+                        "purpose": "invoke on port http",
+                        "rule": 0
+                      },
+                      "message": "aws.autoscaling-group accepts invoke on port http from aws.alb (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "app-db",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.autoscaling-group",
+                        "toType": "aws.rds",
+                        "purpose": "read on port postgresql",
+                        "rule": 0
+                      },
+                      "message": "aws.rds accepts read on port postgresql from aws.autoscaling-group (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "cdn-alb",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.cloudfront",
+                        "toType": "aws.alb",
+                        "purpose": "invoke on port https",
+                        "rule": 0
+                      },
+                      "message": "aws.alb accepts invoke on port https from aws.cloudfront (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "cdn-assets",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.cloudfront",
+                        "toType": "aws.s3",
+                        "purpose": "read",
+                        "rule": 2
+                      },
+                      "message": "aws.s3 accepts read from aws.cloudfront (accepts rule 2)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "users-assets",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "aws.s3",
+                        "purpose": "read on port https",
+                        "rule": 1
+                      },
+                      "message": "aws.s3 accepts read on port https from core.internet (accepts rule 1)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "users-cdn",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "aws.cloudfront",
+                        "purpose": "port https",
+                        "rule": 0
+                      },
+                      "message": "aws.cloudfront accepts port https from core.internet (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "users-db",
+              "verdict": "fail",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "fail",
+                  "evidence": [
+                    {
+                      "code": "NOT_ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "aws.rds",
+                        "purpose": "read on port postgresql"
+                      },
+                      "message": "aws.rds does not accept read on port postgresql from core.internet."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "worker-orders",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.lambda",
+                        "toType": "aws.dynamodb",
+                        "purpose": "write",
+                        "rule": 0
+                      },
+                      "message": "aws.dynamodb accepts write from aws.lambda (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "worker-reports",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.lambda",
+                        "toType": "aws.dynamodb",
+                        "purpose": "read",
+                        "rule": 0
+                      },
+                      "message": "aws.dynamodb accepts read from aws.lambda (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "summary": {
+            "pass": 8,
+            "fail": 1,
+            "undecidable": 0
+          },
+          "findings": [
+            {
+              "code": "CONNECTION_NOT_ACCEPTED",
+              "severity": "error",
+              "subjects": [
+                "users-db"
+              ],
+              "params": {
+                "intent": "users-db",
+                "fromType": "core.internet",
+                "toType": "aws.rds",
+                "purpose": "read on port postgresql"
+              },
+              "message": "Intent users-db: aws.rds does not accept read on port postgresql from core.internet."
+            }
+          ]
+        },
+        {
+          "id": "access",
+          "intents": [
+            {
+              "intent": "alb-app",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.alb",
+                        "toType": "aws.autoscaling-group",
+                        "purpose": "invoke on port http",
+                        "rule": 0
+                      },
+                      "message": "aws.autoscaling-group accepts invoke on port http from aws.alb (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "forwarding",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ROUTE_FOUND",
+                      "params": {
+                        "from": "alb",
+                        "to": "app"
+                      },
+                      "message": "alb has a route to app."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "SAME_NETWORK",
+                      "params": {
+                        "from": "alb",
+                        "to": "app",
+                        "network": "vpc"
+                      },
+                      "message": "alb and app are in the same network, vpc."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "alb-sg",
+                        "direction": "outbound",
+                        "peer": "app",
+                        "rule": 1
+                      },
+                      "message": "alb-sg allows outbound traffic with app (rule 1)."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "app-sg",
+                        "direction": "inbound",
+                        "peer": "alb",
+                        "rule": 0
+                      },
+                      "message": "app-sg allows inbound traffic with alb (rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "app-db",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.autoscaling-group",
+                        "toType": "aws.rds",
+                        "purpose": "read on port postgresql",
+                        "rule": 0
+                      },
+                      "message": "aws.rds accepts read on port postgresql from aws.autoscaling-group (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "SAME_NETWORK",
+                      "params": {
+                        "from": "app",
+                        "to": "db",
+                        "network": "vpc"
+                      },
+                      "message": "app and db are in the same network, vpc."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "app-sg",
+                        "direction": "outbound",
+                        "peer": "db",
+                        "rule": 1
+                      },
+                      "message": "app-sg allows outbound traffic with db (rule 1)."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "db-sg",
+                        "direction": "inbound",
+                        "peer": "app",
+                        "rule": 0
+                      },
+                      "message": "db-sg allows inbound traffic with app (rule 0)."
+                    },
+                    {
+                      "code": "PORT_OPEN",
+                      "params": {
+                        "to": "db",
+                        "port": "postgresql"
+                      },
+                      "message": "db listens on port postgresql."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "cdn-alb",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.cloudfront",
+                        "toType": "aws.alb",
+                        "purpose": "invoke on port https",
+                        "rule": 0
+                      },
+                      "message": "aws.alb accepts invoke on port https from aws.cloudfront (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "forwarding",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ROUTE_FOUND",
+                      "params": {
+                        "from": "cdn",
+                        "to": "alb"
+                      },
+                      "message": "cdn has a route to alb."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "INTERNET_ROUTE",
+                      "params": {
+                        "zone": "public",
+                        "gateway": "igw"
+                      },
+                      "message": "public reaches the internet through igw."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "alb-sg",
+                        "direction": "inbound",
+                        "peer": "cdn",
+                        "rule": 0
+                      },
+                      "message": "alb-sg allows inbound traffic with cdn (rule 0)."
+                    },
+                    {
+                      "code": "PORT_OPEN",
+                      "params": {
+                        "to": "alb",
+                        "port": "https"
+                      },
+                      "message": "alb listens on port https."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "cdn-assets",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.cloudfront",
+                        "toType": "aws.s3",
+                        "purpose": "read",
+                        "rule": 2
+                      },
+                      "message": "aws.s3 accepts read from aws.cloudfront (accepts rule 2)."
+                    }
+                  ]
+                },
+                {
+                  "check": "forwarding",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ROUTE_FOUND",
+                      "params": {
+                        "from": "cdn",
+                        "to": "assets"
+                      },
+                      "message": "cdn has a route to assets."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ENDPOINT_PUBLIC",
+                      "params": {
+                        "from": "cdn",
+                        "to": "assets"
+                      },
+                      "message": "assets has a public endpoint."
+                    }
+                  ]
+                },
+                {
+                  "check": "authorization",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "FORWARDER_AUTHORIZED",
+                      "params": {
+                        "from": "cdn",
+                        "to": "assets"
+                      },
+                      "message": "cdn's route to assets also authorizes it."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "users-assets",
+              "verdict": "fail",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "aws.s3",
+                        "purpose": "read on port https",
+                        "rule": 1
+                      },
+                      "message": "aws.s3 accepts read on port https from core.internet (accepts rule 1)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ENDPOINT_PUBLIC",
+                      "params": {
+                        "from": "users",
+                        "to": "assets"
+                      },
+                      "message": "assets has a public endpoint."
+                    },
+                    {
+                      "code": "PORT_OPEN",
+                      "params": {
+                        "to": "assets",
+                        "port": "https"
+                      },
+                      "message": "assets listens on port https."
+                    }
+                  ]
+                },
+                {
+                  "check": "authorization",
+                  "verdict": "fail",
+                  "evidence": [
+                    {
+                      "code": "NOT_PRINCIPAL",
+                      "params": {
+                        "from": "users"
+                      },
+                      "message": "users has no identity that can be granted access."
+                    },
+                    {
+                      "code": "PUBLIC_DENIED",
+                      "params": {
+                        "to": "assets",
+                        "action": "read"
+                      },
+                      "message": "assets does not allow public read."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "users-cdn",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "aws.cloudfront",
+                        "purpose": "port https",
+                        "rule": 0
+                      },
+                      "message": "aws.cloudfront accepts port https from core.internet (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ENDPOINT_PUBLIC",
+                      "params": {
+                        "from": "users",
+                        "to": "cdn"
+                      },
+                      "message": "cdn has a public endpoint."
+                    },
+                    {
+                      "code": "PORT_OPEN",
+                      "params": {
+                        "to": "cdn",
+                        "port": "https"
+                      },
+                      "message": "cdn listens on port https."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "users-db",
+              "verdict": "fail",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "fail",
+                  "evidence": [
+                    {
+                      "code": "NOT_ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "aws.rds",
+                        "purpose": "read on port postgresql"
+                      },
+                      "message": "aws.rds does not accept read on port postgresql from core.internet."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "fail",
+                  "evidence": [
+                    {
+                      "code": "ENDPOINT_PRIVATE",
+                      "params": {
+                        "from": "users",
+                        "to": "db"
+                      },
+                      "message": "db has a private endpoint, and users is not inside its network."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "worker-orders",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.lambda",
+                        "toType": "aws.dynamodb",
+                        "purpose": "write",
+                        "rule": 0
+                      },
+                      "message": "aws.dynamodb accepts write from aws.lambda (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "PRIVATE_SERVICE_ROUTE",
+                      "params": {
+                        "zone": "private",
+                        "gateway": "ddb-endpoint",
+                        "service": "orders"
+                      },
+                      "message": "private reaches orders privately through ddb-endpoint."
+                    },
+                    {
+                      "code": "ENDPOINT_PUBLIC",
+                      "params": {
+                        "from": "worker",
+                        "to": "orders"
+                      },
+                      "message": "orders has a public endpoint."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "worker-sg",
+                        "direction": "outbound",
+                        "peer": "orders",
+                        "rule": 0
+                      },
+                      "message": "worker-sg allows outbound traffic with orders (rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "authorization",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "GRANT_FOUND",
+                      "params": {
+                        "from": "worker",
+                        "to": "orders",
+                        "access": "read-write",
+                        "action": "write"
+                      },
+                      "message": "worker has read-write access to orders, which allows write."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "worker-reports",
+              "verdict": "fail",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.lambda",
+                        "toType": "aws.dynamodb",
+                        "purpose": "read",
+                        "rule": 0
+                      },
+                      "message": "aws.dynamodb accepts read from aws.lambda (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "fail",
+                  "evidence": [
+                    {
+                      "code": "SERVICE_NOT_SERVED",
+                      "params": {
+                        "gateway": "ddb-endpoint",
+                        "service": "reports"
+                      },
+                      "message": "ddb-endpoint does not reach reports."
+                    },
+                    {
+                      "code": "ENDPOINT_PUBLIC",
+                      "params": {
+                        "from": "worker",
+                        "to": "reports"
+                      },
+                      "message": "reports has a public endpoint."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "worker-sg",
+                        "direction": "outbound",
+                        "peer": "reports",
+                        "rule": 0
+                      },
+                      "message": "worker-sg allows outbound traffic with reports (rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "authorization",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "GRANT_FOUND",
+                      "params": {
+                        "from": "worker",
+                        "to": "reports",
+                        "access": "read",
+                        "action": "read"
+                      },
+                      "message": "worker has read access to reports, which allows read."
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "summary": {
+            "pass": 6,
+            "fail": 3,
+            "undecidable": 0
+          },
+          "exposure": [
+            {
+              "component": "alb",
+              "exposure": "exposed",
+              "ports": [
+                "https"
+              ],
+              "evidence": [
+                {
+                  "code": "ENDPOINT_PUBLIC",
+                  "params": {
+                    "from": "the internet",
+                    "to": "alb"
+                  },
+                  "message": "alb has a public endpoint."
+                },
+                {
+                  "code": "INTERNET_ROUTE",
+                  "params": {
+                    "zone": "public",
+                    "gateway": "igw"
+                  },
+                  "message": "public reaches the internet through igw."
+                },
+                {
+                  "code": "FILTER_ALLOWS",
+                  "params": {
+                    "filter": "alb-sg",
+                    "direction": "inbound",
+                    "peer": "the internet",
+                    "rule": 0
+                  },
+                  "message": "alb-sg allows inbound traffic with the internet (rule 0)."
+                },
+                {
+                  "code": "ANONYMOUS_ALLOWED",
+                  "params": {
+                    "component": "alb"
+                  },
+                  "message": "alb does not control access."
+                }
+              ]
+            },
+            {
+              "component": "app",
+              "exposure": "not-exposed",
+              "evidence": [
+                {
+                  "code": "ENDPOINT_NOT_PUBLIC",
+                  "params": {
+                    "component": "app"
+                  },
+                  "message": "app has no public endpoint."
+                }
+              ]
+            },
+            {
+              "component": "assets",
+              "exposure": "not-exposed",
+              "evidence": [
+                {
+                  "code": "ENDPOINT_PUBLIC",
+                  "params": {
+                    "from": "the internet",
+                    "to": "assets"
+                  },
+                  "message": "assets has a public endpoint."
+                },
+                {
+                  "code": "PUBLIC_ACCESS_OFF",
+                  "params": {
+                    "component": "assets"
+                  },
+                  "message": "assets does not allow public access."
+                }
+              ]
+            },
+            {
+              "component": "cdn",
+              "exposure": "exposed",
+              "evidence": [
+                {
+                  "code": "ENDPOINT_PUBLIC",
+                  "params": {
+                    "from": "the internet",
+                    "to": "cdn"
+                  },
+                  "message": "cdn has a public endpoint."
+                },
+                {
+                  "code": "ANONYMOUS_ALLOWED",
+                  "params": {
+                    "component": "cdn"
+                  },
+                  "message": "cdn does not control access."
+                }
+              ]
+            },
+            {
+              "component": "db",
+              "exposure": "not-exposed",
+              "evidence": [
+                {
+                  "code": "ENDPOINT_NOT_PUBLIC",
+                  "params": {
+                    "component": "db"
+                  },
+                  "message": "db has no public endpoint."
+                }
+              ]
+            },
+            {
+              "component": "orders",
+              "exposure": "not-exposed",
+              "evidence": [
+                {
+                  "code": "ENDPOINT_PUBLIC",
+                  "params": {
+                    "from": "the internet",
+                    "to": "orders"
+                  },
+                  "message": "orders has a public endpoint."
+                },
+                {
+                  "code": "PUBLIC_ACCESS_OFF",
+                  "params": {
+                    "component": "orders"
+                  },
+                  "message": "orders does not allow public access."
+                }
+              ]
+            },
+            {
+              "component": "reports",
+              "exposure": "not-exposed",
+              "evidence": [
+                {
+                  "code": "ENDPOINT_PUBLIC",
+                  "params": {
+                    "from": "the internet",
+                    "to": "reports"
+                  },
+                  "message": "reports has a public endpoint."
+                },
+                {
+                  "code": "PUBLIC_ACCESS_OFF",
+                  "params": {
+                    "component": "reports"
+                  },
+                  "message": "reports does not allow public access."
+                }
+              ]
+            },
+            {
+              "component": "worker",
+              "exposure": "not-exposed",
+              "evidence": [
+                {
+                  "code": "ENDPOINT_PUBLIC",
+                  "params": {
+                    "from": "the internet",
+                    "to": "worker"
+                  },
+                  "message": "worker has a public endpoint."
+                },
+                {
+                  "code": "PUBLIC_ACCESS_OFF",
+                  "params": {
+                    "component": "worker"
+                  },
+                  "message": "worker does not allow public access."
+                }
+              ]
+            }
+          ],
+          "assumptions": [],
+          "findings": [
+            {
+              "code": "EXPOSED_TO_INTERNET",
+              "severity": "info",
+              "subjects": [
+                "alb"
+              ],
+              "params": {
+                "component": "alb"
+              },
+              "message": "alb is directly accessible from the internet."
+            },
+            {
+              "code": "EXPOSED_TO_INTERNET",
+              "severity": "info",
+              "subjects": [
+                "cdn"
+              ],
+              "params": {
+                "component": "cdn"
+              },
+              "message": "cdn is directly accessible from the internet."
+            },
+            {
+              "code": "ACCESS_PERMISSION_MISSING",
+              "severity": "error",
+              "subjects": [
+                "users-assets"
+              ],
+              "params": {
+                "intent": "users-assets",
+                "from": "users",
+                "to": "assets",
+                "action": "read"
+              },
+              "message": "Intent users-assets: users has no permission to read assets."
+            },
+            {
+              "code": "ACCESS_NOT_REACHABLE",
+              "severity": "error",
+              "subjects": [
+                "users-db"
+              ],
+              "params": {
+                "intent": "users-db",
+                "from": "users",
+                "to": "db"
+              },
+              "message": "Intent users-db: db cannot be reached from users."
+            },
+            {
+              "code": "ACCESS_NOT_REACHABLE",
+              "severity": "error",
+              "subjects": [
+                "worker-reports"
+              ],
+              "params": {
+                "intent": "worker-reports",
+                "from": "worker",
+                "to": "reports"
+              },
+              "message": "Intent worker-reports: reports cannot be reached from worker."
+            }
+          ]
+        }
+      ]
+    },
+    "detailed": {
+      "library": {
+        "name": "solution-validator",
+        "version": "<version>"
+      },
+      "vocabulary": 3,
+      "packs": [
+        {
+          "id": "aws",
+          "version": "0.4.0"
+        },
+        {
+          "id": "core",
+          "version": "0.2.0"
+        }
+      ],
+      "options": {
+        "level": "detailed",
+        "analyses": [
+          "model-validity",
+          "connection-validity",
+          "access",
+          "address-plan"
+        ],
+        "assumptions": "strict"
+      },
+      "analyses": [
+        {
+          "id": "model-validity",
+          "valid": true,
+          "findings": []
+        },
+        {
+          "id": "connection-validity",
+          "intents": [
+            {
+              "intent": "alb-app",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.alb",
+                        "toType": "aws.autoscaling-group",
+                        "purpose": "invoke on port http",
+                        "rule": 0
+                      },
+                      "message": "aws.autoscaling-group accepts invoke on port http from aws.alb (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "app-db",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.autoscaling-group",
+                        "toType": "aws.rds",
+                        "purpose": "read on port postgresql",
+                        "rule": 0
+                      },
+                      "message": "aws.rds accepts read on port postgresql from aws.autoscaling-group (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "cdn-alb",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.cloudfront",
+                        "toType": "aws.alb",
+                        "purpose": "invoke on port https",
+                        "rule": 0
+                      },
+                      "message": "aws.alb accepts invoke on port https from aws.cloudfront (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "cdn-assets",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.cloudfront",
+                        "toType": "aws.s3",
+                        "purpose": "read",
+                        "rule": 2
+                      },
+                      "message": "aws.s3 accepts read from aws.cloudfront (accepts rule 2)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "users-assets",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "aws.s3",
+                        "purpose": "read on port https",
+                        "rule": 1
+                      },
+                      "message": "aws.s3 accepts read on port https from core.internet (accepts rule 1)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "users-cdn",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "aws.cloudfront",
+                        "purpose": "port https",
+                        "rule": 0
+                      },
+                      "message": "aws.cloudfront accepts port https from core.internet (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "users-db",
+              "verdict": "fail",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "fail",
+                  "evidence": [
+                    {
+                      "code": "NOT_ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "aws.rds",
+                        "purpose": "read on port postgresql"
+                      },
+                      "message": "aws.rds does not accept read on port postgresql from core.internet."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "worker-orders",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.lambda",
+                        "toType": "aws.dynamodb",
+                        "purpose": "write",
+                        "rule": 0
+                      },
+                      "message": "aws.dynamodb accepts write from aws.lambda (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "worker-reports",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.lambda",
+                        "toType": "aws.dynamodb",
+                        "purpose": "read",
+                        "rule": 0
+                      },
+                      "message": "aws.dynamodb accepts read from aws.lambda (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "summary": {
+            "pass": 8,
+            "fail": 1,
+            "undecidable": 0
+          },
+          "findings": [
+            {
+              "code": "CONNECTION_NOT_ACCEPTED",
+              "severity": "error",
+              "subjects": [
+                "users-db"
+              ],
+              "params": {
+                "intent": "users-db",
+                "fromType": "core.internet",
+                "toType": "aws.rds",
+                "purpose": "read on port postgresql"
+              },
+              "message": "Intent users-db: aws.rds does not accept read on port postgresql from core.internet."
+            }
+          ]
+        },
+        {
+          "id": "access",
+          "intents": [
+            {
+              "intent": "alb-app",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.alb",
+                        "toType": "aws.autoscaling-group",
+                        "purpose": "invoke on port http",
+                        "rule": 0
+                      },
+                      "message": "aws.autoscaling-group accepts invoke on port http from aws.alb (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "forwarding",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ROUTE_FOUND",
+                      "params": {
+                        "from": "alb",
+                        "to": "app"
+                      },
+                      "message": "alb has a route to app."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "SAME_NETWORK",
+                      "params": {
+                        "from": "alb",
+                        "to": "app",
+                        "network": "vpc"
+                      },
+                      "message": "alb and app are in the same network, vpc."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "alb-sg",
+                        "direction": "outbound",
+                        "peer": "app",
+                        "rule": 1
+                      },
+                      "message": "alb-sg allows outbound traffic with app (rule 1)."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "app-sg",
+                        "direction": "inbound",
+                        "peer": "alb",
+                        "rule": 0
+                      },
+                      "message": "app-sg allows inbound traffic with alb (rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "app-db",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.autoscaling-group",
+                        "toType": "aws.rds",
+                        "purpose": "read on port postgresql",
+                        "rule": 0
+                      },
+                      "message": "aws.rds accepts read on port postgresql from aws.autoscaling-group (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "SAME_NETWORK",
+                      "params": {
+                        "from": "app",
+                        "to": "db",
+                        "network": "vpc"
+                      },
+                      "message": "app and db are in the same network, vpc."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "app-sg",
+                        "direction": "outbound",
+                        "peer": "db",
+                        "rule": 1
+                      },
+                      "message": "app-sg allows outbound traffic with db (rule 1)."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "db-sg",
+                        "direction": "inbound",
+                        "peer": "app",
+                        "rule": 0
+                      },
+                      "message": "db-sg allows inbound traffic with app (rule 0)."
+                    },
+                    {
+                      "code": "PORT_OPEN",
+                      "params": {
+                        "to": "db",
+                        "port": "postgresql"
+                      },
+                      "message": "db listens on port postgresql."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "cdn-alb",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.cloudfront",
+                        "toType": "aws.alb",
+                        "purpose": "invoke on port https",
+                        "rule": 0
+                      },
+                      "message": "aws.alb accepts invoke on port https from aws.cloudfront (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "forwarding",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ROUTE_FOUND",
+                      "params": {
+                        "from": "cdn",
+                        "to": "alb"
+                      },
+                      "message": "cdn has a route to alb."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "INTERNET_ROUTE",
+                      "params": {
+                        "zone": "public",
+                        "gateway": "igw"
+                      },
+                      "message": "public reaches the internet through igw."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "alb-sg",
+                        "direction": "inbound",
+                        "peer": "cdn",
+                        "rule": 0
+                      },
+                      "message": "alb-sg allows inbound traffic with cdn (rule 0)."
+                    },
+                    {
+                      "code": "PORT_OPEN",
+                      "params": {
+                        "to": "alb",
+                        "port": "https"
+                      },
+                      "message": "alb listens on port https."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "cdn-assets",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.cloudfront",
+                        "toType": "aws.s3",
+                        "purpose": "read",
+                        "rule": 2
+                      },
+                      "message": "aws.s3 accepts read from aws.cloudfront (accepts rule 2)."
+                    }
+                  ]
+                },
+                {
+                  "check": "forwarding",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ROUTE_FOUND",
+                      "params": {
+                        "from": "cdn",
+                        "to": "assets"
+                      },
+                      "message": "cdn has a route to assets."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ENDPOINT_PUBLIC",
+                      "params": {
+                        "from": "cdn",
+                        "to": "assets"
+                      },
+                      "message": "assets has a public endpoint."
+                    }
+                  ]
+                },
+                {
+                  "check": "authorization",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "FORWARDER_AUTHORIZED",
+                      "params": {
+                        "from": "cdn",
+                        "to": "assets"
+                      },
+                      "message": "cdn's route to assets also authorizes it."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "users-assets",
+              "verdict": "fail",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "aws.s3",
+                        "purpose": "read on port https",
+                        "rule": 1
+                      },
+                      "message": "aws.s3 accepts read on port https from core.internet (accepts rule 1)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ENDPOINT_PUBLIC",
+                      "params": {
+                        "from": "users",
+                        "to": "assets"
+                      },
+                      "message": "assets has a public endpoint."
+                    },
+                    {
+                      "code": "PORT_OPEN",
+                      "params": {
+                        "to": "assets",
+                        "port": "https"
+                      },
+                      "message": "assets listens on port https."
+                    }
+                  ]
+                },
+                {
+                  "check": "authorization",
+                  "verdict": "fail",
+                  "evidence": [
+                    {
+                      "code": "NOT_PRINCIPAL",
+                      "params": {
+                        "from": "users"
+                      },
+                      "message": "users has no identity that can be granted access."
+                    },
+                    {
+                      "code": "PUBLIC_DENIED",
+                      "params": {
+                        "to": "assets",
+                        "action": "read"
+                      },
+                      "message": "assets does not allow public read."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "users-cdn",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "aws.cloudfront",
+                        "purpose": "port https",
+                        "rule": 0
+                      },
+                      "message": "aws.cloudfront accepts port https from core.internet (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ENDPOINT_PUBLIC",
+                      "params": {
+                        "from": "users",
+                        "to": "cdn"
+                      },
+                      "message": "cdn has a public endpoint."
+                    },
+                    {
+                      "code": "PORT_OPEN",
+                      "params": {
+                        "to": "cdn",
+                        "port": "https"
+                      },
+                      "message": "cdn listens on port https."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "users-db",
+              "verdict": "fail",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "fail",
+                  "evidence": [
+                    {
+                      "code": "NOT_ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "aws.rds",
+                        "purpose": "read on port postgresql"
+                      },
+                      "message": "aws.rds does not accept read on port postgresql from core.internet."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "fail",
+                  "evidence": [
+                    {
+                      "code": "ENDPOINT_PRIVATE",
+                      "params": {
+                        "from": "users",
+                        "to": "db"
+                      },
+                      "message": "db has a private endpoint, and users is not inside its network."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "worker-orders",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.lambda",
+                        "toType": "aws.dynamodb",
+                        "purpose": "write",
+                        "rule": 0
+                      },
+                      "message": "aws.dynamodb accepts write from aws.lambda (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "PRIVATE_SERVICE_ROUTE",
+                      "params": {
+                        "zone": "private",
+                        "gateway": "ddb-endpoint",
+                        "service": "orders"
+                      },
+                      "message": "private reaches orders privately through ddb-endpoint."
+                    },
+                    {
+                      "code": "ENDPOINT_PUBLIC",
+                      "params": {
+                        "from": "worker",
+                        "to": "orders"
+                      },
+                      "message": "orders has a public endpoint."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "worker-sg",
+                        "direction": "outbound",
+                        "peer": "orders",
+                        "rule": 0
+                      },
+                      "message": "worker-sg allows outbound traffic with orders (rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "authorization",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "GRANT_FOUND",
+                      "params": {
+                        "from": "worker",
+                        "to": "orders",
+                        "access": "read-write",
+                        "action": "write"
+                      },
+                      "message": "worker has read-write access to orders, which allows write."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "worker-reports",
+              "verdict": "fail",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.lambda",
+                        "toType": "aws.dynamodb",
+                        "purpose": "read",
+                        "rule": 0
+                      },
+                      "message": "aws.dynamodb accepts read from aws.lambda (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "fail",
+                  "evidence": [
+                    {
+                      "code": "SERVICE_NOT_SERVED",
+                      "params": {
+                        "gateway": "ddb-endpoint",
+                        "service": "reports"
+                      },
+                      "message": "ddb-endpoint does not reach reports."
+                    },
+                    {
+                      "code": "ENDPOINT_PUBLIC",
+                      "params": {
+                        "from": "worker",
+                        "to": "reports"
+                      },
+                      "message": "reports has a public endpoint."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "worker-sg",
+                        "direction": "outbound",
+                        "peer": "reports",
+                        "rule": 0
+                      },
+                      "message": "worker-sg allows outbound traffic with reports (rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "authorization",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "GRANT_FOUND",
+                      "params": {
+                        "from": "worker",
+                        "to": "reports",
+                        "access": "read",
+                        "action": "read"
+                      },
+                      "message": "worker has read access to reports, which allows read."
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "summary": {
+            "pass": 6,
+            "fail": 3,
+            "undecidable": 0
+          },
+          "exposure": [
+            {
+              "component": "alb",
+              "exposure": "exposed",
+              "ports": [
+                "https"
+              ],
+              "evidence": [
+                {
+                  "code": "ENDPOINT_PUBLIC",
+                  "params": {
+                    "from": "the internet",
+                    "to": "alb"
+                  },
+                  "message": "alb has a public endpoint."
+                },
+                {
+                  "code": "INTERNET_ROUTE",
+                  "params": {
+                    "zone": "public",
+                    "gateway": "igw"
+                  },
+                  "message": "public reaches the internet through igw."
+                },
+                {
+                  "code": "FILTER_ALLOWS",
+                  "params": {
+                    "filter": "alb-sg",
+                    "direction": "inbound",
+                    "peer": "the internet",
+                    "rule": 0
+                  },
+                  "message": "alb-sg allows inbound traffic with the internet (rule 0)."
+                },
+                {
+                  "code": "ANONYMOUS_ALLOWED",
+                  "params": {
+                    "component": "alb"
+                  },
+                  "message": "alb does not control access."
+                }
+              ]
+            },
+            {
+              "component": "app",
+              "exposure": "not-exposed",
+              "evidence": [
+                {
+                  "code": "ENDPOINT_NOT_PUBLIC",
+                  "params": {
+                    "component": "app"
+                  },
+                  "message": "app has no public endpoint."
+                }
+              ]
+            },
+            {
+              "component": "assets",
+              "exposure": "not-exposed",
+              "evidence": [
+                {
+                  "code": "ENDPOINT_PUBLIC",
+                  "params": {
+                    "from": "the internet",
+                    "to": "assets"
+                  },
+                  "message": "assets has a public endpoint."
+                },
+                {
+                  "code": "PUBLIC_ACCESS_OFF",
+                  "params": {
+                    "component": "assets"
+                  },
+                  "message": "assets does not allow public access."
+                }
+              ]
+            },
+            {
+              "component": "cdn",
+              "exposure": "exposed",
+              "evidence": [
+                {
+                  "code": "ENDPOINT_PUBLIC",
+                  "params": {
+                    "from": "the internet",
+                    "to": "cdn"
+                  },
+                  "message": "cdn has a public endpoint."
+                },
+                {
+                  "code": "ANONYMOUS_ALLOWED",
+                  "params": {
+                    "component": "cdn"
+                  },
+                  "message": "cdn does not control access."
+                }
+              ]
+            },
+            {
+              "component": "db",
+              "exposure": "not-exposed",
+              "evidence": [
+                {
+                  "code": "ENDPOINT_NOT_PUBLIC",
+                  "params": {
+                    "component": "db"
+                  },
+                  "message": "db has no public endpoint."
+                }
+              ]
+            },
+            {
+              "component": "orders",
+              "exposure": "not-exposed",
+              "evidence": [
+                {
+                  "code": "ENDPOINT_PUBLIC",
+                  "params": {
+                    "from": "the internet",
+                    "to": "orders"
+                  },
+                  "message": "orders has a public endpoint."
+                },
+                {
+                  "code": "PUBLIC_ACCESS_OFF",
+                  "params": {
+                    "component": "orders"
+                  },
+                  "message": "orders does not allow public access."
+                }
+              ]
+            },
+            {
+              "component": "reports",
+              "exposure": "not-exposed",
+              "evidence": [
+                {
+                  "code": "ENDPOINT_PUBLIC",
+                  "params": {
+                    "from": "the internet",
+                    "to": "reports"
+                  },
+                  "message": "reports has a public endpoint."
+                },
+                {
+                  "code": "PUBLIC_ACCESS_OFF",
+                  "params": {
+                    "component": "reports"
+                  },
+                  "message": "reports does not allow public access."
+                }
+              ]
+            },
+            {
+              "component": "worker",
+              "exposure": "not-exposed",
+              "evidence": [
+                {
+                  "code": "ENDPOINT_PUBLIC",
+                  "params": {
+                    "from": "the internet",
+                    "to": "worker"
+                  },
+                  "message": "worker has a public endpoint."
+                },
+                {
+                  "code": "PUBLIC_ACCESS_OFF",
+                  "params": {
+                    "component": "worker"
+                  },
+                  "message": "worker does not allow public access."
+                }
+              ]
+            }
+          ],
+          "assumptions": [],
+          "findings": [
+            {
+              "code": "EXPOSED_TO_INTERNET",
+              "severity": "info",
+              "subjects": [
+                "alb"
+              ],
+              "params": {
+                "component": "alb"
+              },
+              "message": "alb is directly accessible from the internet."
+            },
+            {
+              "code": "EXPOSED_TO_INTERNET",
+              "severity": "info",
+              "subjects": [
+                "cdn"
+              ],
+              "params": {
+                "component": "cdn"
+              },
+              "message": "cdn is directly accessible from the internet."
+            },
+            {
+              "code": "ACCESS_PERMISSION_MISSING",
+              "severity": "error",
+              "subjects": [
+                "users-assets"
+              ],
+              "params": {
+                "intent": "users-assets",
+                "from": "users",
+                "to": "assets",
+                "action": "read"
+              },
+              "message": "Intent users-assets: users has no permission to read assets."
+            },
+            {
+              "code": "ACCESS_NOT_REACHABLE",
+              "severity": "error",
+              "subjects": [
+                "users-db"
+              ],
+              "params": {
+                "intent": "users-db",
+                "from": "users",
+                "to": "db"
+              },
+              "message": "Intent users-db: db cannot be reached from users."
+            },
+            {
+              "code": "ACCESS_NOT_REACHABLE",
+              "severity": "error",
+              "subjects": [
+                "worker-reports"
+              ],
+              "params": {
+                "intent": "worker-reports",
+                "from": "worker",
+                "to": "reports"
+              },
+              "message": "Intent worker-reports: reports cannot be reached from worker."
+            }
+          ]
+        },
+        {
+          "id": "address-plan",
+          "zones": [
+            {
+              "zone": "private",
+              "parent": "vpc",
+              "space": "10.0.2.0/24",
+              "size": 256
+            },
+            {
+              "zone": "public",
+              "parent": "vpc",
+              "space": "10.0.1.0/24",
+              "size": 256
+            },
+            {
+              "zone": "vpc",
+              "space": "10.0.0.0/16",
+              "size": 65536
+            }
+          ],
+          "findings": []
+        }
+      ]
+    }
+  }
+}

@@ -26,7 +26,7 @@ export function testPack(overrides: Record<string, unknown> = {}): Record<string
     version: "1.0.0",
     label: "Acme",
     vocabulary: 1,
-    requires: { core: "^0.1.0" },
+    requires: { core: "^0.2.0" },
     types: [{ id: "acme.box", label: "Box", category: "compute" }],
     ...overrides,
   };
