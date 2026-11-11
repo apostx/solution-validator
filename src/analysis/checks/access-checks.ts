@@ -20,6 +20,8 @@ export interface CheckOutcome {
   missing: MissingProperty[];
   /** A traffic filter limits ports, and the intent's port is not known. */
   portUnknown?: boolean;
+  /** An address range could not be matched with the known addresses. */
+  addressUnknown?: boolean;
   /** The check needed an action, and the intent states none. */
   actionMissing?: boolean;
 }
@@ -27,6 +29,8 @@ export interface CheckOutcome {
 export interface AccessContext {
   model: SolutionModel;
   resolver: ParameterResolver;
+  /** `detailed` also uses address spaces, address ranges and port ranges. Default: logical. */
+  level?: "logical" | "detailed";
 }
 
 type Targets = { known: true; targets: string[]; evidence: Evidence[] } | Unknown;
@@ -152,6 +156,7 @@ export function checkConnectivity(
   return {
     ...outcome("connectivity", reach.verdict, all, reach.missing),
     ...(reach.portUnknown && reach.verdict === "undecidable" ? { portUnknown: true } : {}),
+    ...(reach.addressUnknown && reach.verdict === "undecidable" ? { addressUnknown: true } : {}),
   };
 }
 

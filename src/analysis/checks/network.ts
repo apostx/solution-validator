@@ -2,6 +2,16 @@ import type { ComponentType } from "../../core/registry";
 import type { Component } from "../../core/solution-schema";
 import type { Traits } from "../../core/traits";
 import { compareStrings } from "../../util/compare";
+import {
+  type Cidr,
+  cidrContains,
+  cidrOverlaps,
+  containsPublic,
+  EPHEMERAL_PORTS,
+  type PortRange,
+  parseCidr,
+  parsePortRange,
+} from "../../util/ipv4";
 import { isObject } from "../../util/json";
 import { invalidValue, type MissingProperty } from "../parameters";
 import { combineVerdicts, createEvidence, type Evidence, type Verdict } from "../verdict";
@@ -22,6 +32,8 @@ export interface Step {
   missing: MissingProperty[];
   /** A filter limits ports, and the traffic's port is not known. */
   portUnknown?: boolean;
+  /** An address range could not be matched with the known addresses. */
+  addressUnknown?: boolean;
 }
 
 export function step(
@@ -38,6 +50,7 @@ export function combineSteps(steps: readonly Step[]): Step {
     evidence: steps.flatMap((s) => s.evidence),
     missing: steps.flatMap((s) => s.missing),
     ...(steps.some((s) => s.portUnknown) ? { portUnknown: true } : {}),
+    ...(steps.some((s) => s.addressUnknown) ? { addressUnknown: true } : {}),
   };
 }
 
@@ -52,7 +65,10 @@ export interface Party {
 /** The ports traffic uses: known ports, any port (return traffic), or unknown. */
 export type PortSpec =
   | { kind: "ports"; ports: (string | number)[] }
+  /** Return traffic at the logical level: some port; only rules without ports match. */
   | { kind: "any" }
+  /** Return traffic at the detailed level: the whole ephemeral range must be allowed. */
+  | { kind: "range"; range: PortRange }
   | { kind: "unknown" };
 
 type Resolved<T> = { known: true; value: T; evidence: Evidence[] } | { known: false; step: Step };
@@ -123,6 +139,28 @@ export class Network {
     }
     const placements = this.placements(component);
     return { known: true, value: placements.length > 0 ? placements : [undefined], evidence: [] };
+  }
+
+  /** The address space of the innermost zone of a position that has one (detailed level). */
+  addressOf(position: string): Resolved<{ zone: string; cidr: Cidr } | undefined> {
+    for (const zone of this.chain(position)) {
+      const component = this.#component(zone);
+      const type = component && this.#type(component);
+      const parameter = type?.traits.zone?.addressSpace;
+      if (!component || !type || parameter === undefined) continue;
+      const value = this.#resolve(component, type, parameter);
+      if (!value.known) return value;
+      if (typeof value.value !== "string") continue;
+      const cidr = parseCidr(value.value);
+      if (!cidr) {
+        return {
+          known: false,
+          step: step("undecidable", invalidValue(component, parameter).evidence),
+        };
+      }
+      return { known: true, value: { zone, cidr }, evidence: value.evidence };
+    }
+    return { known: true, value: undefined, evidence: [] };
   }
 
   // Parameters
@@ -238,6 +276,8 @@ export class Network {
   /** Whether a rule's peer names the party. `internet` means outside the filter's network. */
   #peerMatches(peer: string, party: Party, network: string | undefined): Resolved<boolean> {
     if (peer === "any") return { known: true, value: true, evidence: [] };
+    const cidr = parseCidr(peer);
+    if (cidr) return this.#cidrMatches(cidr, party);
     if (peer === "internet") {
       const root = this.root(party.position);
       return { known: true, value: root === undefined || root !== network, evidence: [] };
@@ -249,6 +289,49 @@ export class Network {
     const filter = this.#filters().find((candidate) => candidate.component.id === peer);
     if (filter) return this.#protects(filter, party);
     return { known: true, value: false, evidence: [] };
+  }
+
+  /**
+   * Whether an address range covers the party. `0.0.0.0/0` covers everyone. Otherwise the
+   * detailed level compares it with the address space of the party's zone; outside parties have
+   * unknown public addresses, so only ranges without public addresses decide for them.
+   */
+  #cidrMatches(cidr: Cidr, party: Party): Resolved<boolean> {
+    if (cidr.prefix === 0) return { known: true, value: true, evidence: [] };
+    const name = party.component?.id ?? "the internet";
+    const unknown = (code: "CIDR_NEEDS_DETAILED" | "PEER_ADDRESS_UNKNOWN") => ({
+      known: false as const,
+      step: {
+        ...step("undecidable", [createEvidence(code, { cidr: cidr.text, party: name })]),
+        addressUnknown: true,
+      },
+    });
+    if (this.#context.level !== "detailed") return unknown("CIDR_NEEDS_DETAILED");
+    if (party.position === undefined) {
+      return containsPublic(cidr)
+        ? unknown("PEER_ADDRESS_UNKNOWN")
+        : { known: true, value: false, evidence: [] };
+    }
+    const address = this.addressOf(party.position);
+    if (!address.known) return address;
+    if (!address.value) return unknown("PEER_ADDRESS_UNKNOWN");
+    const space = address.value.cidr;
+    if (cidrContains(cidr, space)) return { known: true, value: true, evidence: address.evidence };
+    if (!cidrOverlaps(cidr, space))
+      return { known: true, value: false, evidence: address.evidence };
+    return {
+      known: false,
+      step: {
+        ...step("undecidable", [
+          createEvidence("CIDR_PARTLY_COVERS", {
+            cidr: cidr.text,
+            zone: address.value.zone,
+            space: space.text,
+          }),
+        ]),
+        addressUnknown: true,
+      },
+    };
   }
 
   /**
@@ -311,17 +394,25 @@ export class Network {
 
   #portsMatch(rulePorts: unknown, ports: PortSpec): boolean | "unknown" {
     if (!Array.isArray(rulePorts)) return true;
+    const entries = rulePorts.filter((entry): entry is string => typeof entry === "string");
     if (ports.kind === "any") return false;
     if (ports.kind === "unknown") return "unknown";
+    if (ports.kind === "range") {
+      const { from, to } = ports.range;
+      return entries.some((entry) => {
+        const range = parsePortRange(entry);
+        return range !== undefined && range.from <= from && to <= range.to;
+      });
+    }
     return ports.ports.every((port) =>
-      rulePorts.some((rulePort) => {
-        if (typeof rulePort !== "string") return false;
-        if (/^[0-9]+$/.test(rulePort)) {
-          const number = Number(rulePort);
-          if (typeof port === "number") return port === number;
-          return this.#context.model.registry.getPort(port)?.port === number;
+      entries.some((entry) => {
+        const range = parsePortRange(entry);
+        if (range) {
+          const number =
+            typeof port === "number" ? port : this.#context.model.registry.getPort(port)?.port;
+          return number !== undefined && range.from <= number && number <= range.to;
         }
-        return samePort(this.#context.model, rulePort, port);
+        return samePort(this.#context.model, entry, port);
       }),
     );
   }
@@ -356,7 +447,11 @@ export class Network {
         steps.push(this.evaluate(filter, direction, other, ports, network));
         if (!filter.params.stateful) {
           const reverse = direction === "inbound" ? "outbound" : "inbound";
-          const back = this.evaluate(filter, reverse, other, { kind: "any" }, network);
+          const replies: PortSpec =
+            this.#context.level === "detailed"
+              ? { kind: "range", range: EPHEMERAL_PORTS }
+              : { kind: "any" };
+          const back = this.evaluate(filter, reverse, other, replies, network);
           steps.push({
             ...back,
             evidence: [
@@ -411,6 +506,29 @@ export class Network {
   }
 
   /**
+   * The route internet traffic takes. `internet` and `0.0.0.0/0` are default routes. At the
+   * detailed level, a more specific route whose range contains public addresses may catch the
+   * traffic; the destination's address is not known, so a different gateway there makes the
+   * choice ambiguous. Ranges without public addresses never carry internet traffic.
+   */
+  #internetRoute(
+    routes: readonly Record<string, unknown>[],
+  ): Record<string, unknown> | undefined | "ambiguous" {
+    const isDefault = (route: Record<string, unknown>) =>
+      route.destination === "internet" ||
+      (typeof route.destination === "string" && parseCidr(route.destination)?.prefix === 0);
+    const fallback = routes.find(isDefault);
+    if (this.#context.level !== "detailed") return fallback;
+    const specific = routes.filter((route) => {
+      if (isDefault(route) || typeof route.destination !== "string") return false;
+      const cidr = parseCidr(route.destination);
+      return cidr !== undefined && containsPublic(cidr);
+    });
+    if (specific.some((route) => route.gateway !== fallback?.gateway)) return "ambiguous";
+    return fallback;
+  }
+
+  /**
    * How traffic between a zone and the internet goes: through the gateway of its `internet`
    * route. `inbound` traffic needs a gateway that allows both directions; `outbound` traffic may
    * also use an outbound-only gateway, which itself needs such a route.
@@ -427,8 +545,18 @@ export class Network {
     if (!found.value) {
       return step("fail", [createEvidence("LOCAL_ROUTES_ONLY", { zone })]);
     }
-    const route = found.value.routes.find((candidate) => candidate.destination === "internet");
     const router = found.value.router.id;
+    const selected = this.#internetRoute(found.value.routes);
+    if (selected === "ambiguous") {
+      return {
+        ...step("undecidable", [
+          ...found.evidence,
+          createEvidence("ROUTE_AMBIGUOUS", { zone, router }),
+        ]),
+        addressUnknown: true,
+      };
+    }
+    const route = selected;
     if (!route || typeof route.gateway !== "string") {
       return step("fail", [
         ...found.evidence,

@@ -96,6 +96,7 @@ export function checkRequirements(
     access: {
       model,
       resolver: new ParameterResolver(analysis.options.assumptions),
+      level: analysis.options.level,
     },
   };
 

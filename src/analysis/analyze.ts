@@ -2,6 +2,7 @@ import type { SolutionModel } from "../core/model";
 import { type Finding, hasErrors, sortFindings } from "../messages/finding";
 import { VERSION } from "../version";
 import { checkAccess } from "./access";
+import { type AddressFact, checkAddressPlan } from "./address-plan";
 import type { ExposureFact } from "./checks/access-checks";
 import { checkConnectionValidity } from "./connection-validity";
 import { checkModelValidity } from "./model-validity";
@@ -12,12 +13,12 @@ export const LIBRARY_NAME = "solution-validator";
 
 /**
  * - `logical`: decided from logical settings, without addresses.
- * - `detailed`: also uses concrete values such as CIDR ranges and port numbers (not yet
- *   implemented by any analysis except `model-validity`).
+ * - `detailed`: also uses concrete values: address spaces, address ranges in rules and routes,
+ *   and port ranges. Adds the `address-plan` analysis.
  */
 export type AnalysisLevel = "logical" | "detailed";
 
-export type AnalysisId = "model-validity" | "connection-validity" | "access";
+export type AnalysisId = "model-validity" | "connection-validity" | "access" | "address-plan";
 
 export interface AnalyzeOptions {
   /** Default: `logical`. */
@@ -61,7 +62,18 @@ export interface AccessReport {
   readonly findings: readonly Finding[];
 }
 
-export type AnalysisReport = ModelValidityReport | ConnectionValidityReport | AccessReport;
+export interface AddressPlanReport {
+  readonly id: "address-plan";
+  /** Every zone with its address space, sorted by zone id. */
+  readonly zones: readonly AddressFact[];
+  readonly findings: readonly Finding[];
+}
+
+export type AnalysisReport =
+  | ModelValidityReport
+  | ConnectionValidityReport
+  | AccessReport
+  | AddressPlanReport;
 
 export interface AnalysisResult {
   /** The library that produced the result, so that results can be reproduced. */
@@ -85,7 +97,7 @@ interface AnalysisDefinition {
   readonly levels: readonly AnalysisLevel[];
   /** Analyses that run whenever this one runs. */
   readonly requires?: readonly AnalysisId[];
-  run(model: SolutionModel, policy: AssumptionPolicy): AnalysisReport;
+  run(model: SolutionModel, policy: AssumptionPolicy, level: AnalysisLevel): AnalysisReport;
 }
 
 /** The available analyses, in the order they run. */
@@ -113,10 +125,10 @@ const ANALYSES: readonly AnalysisDefinition[] = [
   },
   {
     id: "access",
-    levels: ["logical"],
+    levels: ["logical", "detailed"],
     requires: ["connection-validity"],
-    run: (model, policy) => {
-      const { intents, exposure, assumptions, findings } = checkAccess(model, policy);
+    run: (model, policy, level) => {
+      const { intents, exposure, assumptions, findings } = checkAccess(model, policy, level);
       return {
         id: "access",
         intents,
@@ -125,6 +137,14 @@ const ANALYSES: readonly AnalysisDefinition[] = [
         assumptions,
         findings: sortFindings(findings),
       };
+    },
+  },
+  {
+    id: "address-plan",
+    levels: ["detailed"],
+    run: (model, policy) => {
+      const { zones, findings } = checkAddressPlan(model, policy);
+      return { id: "address-plan", zones, findings: sortFindings(findings) };
     },
   },
 ];
@@ -179,7 +199,7 @@ export function analyze(model: SolutionModel, options: AnalyzeOptions = {}): Ana
       return pack ? [{ id: pack.id, version: pack.version }] : [];
     }),
     options: { level, analyses: selected.map((analysis) => analysis.id), assumptions: policy },
-    analyses: selected.map((analysis) => analysis.run(model, policy)),
+    analyses: selected.map((analysis) => analysis.run(model, policy, level)),
   };
 }
 
