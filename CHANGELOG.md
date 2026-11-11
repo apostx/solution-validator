@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.0](https://github.com/apostx/solution-validator/compare/v0.5.0...v0.6.0) (2026-11-11)
+
+
+### Features
+
+* detailed analysis level with IPv4 address plans (iteration 6) ([#12](https://github.com/apostx/solution-validator/issues/12)) ([239ad06](https://github.com/apostx/solution-validator/commit/239ad0626dcdabf21d214592344a6a9a5379f787))
+
 ## [0.5.0](https://github.com/apostx/solution-validator/compare/v0.4.0...v0.5.0) (2026-11-11)
 
 
