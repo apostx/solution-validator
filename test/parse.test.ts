@@ -94,7 +94,7 @@ describe("analyze", () => {
       TypeError,
     );
     expect(() => analyze(parsed.model, { level: "exact" as "logical" })).toThrow(TypeError);
-    expect(() => analyze(parsed.model, { level: "detailed", analyses: ["access"] })).toThrow(
+    expect(() => analyze(parsed.model, { level: "logical", analyses: ["address-plan"] })).toThrow(
       TypeError,
     );
     expect(() => analyze(parsed.model, { assumptions: "lenient" as "strict" })).toThrow(TypeError);
@@ -108,6 +108,8 @@ describe("analyze", () => {
     expect(analyze(parsed.model, { level: "detailed" }).options.analyses).toEqual([
       "model-validity",
       "connection-validity",
+      "access",
+      "address-plan",
     ]);
   });
 });

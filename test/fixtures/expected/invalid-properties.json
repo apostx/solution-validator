@@ -13,7 +13,7 @@
       "packs": [
         {
           "id": "aws",
-          "version": "0.2.0"
+          "version": "0.3.0"
         },
         {
           "id": "core",
@@ -351,7 +351,7 @@
       "packs": [
         {
           "id": "aws",
-          "version": "0.2.0"
+          "version": "0.3.0"
         },
         {
           "id": "core",
@@ -677,6 +677,350 @@
               "message": "Intent i1: api has no route to fn."
             }
           ]
+        }
+      ]
+    },
+    "detailed": {
+      "library": {
+        "name": "solution-validator",
+        "version": "<version>"
+      },
+      "vocabulary": 2,
+      "packs": [
+        {
+          "id": "aws",
+          "version": "0.3.0"
+        },
+        {
+          "id": "core",
+          "version": "0.1.0"
+        }
+      ],
+      "options": {
+        "level": "detailed",
+        "analyses": [
+          "model-validity",
+          "connection-validity",
+          "access",
+          "address-plan"
+        ],
+        "assumptions": "strict"
+      },
+      "analyses": [
+        {
+          "id": "model-validity",
+          "valid": false,
+          "findings": [
+            {
+              "code": "PROPERTY_UNKNOWN",
+              "severity": "error",
+              "subjects": [
+                "api"
+              ],
+              "params": {
+                "component": "api",
+                "property": "stage",
+                "type": "aws.api-gateway"
+              },
+              "message": "Component api sets property stage, which type aws.api-gateway does not define."
+            },
+            {
+              "code": "REFERENCE_UNKNOWN",
+              "severity": "error",
+              "subjects": [
+                "api"
+              ],
+              "params": {
+                "path": "/components/0/properties/routes/0/target",
+                "id": "orders-fn"
+              },
+              "message": "/components/0/properties/routes/0/target refers to orders-fn, which is not a component of the solution."
+            },
+            {
+              "code": "SCHEMA_CONSTRAINT",
+              "severity": "error",
+              "subjects": [
+                "api"
+              ],
+              "params": {
+                "path": "/components/0/properties/routes/1/path",
+                "constraint": "minLength",
+                "limit": "1"
+              },
+              "message": "/components/0/properties/routes/1/path does not satisfy the constraint minLength 1."
+            },
+            {
+              "code": "SCHEMA_ENUM",
+              "severity": "error",
+              "subjects": [
+                "api"
+              ],
+              "params": {
+                "path": "/components/0/properties/endpoint",
+                "allowed": "public, private"
+              },
+              "message": "/components/0/properties/endpoint must be one of: public, private."
+            },
+            {
+              "code": "SCHEMA_REQUIRED",
+              "severity": "error",
+              "subjects": [
+                "api"
+              ],
+              "params": {
+                "path": "/components/0/properties/routes/1",
+                "field": "target"
+              },
+              "message": "/components/0/properties/routes/1 is missing the required field target."
+            },
+            {
+              "code": "SCHEMA_TYPE",
+              "severity": "error",
+              "subjects": [
+                "bucket"
+              ],
+              "params": {
+                "path": "/components/2/properties/publicAccess",
+                "expected": "boolean"
+              },
+              "message": "/components/2/properties/publicAccess must be of type boolean."
+            },
+            {
+              "code": "REFERENCE_UNKNOWN",
+              "severity": "error",
+              "subjects": [
+                "fn"
+              ],
+              "params": {
+                "path": "/components/1/properties/permissions/0/resource",
+                "id": "table"
+              },
+              "message": "/components/1/properties/permissions/0/resource refers to table, which is not a component of the solution."
+            },
+            {
+              "code": "SCHEMA_ENUM",
+              "severity": "error",
+              "subjects": [
+                "fn"
+              ],
+              "params": {
+                "path": "/components/1/properties/permissions/0/access",
+                "allowed": "read, write, read-write, invoke"
+              },
+              "message": "/components/1/properties/permissions/0/access must be one of: read, write, read-write, invoke."
+            },
+            {
+              "code": "SCHEMA_UNKNOWN_FIELD",
+              "severity": "error",
+              "subjects": [
+                "fn"
+              ],
+              "params": {
+                "path": "/components/1/properties/permissions/0",
+                "field": "until"
+              },
+              "message": "/components/1/properties/permissions/0 has an unknown field until."
+            }
+          ]
+        },
+        {
+          "id": "connection-validity",
+          "intents": [
+            {
+              "intent": "i1",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.api-gateway",
+                        "toType": "aws.lambda",
+                        "purpose": "invoke",
+                        "rule": 0
+                      },
+                      "message": "aws.lambda accepts invoke from aws.api-gateway (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "summary": {
+            "pass": 1,
+            "fail": 0,
+            "undecidable": 0
+          },
+          "findings": []
+        },
+        {
+          "id": "access",
+          "intents": [
+            {
+              "intent": "i1",
+              "verdict": "fail",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.api-gateway",
+                        "toType": "aws.lambda",
+                        "purpose": "invoke",
+                        "rule": 0
+                      },
+                      "message": "aws.lambda accepts invoke from aws.api-gateway (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "forwarding",
+                  "verdict": "fail",
+                  "evidence": [
+                    {
+                      "code": "ROUTE_MISSING",
+                      "params": {
+                        "from": "api",
+                        "to": "fn"
+                      },
+                      "message": "api has no route to fn."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ENDPOINT_PUBLIC",
+                      "params": {
+                        "from": "api",
+                        "to": "fn"
+                      },
+                      "message": "fn has a public endpoint."
+                    }
+                  ]
+                },
+                {
+                  "check": "authorization",
+                  "verdict": "fail",
+                  "evidence": [
+                    {
+                      "code": "NOT_PRINCIPAL",
+                      "params": {
+                        "from": "api"
+                      },
+                      "message": "api has no identity that can be granted access."
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "summary": {
+            "pass": 0,
+            "fail": 1,
+            "undecidable": 0
+          },
+          "exposure": [
+            {
+              "component": "api",
+              "exposure": "undecidable",
+              "evidence": [
+                {
+                  "code": "PROPERTY_INVALID",
+                  "params": {
+                    "component": "api",
+                    "property": "endpoint"
+                  },
+                  "message": "api sets endpoint to a value the check cannot use."
+                }
+              ]
+            },
+            {
+              "component": "bucket",
+              "exposure": "not-exposed",
+              "evidence": [
+                {
+                  "code": "ENDPOINT_PUBLIC",
+                  "params": {
+                    "from": "the internet",
+                    "to": "bucket"
+                  },
+                  "message": "bucket has a public endpoint."
+                },
+                {
+                  "code": "PUBLIC_ACCESS_OFF",
+                  "params": {
+                    "component": "bucket"
+                  },
+                  "message": "bucket does not allow public access."
+                }
+              ]
+            },
+            {
+              "component": "fn",
+              "exposure": "not-exposed",
+              "evidence": [
+                {
+                  "code": "ENDPOINT_PUBLIC",
+                  "params": {
+                    "from": "the internet",
+                    "to": "fn"
+                  },
+                  "message": "fn has a public endpoint."
+                },
+                {
+                  "code": "PUBLIC_ACCESS_OFF",
+                  "params": {
+                    "component": "fn"
+                  },
+                  "message": "fn does not allow public access."
+                }
+              ]
+            }
+          ],
+          "assumptions": [],
+          "findings": [
+            {
+              "code": "ACCESS_PERMISSION_MISSING",
+              "severity": "error",
+              "subjects": [
+                "i1"
+              ],
+              "params": {
+                "intent": "i1",
+                "from": "api",
+                "to": "fn",
+                "action": "invoke"
+              },
+              "message": "Intent i1: api has no permission to invoke fn."
+            },
+            {
+              "code": "ACCESS_ROUTE_MISSING",
+              "severity": "error",
+              "subjects": [
+                "i1"
+              ],
+              "params": {
+                "intent": "i1",
+                "from": "api",
+                "to": "fn"
+              },
+              "message": "Intent i1: api has no route to fn."
+            }
+          ]
+        },
+        {
+          "id": "address-plan",
+          "zones": [],
+          "findings": []
         }
       ]
     }

@@ -30,6 +30,12 @@ const SECTIONS: { source: FindingSource; title: string; intro: string }[] = [
       "Logical access: forwarding, connectivity and authorization for every intent, and exposure to the internet. Failures are reported per failing check; undecidable intents report what is missing. Compatibility failures come from `connection-validity`, which always runs with `access`.",
   },
   {
+    source: "address-plan",
+    title: "Analysis: address-plan (detailed level)",
+    intro:
+      "Checks the address plan: zones' IPv4 address spaces, their nesting and overlaps, and route destinations.",
+  },
+  {
     source: "requirements",
     title: "Tasks and requirements",
     intro:

@@ -13,7 +13,7 @@
       "packs": [
         {
           "id": "aws",
-          "version": "0.2.0"
+          "version": "0.3.0"
         },
         {
           "id": "core",
@@ -795,7 +795,7 @@
       "packs": [
         {
           "id": "aws",
-          "version": "0.2.0"
+          "version": "0.3.0"
         },
         {
           "id": "core",
@@ -1565,6 +1565,818 @@
               "message": "web is directly accessible from the internet."
             }
           ]
+        }
+      ]
+    },
+    "detailed": {
+      "library": {
+        "name": "solution-validator",
+        "version": "<version>"
+      },
+      "vocabulary": 2,
+      "packs": [
+        {
+          "id": "aws",
+          "version": "0.3.0"
+        },
+        {
+          "id": "core",
+          "version": "0.1.0"
+        }
+      ],
+      "options": {
+        "level": "detailed",
+        "analyses": [
+          "model-validity",
+          "connection-validity",
+          "access",
+          "address-plan"
+        ],
+        "assumptions": "strict"
+      },
+      "analyses": [
+        {
+          "id": "model-validity",
+          "valid": true,
+          "findings": []
+        },
+        {
+          "id": "connection-validity",
+          "intents": [
+            {
+              "intent": "batch-table",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.lambda",
+                        "toType": "aws.dynamodb",
+                        "purpose": "read",
+                        "rule": 0
+                      },
+                      "message": "aws.dynamodb accepts read from aws.lambda (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "users-app",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "aws.autoscaling-group",
+                        "purpose": "port https",
+                        "rule": 0
+                      },
+                      "message": "aws.autoscaling-group accepts port https from core.internet (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "users-web-http",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "aws.autoscaling-group",
+                        "purpose": "port http",
+                        "rule": 0
+                      },
+                      "message": "aws.autoscaling-group accepts port http from core.internet (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "users-web-https",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "aws.autoscaling-group",
+                        "purpose": "port https",
+                        "rule": 0
+                      },
+                      "message": "aws.autoscaling-group accepts port https from core.internet (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "web-app",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.autoscaling-group",
+                        "toType": "aws.autoscaling-group",
+                        "purpose": "invoke on port https",
+                        "rule": 0
+                      },
+                      "message": "aws.autoscaling-group accepts invoke on port https from aws.autoscaling-group (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "web-table",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.autoscaling-group",
+                        "toType": "aws.dynamodb",
+                        "purpose": "read",
+                        "rule": 0
+                      },
+                      "message": "aws.dynamodb accepts read from aws.autoscaling-group (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "worker-table",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.lambda",
+                        "toType": "aws.dynamodb",
+                        "purpose": "write",
+                        "rule": 0
+                      },
+                      "message": "aws.dynamodb accepts write from aws.lambda (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "summary": {
+            "pass": 7,
+            "fail": 0,
+            "undecidable": 0
+          },
+          "findings": []
+        },
+        {
+          "id": "access",
+          "intents": [
+            {
+              "intent": "batch-table",
+              "verdict": "fail",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.lambda",
+                        "toType": "aws.dynamodb",
+                        "purpose": "read",
+                        "rule": 0
+                      },
+                      "message": "aws.dynamodb accepts read from aws.lambda (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "fail",
+                  "evidence": [
+                    {
+                      "code": "LOCAL_ROUTES_ONLY",
+                      "params": {
+                        "zone": "isolated-a"
+                      },
+                      "message": "isolated-a has no router, so it only has local routes."
+                    },
+                    {
+                      "code": "ENDPOINT_PUBLIC",
+                      "params": {
+                        "from": "batch",
+                        "to": "orders-table"
+                      },
+                      "message": "orders-table has a public endpoint."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "batch-sg",
+                        "direction": "outbound",
+                        "peer": "orders-table",
+                        "rule": 0
+                      },
+                      "message": "batch-sg allows outbound traffic with orders-table (rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "authorization",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "GRANT_FOUND",
+                      "params": {
+                        "from": "batch",
+                        "to": "orders-table",
+                        "access": "read",
+                        "action": "read"
+                      },
+                      "message": "batch has read access to orders-table, which allows read."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "users-app",
+              "verdict": "fail",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "aws.autoscaling-group",
+                        "purpose": "port https",
+                        "rule": 0
+                      },
+                      "message": "aws.autoscaling-group accepts port https from core.internet (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "fail",
+                  "evidence": [
+                    {
+                      "code": "ENDPOINT_PRIVATE",
+                      "params": {
+                        "from": "users",
+                        "to": "app"
+                      },
+                      "message": "app has a private endpoint, and users is not inside its network."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "users-web-http",
+              "verdict": "fail",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "aws.autoscaling-group",
+                        "purpose": "port http",
+                        "rule": 0
+                      },
+                      "message": "aws.autoscaling-group accepts port http from core.internet (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "fail",
+                  "evidence": [
+                    {
+                      "code": "INTERNET_ROUTE",
+                      "params": {
+                        "zone": "public-a",
+                        "gateway": "igw"
+                      },
+                      "message": "public-a reaches the internet through igw."
+                    },
+                    {
+                      "code": "FILTER_DEFAULT_DENIES",
+                      "params": {
+                        "filter": "web-sg",
+                        "direction": "inbound",
+                        "peer": "users"
+                      },
+                      "message": "No rule of web-sg matches inbound traffic with users; its default denies it."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "users-web-https",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "aws.autoscaling-group",
+                        "purpose": "port https",
+                        "rule": 0
+                      },
+                      "message": "aws.autoscaling-group accepts port https from core.internet (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "INTERNET_ROUTE",
+                      "params": {
+                        "zone": "public-a",
+                        "gateway": "igw"
+                      },
+                      "message": "public-a reaches the internet through igw."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "web-sg",
+                        "direction": "inbound",
+                        "peer": "users",
+                        "rule": 0
+                      },
+                      "message": "web-sg allows inbound traffic with users (rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "web-app",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.autoscaling-group",
+                        "toType": "aws.autoscaling-group",
+                        "purpose": "invoke on port https",
+                        "rule": 0
+                      },
+                      "message": "aws.autoscaling-group accepts invoke on port https from aws.autoscaling-group (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "SAME_NETWORK",
+                      "params": {
+                        "from": "web",
+                        "to": "app",
+                        "network": "vpc"
+                      },
+                      "message": "web and app are in the same network, vpc."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "web-sg",
+                        "direction": "outbound",
+                        "peer": "app",
+                        "rule": 1
+                      },
+                      "message": "web-sg allows outbound traffic with app (rule 1)."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "app-sg",
+                        "direction": "inbound",
+                        "peer": "web",
+                        "rule": 0
+                      },
+                      "message": "app-sg allows inbound traffic with web (rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "web-table",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.autoscaling-group",
+                        "toType": "aws.dynamodb",
+                        "purpose": "read",
+                        "rule": 0
+                      },
+                      "message": "aws.dynamodb accepts read from aws.autoscaling-group (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "INTERNET_ROUTE",
+                      "params": {
+                        "zone": "public-a",
+                        "gateway": "igw"
+                      },
+                      "message": "public-a reaches the internet through igw."
+                    },
+                    {
+                      "code": "ENDPOINT_PUBLIC",
+                      "params": {
+                        "from": "web",
+                        "to": "orders-table"
+                      },
+                      "message": "orders-table has a public endpoint."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "web-sg",
+                        "direction": "outbound",
+                        "peer": "orders-table",
+                        "rule": 1
+                      },
+                      "message": "web-sg allows outbound traffic with orders-table (rule 1)."
+                    }
+                  ]
+                },
+                {
+                  "check": "authorization",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "GRANT_FOUND",
+                      "params": {
+                        "from": "web",
+                        "to": "orders-table",
+                        "access": "read",
+                        "action": "read"
+                      },
+                      "message": "web has read access to orders-table, which allows read."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "worker-table",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.lambda",
+                        "toType": "aws.dynamodb",
+                        "purpose": "write",
+                        "rule": 0
+                      },
+                      "message": "aws.dynamodb accepts write from aws.lambda (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "NAT_ROUTE",
+                      "params": {
+                        "zone": "private-a",
+                        "gateway": "nat"
+                      },
+                      "message": "private-a reaches the internet through nat, for outbound connections only."
+                    },
+                    {
+                      "code": "INTERNET_ROUTE",
+                      "params": {
+                        "zone": "public-a",
+                        "gateway": "igw"
+                      },
+                      "message": "public-a reaches the internet through igw."
+                    },
+                    {
+                      "code": "ENDPOINT_PUBLIC",
+                      "params": {
+                        "from": "worker",
+                        "to": "orders-table"
+                      },
+                      "message": "orders-table has a public endpoint."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "worker-sg",
+                        "direction": "outbound",
+                        "peer": "orders-table",
+                        "rule": 0
+                      },
+                      "message": "worker-sg allows outbound traffic with orders-table (rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "authorization",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "GRANT_FOUND",
+                      "params": {
+                        "from": "worker",
+                        "to": "orders-table",
+                        "access": "read-write",
+                        "action": "write"
+                      },
+                      "message": "worker has read-write access to orders-table, which allows write."
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "summary": {
+            "pass": 4,
+            "fail": 3,
+            "undecidable": 0
+          },
+          "exposure": [
+            {
+              "component": "app",
+              "exposure": "not-exposed",
+              "evidence": [
+                {
+                  "code": "ENDPOINT_NOT_PUBLIC",
+                  "params": {
+                    "component": "app"
+                  },
+                  "message": "app has no public endpoint."
+                }
+              ]
+            },
+            {
+              "component": "batch",
+              "exposure": "not-exposed",
+              "evidence": [
+                {
+                  "code": "ENDPOINT_PUBLIC",
+                  "params": {
+                    "from": "the internet",
+                    "to": "batch"
+                  },
+                  "message": "batch has a public endpoint."
+                },
+                {
+                  "code": "PUBLIC_ACCESS_OFF",
+                  "params": {
+                    "component": "batch"
+                  },
+                  "message": "batch does not allow public access."
+                }
+              ]
+            },
+            {
+              "component": "orders-table",
+              "exposure": "not-exposed",
+              "evidence": [
+                {
+                  "code": "ENDPOINT_PUBLIC",
+                  "params": {
+                    "from": "the internet",
+                    "to": "orders-table"
+                  },
+                  "message": "orders-table has a public endpoint."
+                },
+                {
+                  "code": "PUBLIC_ACCESS_OFF",
+                  "params": {
+                    "component": "orders-table"
+                  },
+                  "message": "orders-table does not allow public access."
+                }
+              ]
+            },
+            {
+              "component": "web",
+              "exposure": "exposed",
+              "ports": [
+                "https"
+              ],
+              "evidence": [
+                {
+                  "code": "ENDPOINT_PUBLIC",
+                  "params": {
+                    "from": "the internet",
+                    "to": "web"
+                  },
+                  "message": "web has a public endpoint."
+                },
+                {
+                  "code": "INTERNET_ROUTE",
+                  "params": {
+                    "zone": "public-a",
+                    "gateway": "igw"
+                  },
+                  "message": "public-a reaches the internet through igw."
+                },
+                {
+                  "code": "FILTER_ALLOWS",
+                  "params": {
+                    "filter": "web-sg",
+                    "direction": "inbound",
+                    "peer": "the internet",
+                    "rule": 0
+                  },
+                  "message": "web-sg allows inbound traffic with the internet (rule 0)."
+                },
+                {
+                  "code": "ANONYMOUS_ALLOWED",
+                  "params": {
+                    "component": "web"
+                  },
+                  "message": "web does not control access."
+                }
+              ]
+            },
+            {
+              "component": "worker",
+              "exposure": "not-exposed",
+              "evidence": [
+                {
+                  "code": "ENDPOINT_PUBLIC",
+                  "params": {
+                    "from": "the internet",
+                    "to": "worker"
+                  },
+                  "message": "worker has a public endpoint."
+                },
+                {
+                  "code": "PUBLIC_ACCESS_OFF",
+                  "params": {
+                    "component": "worker"
+                  },
+                  "message": "worker does not allow public access."
+                }
+              ]
+            }
+          ],
+          "assumptions": [],
+          "findings": [
+            {
+              "code": "ACCESS_NOT_REACHABLE",
+              "severity": "error",
+              "subjects": [
+                "batch-table"
+              ],
+              "params": {
+                "intent": "batch-table",
+                "from": "batch",
+                "to": "orders-table"
+              },
+              "message": "Intent batch-table: orders-table cannot be reached from batch."
+            },
+            {
+              "code": "ACCESS_NOT_REACHABLE",
+              "severity": "error",
+              "subjects": [
+                "users-app"
+              ],
+              "params": {
+                "intent": "users-app",
+                "from": "users",
+                "to": "app"
+              },
+              "message": "Intent users-app: app cannot be reached from users."
+            },
+            {
+              "code": "ACCESS_NOT_REACHABLE",
+              "severity": "error",
+              "subjects": [
+                "users-web-http"
+              ],
+              "params": {
+                "intent": "users-web-http",
+                "from": "users",
+                "to": "web"
+              },
+              "message": "Intent users-web-http: web cannot be reached from users."
+            },
+            {
+              "code": "EXPOSED_TO_INTERNET",
+              "severity": "info",
+              "subjects": [
+                "web"
+              ],
+              "params": {
+                "component": "web"
+              },
+              "message": "web is directly accessible from the internet."
+            }
+          ]
+        },
+        {
+          "id": "address-plan",
+          "zones": [
+            {
+              "zone": "isolated-a",
+              "parent": "vpc",
+              "space": "10.0.3.0/24",
+              "size": 256
+            },
+            {
+              "zone": "private-a",
+              "parent": "vpc",
+              "space": "10.0.2.0/24",
+              "size": 256
+            },
+            {
+              "zone": "public-a",
+              "parent": "vpc",
+              "space": "10.0.1.0/24",
+              "size": 256
+            },
+            {
+              "zone": "vpc",
+              "space": "10.0.0.0/16",
+              "size": 65536
+            }
+          ],
+          "findings": []
         }
       ]
     }

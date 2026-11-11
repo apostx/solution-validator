@@ -11,7 +11,7 @@ const fixtures = readdirSync(directory)
 
 /**
  * Golden files: each solution in `fixtures/solutions` is parsed and analyzed under both
- * assumption policies, and the result is compared with `fixtures/expected`. Update them with `npx vitest run -u` and review the diff.
+ * assumption policies and at the detailed level, and the result is compared with `fixtures/expected`. Update them with `npx vitest run -u` and review the diff.
  */
 describe.each(fixtures)("%s", (name) => {
   const text = readFileSync(new URL(name, directory), "utf8");
@@ -22,6 +22,9 @@ describe.each(fixtures)("%s", (name) => {
         analysis: {
           strict: withoutVersion(analyze(parsed.model, { assumptions: "strict" })),
           "pack-defaults": withoutVersion(analyze(parsed.model, { assumptions: "pack-defaults" })),
+          detailed: withoutVersion(
+            analyze(parsed.model, { level: "detailed", assumptions: "strict" }),
+          ),
         },
       }
     : { parse: { ok: false, findings: parsed.findings } };
