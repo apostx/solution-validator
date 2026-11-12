@@ -1,0 +1,163 @@
+{
+  "$schema": "../../../schemas/solution.schema.json",
+  "schemaVersion": 1,
+  "packs": ["core", "onprem"],
+  "components": [
+    {
+      "id": "users",
+      "type": "core.internet"
+    },
+    {
+      "id": "lan",
+      "type": "onprem.network",
+      "properties": {
+        "addressSpace": "192.168.0.0/16"
+      }
+    },
+    {
+      "id": "dmz",
+      "type": "onprem.vlan",
+      "placement": ["lan"],
+      "properties": {
+        "vlanId": 10,
+        "subnet": "192.168.10.0/24"
+      }
+    },
+    {
+      "id": "app",
+      "type": "onprem.vlan",
+      "placement": ["lan"],
+      "properties": {
+        "vlanId": 20,
+        "subnet": "192.168.20.0/24"
+      }
+    },
+    {
+      "id": "data",
+      "type": "onprem.vlan",
+      "placement": ["lan"],
+      "properties": {
+        "vlanId": 30,
+        "subnet": "192.168.30.0/24"
+      }
+    },
+    {
+      "id": "office",
+      "type": "onprem.vlan",
+      "placement": ["lan"],
+      "properties": {
+        "vlanId": 40,
+        "subnet": "192.168.40.0/24"
+      }
+    },
+    {
+      "id": "fw",
+      "type": "onprem.firewall",
+      "properties": {
+        "networks": ["lan"],
+        "protects": ["dmz", "app", "data"],
+        "rules": [
+          {
+            "direction": "inbound",
+            "peer": "internet",
+            "ports": ["https"]
+          },
+          {
+            "direction": "inbound",
+            "peer": "dmz",
+            "ports": ["http"]
+          },
+          {
+            "direction": "inbound",
+            "peer": "app",
+            "ports": ["postgresql"]
+          },
+          {
+            "direction": "inbound",
+            "peer": "office",
+            "ports": ["ssh"]
+          }
+        ],
+        "locations": ["rack-a"]
+      }
+    },
+    {
+      "id": "lb",
+      "type": "onprem.load-balancer",
+      "placement": ["dmz"],
+      "properties": {
+        "endpoint": "public",
+        "pools": [
+          {
+            "path": "/",
+            "target": "web"
+          }
+        ],
+        "locations": ["rack-a", "rack-b"]
+      }
+    },
+    {
+      "id": "web",
+      "type": "onprem.server-cluster",
+      "placement": ["app"],
+      "properties": {
+        "endpoint": "private",
+        "servers": 4,
+        "locations": ["rack-a", "rack-b"]
+      }
+    },
+    {
+      "id": "db",
+      "type": "onprem.database",
+      "placement": ["data"],
+      "properties": {
+        "engine": "postgresql",
+        "locations": ["rack-a"]
+      }
+    },
+    {
+      "id": "ops",
+      "type": "onprem.server",
+      "placement": ["office"],
+      "properties": {
+        "endpoint": "private",
+        "locations": ["rack-c"]
+      }
+    }
+  ],
+  "intents": [
+    {
+      "id": "users-lb",
+      "from": "users",
+      "to": "lb",
+      "port": "https"
+    },
+    {
+      "id": "lb-web",
+      "from": "lb",
+      "to": "web",
+      "action": "invoke",
+      "port": "http"
+    },
+    {
+      "id": "web-db",
+      "from": "web",
+      "to": "db",
+      "action": "read",
+      "port": "postgresql"
+    },
+    {
+      "id": "users-web",
+      "from": "users",
+      "to": "web",
+      "port": "http"
+    },
+    {
+      "id": "ops-db",
+      "from": "ops",
+      "to": "db",
+      "action": "read",
+      "port": "postgresql"
+    }
+  ]
+}

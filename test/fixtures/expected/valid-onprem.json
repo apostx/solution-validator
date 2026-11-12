@@ -1,0 +1,2138 @@
+{
+  "parse": {
+    "ok": true,
+    "findings": []
+  },
+  "analysis": {
+    "strict": {
+      "library": {
+        "name": "solution-validator",
+        "version": "<version>"
+      },
+      "vocabulary": 5,
+      "packs": [
+        {
+          "id": "core",
+          "version": "0.2.0"
+        },
+        {
+          "id": "onprem",
+          "version": "0.1.0"
+        }
+      ],
+      "options": {
+        "level": "logical",
+        "analyses": [
+          "model-validity",
+          "connection-validity",
+          "access",
+          "availability"
+        ],
+        "assumptions": "strict"
+      },
+      "analyses": [
+        {
+          "id": "model-validity",
+          "valid": true,
+          "findings": []
+        },
+        {
+          "id": "connection-validity",
+          "intents": [
+            {
+              "intent": "lb-web",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "onprem.load-balancer",
+                        "toType": "onprem.server-cluster",
+                        "purpose": "invoke on port http",
+                        "rule": 0
+                      },
+                      "message": "onprem.server-cluster accepts invoke on port http from onprem.load-balancer (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "ops-db",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "onprem.server",
+                        "toType": "onprem.database",
+                        "purpose": "read on port postgresql",
+                        "rule": 0
+                      },
+                      "message": "onprem.database accepts read on port postgresql from onprem.server (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "users-lb",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "onprem.load-balancer",
+                        "purpose": "port https",
+                        "rule": 0
+                      },
+                      "message": "onprem.load-balancer accepts port https from core.internet (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "users-web",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "onprem.server-cluster",
+                        "purpose": "port http",
+                        "rule": 0
+                      },
+                      "message": "onprem.server-cluster accepts port http from core.internet (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "web-db",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "onprem.server-cluster",
+                        "toType": "onprem.database",
+                        "purpose": "read on port postgresql",
+                        "rule": 0
+                      },
+                      "message": "onprem.database accepts read on port postgresql from onprem.server-cluster (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "summary": {
+            "pass": 5,
+            "fail": 0,
+            "undecidable": 0
+          },
+          "findings": []
+        },
+        {
+          "id": "access",
+          "intents": [
+            {
+              "intent": "lb-web",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "onprem.load-balancer",
+                        "toType": "onprem.server-cluster",
+                        "purpose": "invoke on port http",
+                        "rule": 0
+                      },
+                      "message": "onprem.server-cluster accepts invoke on port http from onprem.load-balancer (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "forwarding",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ROUTE_FOUND",
+                      "params": {
+                        "from": "lb",
+                        "to": "web"
+                      },
+                      "message": "lb has a route to web."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "SAME_NETWORK",
+                      "params": {
+                        "from": "lb",
+                        "to": "web",
+                        "network": "lan"
+                      },
+                      "message": "lb and web are in the same network, lan."
+                    },
+                    {
+                      "code": "FILTER_DEFAULT_ALLOWS",
+                      "params": {
+                        "filter": "fw",
+                        "direction": "outbound",
+                        "peer": "web"
+                      },
+                      "message": "No rule of fw matches outbound traffic with web; its default allows it."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "fw",
+                        "direction": "inbound",
+                        "peer": "lb",
+                        "rule": 1
+                      },
+                      "message": "fw allows inbound traffic with lb (rule 1)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "ops-db",
+              "verdict": "fail",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "onprem.server",
+                        "toType": "onprem.database",
+                        "purpose": "read on port postgresql",
+                        "rule": 0
+                      },
+                      "message": "onprem.database accepts read on port postgresql from onprem.server (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "fail",
+                  "evidence": [
+                    {
+                      "code": "SAME_NETWORK",
+                      "params": {
+                        "from": "ops",
+                        "to": "db",
+                        "network": "lan"
+                      },
+                      "message": "ops and db are in the same network, lan."
+                    },
+                    {
+                      "code": "FILTER_DEFAULT_DENIES",
+                      "params": {
+                        "filter": "fw",
+                        "direction": "inbound",
+                        "peer": "ops"
+                      },
+                      "message": "No rule of fw matches inbound traffic with ops; its default denies it."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "users-lb",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "onprem.load-balancer",
+                        "purpose": "port https",
+                        "rule": 0
+                      },
+                      "message": "onprem.load-balancer accepts port https from core.internet (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "INTERNET_ROUTE",
+                      "params": {
+                        "zone": "dmz",
+                        "gateway": "fw"
+                      },
+                      "message": "dmz reaches the internet through fw."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "fw",
+                        "direction": "inbound",
+                        "peer": "users",
+                        "rule": 0
+                      },
+                      "message": "fw allows inbound traffic with users (rule 0)."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "fw",
+                        "direction": "inbound",
+                        "peer": "users",
+                        "rule": 0
+                      },
+                      "message": "fw allows inbound traffic with users (rule 0)."
+                    },
+                    {
+                      "code": "PORT_OPEN",
+                      "params": {
+                        "to": "lb",
+                        "port": "https"
+                      },
+                      "message": "lb listens on port https."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "users-web",
+              "verdict": "fail",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "onprem.server-cluster",
+                        "purpose": "port http",
+                        "rule": 0
+                      },
+                      "message": "onprem.server-cluster accepts port http from core.internet (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "fail",
+                  "evidence": [
+                    {
+                      "code": "ENDPOINT_PRIVATE",
+                      "params": {
+                        "from": "users",
+                        "to": "web"
+                      },
+                      "message": "web has a private endpoint, and users is not inside its network."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "web-db",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "onprem.server-cluster",
+                        "toType": "onprem.database",
+                        "purpose": "read on port postgresql",
+                        "rule": 0
+                      },
+                      "message": "onprem.database accepts read on port postgresql from onprem.server-cluster (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "SAME_NETWORK",
+                      "params": {
+                        "from": "web",
+                        "to": "db",
+                        "network": "lan"
+                      },
+                      "message": "web and db are in the same network, lan."
+                    },
+                    {
+                      "code": "FILTER_DEFAULT_ALLOWS",
+                      "params": {
+                        "filter": "fw",
+                        "direction": "outbound",
+                        "peer": "db"
+                      },
+                      "message": "No rule of fw matches outbound traffic with db; its default allows it."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "fw",
+                        "direction": "inbound",
+                        "peer": "web",
+                        "rule": 2
+                      },
+                      "message": "fw allows inbound traffic with web (rule 2)."
+                    },
+                    {
+                      "code": "PORT_OPEN",
+                      "params": {
+                        "to": "db",
+                        "port": "postgresql"
+                      },
+                      "message": "db listens on port postgresql."
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "summary": {
+            "pass": 3,
+            "fail": 2,
+            "undecidable": 0
+          },
+          "exposure": [
+            {
+              "component": "db",
+              "exposure": "not-exposed",
+              "evidence": [
+                {
+                  "code": "ENDPOINT_NOT_PUBLIC",
+                  "params": {
+                    "component": "db"
+                  },
+                  "message": "db has no public endpoint."
+                }
+              ]
+            },
+            {
+              "component": "lb",
+              "exposure": "exposed",
+              "ports": [
+                "https"
+              ],
+              "evidence": [
+                {
+                  "code": "ENDPOINT_PUBLIC",
+                  "params": {
+                    "from": "the internet",
+                    "to": "lb"
+                  },
+                  "message": "lb has a public endpoint."
+                },
+                {
+                  "code": "INTERNET_ROUTE",
+                  "params": {
+                    "zone": "dmz",
+                    "gateway": "fw"
+                  },
+                  "message": "dmz reaches the internet through fw."
+                },
+                {
+                  "code": "FILTER_ALLOWS",
+                  "params": {
+                    "filter": "fw",
+                    "direction": "inbound",
+                    "peer": "the internet",
+                    "rule": 0
+                  },
+                  "message": "fw allows inbound traffic with the internet (rule 0)."
+                },
+                {
+                  "code": "FILTER_ALLOWS",
+                  "params": {
+                    "filter": "fw",
+                    "direction": "inbound",
+                    "peer": "the internet",
+                    "rule": 0
+                  },
+                  "message": "fw allows inbound traffic with the internet (rule 0)."
+                },
+                {
+                  "code": "ANONYMOUS_ALLOWED",
+                  "params": {
+                    "component": "lb"
+                  },
+                  "message": "lb does not control access."
+                }
+              ]
+            },
+            {
+              "component": "ops",
+              "exposure": "not-exposed",
+              "evidence": [
+                {
+                  "code": "ENDPOINT_NOT_PUBLIC",
+                  "params": {
+                    "component": "ops"
+                  },
+                  "message": "ops has no public endpoint."
+                }
+              ]
+            },
+            {
+              "component": "web",
+              "exposure": "not-exposed",
+              "evidence": [
+                {
+                  "code": "ENDPOINT_NOT_PUBLIC",
+                  "params": {
+                    "component": "web"
+                  },
+                  "message": "web has no public endpoint."
+                }
+              ]
+            }
+          ],
+          "assumptions": [],
+          "findings": [
+            {
+              "code": "EXPOSED_TO_INTERNET",
+              "severity": "info",
+              "subjects": [
+                "lb"
+              ],
+              "params": {
+                "component": "lb"
+              },
+              "message": "lb is directly accessible from the internet."
+            },
+            {
+              "code": "ACCESS_NOT_REACHABLE",
+              "severity": "error",
+              "subjects": [
+                "ops-db"
+              ],
+              "params": {
+                "intent": "ops-db",
+                "from": "ops",
+                "to": "db"
+              },
+              "message": "Intent ops-db: db cannot be reached from ops."
+            },
+            {
+              "code": "ACCESS_NOT_REACHABLE",
+              "severity": "error",
+              "subjects": [
+                "users-web"
+              ],
+              "params": {
+                "intent": "users-web",
+                "from": "users",
+                "to": "web"
+              },
+              "message": "Intent users-web: web cannot be reached from users."
+            }
+          ]
+        },
+        {
+          "id": "availability",
+          "components": [
+            {
+              "component": "db",
+              "availability": "single",
+              "domains": [
+                "rack-a"
+              ],
+              "evidence": [
+                {
+                  "code": "FAILURE_DOMAINS",
+                  "params": {
+                    "component": "db",
+                    "domains": "rack-a"
+                  },
+                  "message": "db runs in: rack-a."
+                }
+              ]
+            },
+            {
+              "component": "fw",
+              "availability": "single",
+              "domains": [
+                "rack-a"
+              ],
+              "evidence": [
+                {
+                  "code": "FAILURE_DOMAINS",
+                  "params": {
+                    "component": "fw",
+                    "domains": "rack-a"
+                  },
+                  "message": "fw runs in: rack-a."
+                }
+              ]
+            },
+            {
+              "component": "lb",
+              "availability": "redundant",
+              "domains": [
+                "rack-a",
+                "rack-b"
+              ],
+              "evidence": [
+                {
+                  "code": "FAILURE_DOMAINS",
+                  "params": {
+                    "component": "lb",
+                    "domains": "rack-a, rack-b"
+                  },
+                  "message": "lb runs in: rack-a, rack-b."
+                }
+              ]
+            },
+            {
+              "component": "ops",
+              "availability": "single",
+              "domains": [
+                "rack-c"
+              ],
+              "evidence": [
+                {
+                  "code": "FAILURE_DOMAINS",
+                  "params": {
+                    "component": "ops",
+                    "domains": "rack-c"
+                  },
+                  "message": "ops runs in: rack-c."
+                }
+              ]
+            },
+            {
+              "component": "web",
+              "availability": "redundant",
+              "domains": [
+                "rack-a",
+                "rack-b"
+              ],
+              "evidence": [
+                {
+                  "code": "FAILURE_DOMAINS",
+                  "params": {
+                    "component": "web",
+                    "domains": "rack-a, rack-b"
+                  },
+                  "message": "web runs in: rack-a, rack-b."
+                }
+              ]
+            }
+          ],
+          "findings": [
+            {
+              "code": "AVAILABILITY_SINGLE_POINT",
+              "severity": "warning",
+              "subjects": [
+                "db"
+              ],
+              "params": {
+                "component": "db",
+                "domain": "rack-a",
+                "intents": "web-db"
+              },
+              "message": "db runs in a single failure domain (rack-a), and intents depend on it: web-db."
+            },
+            {
+              "code": "AVAILABILITY_SINGLE_POINT",
+              "severity": "warning",
+              "subjects": [
+                "fw"
+              ],
+              "params": {
+                "component": "fw",
+                "domain": "rack-a",
+                "intents": "users-lb"
+              },
+              "message": "fw runs in a single failure domain (rack-a), and intents depend on it: users-lb."
+            }
+          ]
+        }
+      ]
+    },
+    "pack-defaults": {
+      "library": {
+        "name": "solution-validator",
+        "version": "<version>"
+      },
+      "vocabulary": 5,
+      "packs": [
+        {
+          "id": "core",
+          "version": "0.2.0"
+        },
+        {
+          "id": "onprem",
+          "version": "0.1.0"
+        }
+      ],
+      "options": {
+        "level": "logical",
+        "analyses": [
+          "model-validity",
+          "connection-validity",
+          "access",
+          "availability"
+        ],
+        "assumptions": "pack-defaults"
+      },
+      "analyses": [
+        {
+          "id": "model-validity",
+          "valid": true,
+          "findings": []
+        },
+        {
+          "id": "connection-validity",
+          "intents": [
+            {
+              "intent": "lb-web",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "onprem.load-balancer",
+                        "toType": "onprem.server-cluster",
+                        "purpose": "invoke on port http",
+                        "rule": 0
+                      },
+                      "message": "onprem.server-cluster accepts invoke on port http from onprem.load-balancer (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "ops-db",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "onprem.server",
+                        "toType": "onprem.database",
+                        "purpose": "read on port postgresql",
+                        "rule": 0
+                      },
+                      "message": "onprem.database accepts read on port postgresql from onprem.server (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "users-lb",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "onprem.load-balancer",
+                        "purpose": "port https",
+                        "rule": 0
+                      },
+                      "message": "onprem.load-balancer accepts port https from core.internet (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "users-web",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "onprem.server-cluster",
+                        "purpose": "port http",
+                        "rule": 0
+                      },
+                      "message": "onprem.server-cluster accepts port http from core.internet (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "web-db",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "onprem.server-cluster",
+                        "toType": "onprem.database",
+                        "purpose": "read on port postgresql",
+                        "rule": 0
+                      },
+                      "message": "onprem.database accepts read on port postgresql from onprem.server-cluster (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "summary": {
+            "pass": 5,
+            "fail": 0,
+            "undecidable": 0
+          },
+          "findings": []
+        },
+        {
+          "id": "access",
+          "intents": [
+            {
+              "intent": "lb-web",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "onprem.load-balancer",
+                        "toType": "onprem.server-cluster",
+                        "purpose": "invoke on port http",
+                        "rule": 0
+                      },
+                      "message": "onprem.server-cluster accepts invoke on port http from onprem.load-balancer (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "forwarding",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ROUTE_FOUND",
+                      "params": {
+                        "from": "lb",
+                        "to": "web"
+                      },
+                      "message": "lb has a route to web."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "SAME_NETWORK",
+                      "params": {
+                        "from": "lb",
+                        "to": "web",
+                        "network": "lan"
+                      },
+                      "message": "lb and web are in the same network, lan."
+                    },
+                    {
+                      "code": "FILTER_DEFAULT_ALLOWS",
+                      "params": {
+                        "filter": "fw",
+                        "direction": "outbound",
+                        "peer": "web"
+                      },
+                      "message": "No rule of fw matches outbound traffic with web; its default allows it."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "fw",
+                        "direction": "inbound",
+                        "peer": "lb",
+                        "rule": 1
+                      },
+                      "message": "fw allows inbound traffic with lb (rule 1)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "ops-db",
+              "verdict": "fail",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "onprem.server",
+                        "toType": "onprem.database",
+                        "purpose": "read on port postgresql",
+                        "rule": 0
+                      },
+                      "message": "onprem.database accepts read on port postgresql from onprem.server (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "fail",
+                  "evidence": [
+                    {
+                      "code": "SAME_NETWORK",
+                      "params": {
+                        "from": "ops",
+                        "to": "db",
+                        "network": "lan"
+                      },
+                      "message": "ops and db are in the same network, lan."
+                    },
+                    {
+                      "code": "FILTER_DEFAULT_DENIES",
+                      "params": {
+                        "filter": "fw",
+                        "direction": "inbound",
+                        "peer": "ops"
+                      },
+                      "message": "No rule of fw matches inbound traffic with ops; its default denies it."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "users-lb",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "onprem.load-balancer",
+                        "purpose": "port https",
+                        "rule": 0
+                      },
+                      "message": "onprem.load-balancer accepts port https from core.internet (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "INTERNET_ROUTE",
+                      "params": {
+                        "zone": "dmz",
+                        "gateway": "fw"
+                      },
+                      "message": "dmz reaches the internet through fw."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "fw",
+                        "direction": "inbound",
+                        "peer": "users",
+                        "rule": 0
+                      },
+                      "message": "fw allows inbound traffic with users (rule 0)."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "fw",
+                        "direction": "inbound",
+                        "peer": "users",
+                        "rule": 0
+                      },
+                      "message": "fw allows inbound traffic with users (rule 0)."
+                    },
+                    {
+                      "code": "PORT_OPEN",
+                      "params": {
+                        "to": "lb",
+                        "port": "https"
+                      },
+                      "message": "lb listens on port https."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "users-web",
+              "verdict": "fail",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "onprem.server-cluster",
+                        "purpose": "port http",
+                        "rule": 0
+                      },
+                      "message": "onprem.server-cluster accepts port http from core.internet (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "fail",
+                  "evidence": [
+                    {
+                      "code": "ENDPOINT_PRIVATE",
+                      "params": {
+                        "from": "users",
+                        "to": "web"
+                      },
+                      "message": "web has a private endpoint, and users is not inside its network."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "web-db",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "onprem.server-cluster",
+                        "toType": "onprem.database",
+                        "purpose": "read on port postgresql",
+                        "rule": 0
+                      },
+                      "message": "onprem.database accepts read on port postgresql from onprem.server-cluster (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "SAME_NETWORK",
+                      "params": {
+                        "from": "web",
+                        "to": "db",
+                        "network": "lan"
+                      },
+                      "message": "web and db are in the same network, lan."
+                    },
+                    {
+                      "code": "FILTER_DEFAULT_ALLOWS",
+                      "params": {
+                        "filter": "fw",
+                        "direction": "outbound",
+                        "peer": "db"
+                      },
+                      "message": "No rule of fw matches outbound traffic with db; its default allows it."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "fw",
+                        "direction": "inbound",
+                        "peer": "web",
+                        "rule": 2
+                      },
+                      "message": "fw allows inbound traffic with web (rule 2)."
+                    },
+                    {
+                      "code": "PORT_OPEN",
+                      "params": {
+                        "to": "db",
+                        "port": "postgresql"
+                      },
+                      "message": "db listens on port postgresql."
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "summary": {
+            "pass": 3,
+            "fail": 2,
+            "undecidable": 0
+          },
+          "exposure": [
+            {
+              "component": "db",
+              "exposure": "not-exposed",
+              "evidence": [
+                {
+                  "code": "ENDPOINT_NOT_PUBLIC",
+                  "params": {
+                    "component": "db"
+                  },
+                  "message": "db has no public endpoint."
+                }
+              ]
+            },
+            {
+              "component": "lb",
+              "exposure": "exposed",
+              "ports": [
+                "https"
+              ],
+              "evidence": [
+                {
+                  "code": "ENDPOINT_PUBLIC",
+                  "params": {
+                    "from": "the internet",
+                    "to": "lb"
+                  },
+                  "message": "lb has a public endpoint."
+                },
+                {
+                  "code": "INTERNET_ROUTE",
+                  "params": {
+                    "zone": "dmz",
+                    "gateway": "fw"
+                  },
+                  "message": "dmz reaches the internet through fw."
+                },
+                {
+                  "code": "FILTER_ALLOWS",
+                  "params": {
+                    "filter": "fw",
+                    "direction": "inbound",
+                    "peer": "the internet",
+                    "rule": 0
+                  },
+                  "message": "fw allows inbound traffic with the internet (rule 0)."
+                },
+                {
+                  "code": "FILTER_ALLOWS",
+                  "params": {
+                    "filter": "fw",
+                    "direction": "inbound",
+                    "peer": "the internet",
+                    "rule": 0
+                  },
+                  "message": "fw allows inbound traffic with the internet (rule 0)."
+                },
+                {
+                  "code": "ANONYMOUS_ALLOWED",
+                  "params": {
+                    "component": "lb"
+                  },
+                  "message": "lb does not control access."
+                }
+              ]
+            },
+            {
+              "component": "ops",
+              "exposure": "not-exposed",
+              "evidence": [
+                {
+                  "code": "ENDPOINT_NOT_PUBLIC",
+                  "params": {
+                    "component": "ops"
+                  },
+                  "message": "ops has no public endpoint."
+                }
+              ]
+            },
+            {
+              "component": "web",
+              "exposure": "not-exposed",
+              "evidence": [
+                {
+                  "code": "ENDPOINT_NOT_PUBLIC",
+                  "params": {
+                    "component": "web"
+                  },
+                  "message": "web has no public endpoint."
+                }
+              ]
+            }
+          ],
+          "assumptions": [],
+          "findings": [
+            {
+              "code": "EXPOSED_TO_INTERNET",
+              "severity": "info",
+              "subjects": [
+                "lb"
+              ],
+              "params": {
+                "component": "lb"
+              },
+              "message": "lb is directly accessible from the internet."
+            },
+            {
+              "code": "ACCESS_NOT_REACHABLE",
+              "severity": "error",
+              "subjects": [
+                "ops-db"
+              ],
+              "params": {
+                "intent": "ops-db",
+                "from": "ops",
+                "to": "db"
+              },
+              "message": "Intent ops-db: db cannot be reached from ops."
+            },
+            {
+              "code": "ACCESS_NOT_REACHABLE",
+              "severity": "error",
+              "subjects": [
+                "users-web"
+              ],
+              "params": {
+                "intent": "users-web",
+                "from": "users",
+                "to": "web"
+              },
+              "message": "Intent users-web: web cannot be reached from users."
+            }
+          ]
+        },
+        {
+          "id": "availability",
+          "components": [
+            {
+              "component": "db",
+              "availability": "single",
+              "domains": [
+                "rack-a"
+              ],
+              "evidence": [
+                {
+                  "code": "FAILURE_DOMAINS",
+                  "params": {
+                    "component": "db",
+                    "domains": "rack-a"
+                  },
+                  "message": "db runs in: rack-a."
+                }
+              ]
+            },
+            {
+              "component": "fw",
+              "availability": "single",
+              "domains": [
+                "rack-a"
+              ],
+              "evidence": [
+                {
+                  "code": "FAILURE_DOMAINS",
+                  "params": {
+                    "component": "fw",
+                    "domains": "rack-a"
+                  },
+                  "message": "fw runs in: rack-a."
+                }
+              ]
+            },
+            {
+              "component": "lb",
+              "availability": "redundant",
+              "domains": [
+                "rack-a",
+                "rack-b"
+              ],
+              "evidence": [
+                {
+                  "code": "FAILURE_DOMAINS",
+                  "params": {
+                    "component": "lb",
+                    "domains": "rack-a, rack-b"
+                  },
+                  "message": "lb runs in: rack-a, rack-b."
+                }
+              ]
+            },
+            {
+              "component": "ops",
+              "availability": "single",
+              "domains": [
+                "rack-c"
+              ],
+              "evidence": [
+                {
+                  "code": "FAILURE_DOMAINS",
+                  "params": {
+                    "component": "ops",
+                    "domains": "rack-c"
+                  },
+                  "message": "ops runs in: rack-c."
+                }
+              ]
+            },
+            {
+              "component": "web",
+              "availability": "redundant",
+              "domains": [
+                "rack-a",
+                "rack-b"
+              ],
+              "evidence": [
+                {
+                  "code": "FAILURE_DOMAINS",
+                  "params": {
+                    "component": "web",
+                    "domains": "rack-a, rack-b"
+                  },
+                  "message": "web runs in: rack-a, rack-b."
+                }
+              ]
+            }
+          ],
+          "findings": [
+            {
+              "code": "AVAILABILITY_SINGLE_POINT",
+              "severity": "warning",
+              "subjects": [
+                "db"
+              ],
+              "params": {
+                "component": "db",
+                "domain": "rack-a",
+                "intents": "web-db"
+              },
+              "message": "db runs in a single failure domain (rack-a), and intents depend on it: web-db."
+            },
+            {
+              "code": "AVAILABILITY_SINGLE_POINT",
+              "severity": "warning",
+              "subjects": [
+                "fw"
+              ],
+              "params": {
+                "component": "fw",
+                "domain": "rack-a",
+                "intents": "users-lb"
+              },
+              "message": "fw runs in a single failure domain (rack-a), and intents depend on it: users-lb."
+            }
+          ]
+        }
+      ]
+    },
+    "detailed": {
+      "library": {
+        "name": "solution-validator",
+        "version": "<version>"
+      },
+      "vocabulary": 5,
+      "packs": [
+        {
+          "id": "core",
+          "version": "0.2.0"
+        },
+        {
+          "id": "onprem",
+          "version": "0.1.0"
+        }
+      ],
+      "options": {
+        "level": "detailed",
+        "analyses": [
+          "model-validity",
+          "connection-validity",
+          "access",
+          "address-plan",
+          "availability"
+        ],
+        "assumptions": "strict"
+      },
+      "analyses": [
+        {
+          "id": "model-validity",
+          "valid": true,
+          "findings": []
+        },
+        {
+          "id": "connection-validity",
+          "intents": [
+            {
+              "intent": "lb-web",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "onprem.load-balancer",
+                        "toType": "onprem.server-cluster",
+                        "purpose": "invoke on port http",
+                        "rule": 0
+                      },
+                      "message": "onprem.server-cluster accepts invoke on port http from onprem.load-balancer (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "ops-db",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "onprem.server",
+                        "toType": "onprem.database",
+                        "purpose": "read on port postgresql",
+                        "rule": 0
+                      },
+                      "message": "onprem.database accepts read on port postgresql from onprem.server (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "users-lb",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "onprem.load-balancer",
+                        "purpose": "port https",
+                        "rule": 0
+                      },
+                      "message": "onprem.load-balancer accepts port https from core.internet (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "users-web",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "onprem.server-cluster",
+                        "purpose": "port http",
+                        "rule": 0
+                      },
+                      "message": "onprem.server-cluster accepts port http from core.internet (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "web-db",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "onprem.server-cluster",
+                        "toType": "onprem.database",
+                        "purpose": "read on port postgresql",
+                        "rule": 0
+                      },
+                      "message": "onprem.database accepts read on port postgresql from onprem.server-cluster (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "summary": {
+            "pass": 5,
+            "fail": 0,
+            "undecidable": 0
+          },
+          "findings": []
+        },
+        {
+          "id": "access",
+          "intents": [
+            {
+              "intent": "lb-web",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "onprem.load-balancer",
+                        "toType": "onprem.server-cluster",
+                        "purpose": "invoke on port http",
+                        "rule": 0
+                      },
+                      "message": "onprem.server-cluster accepts invoke on port http from onprem.load-balancer (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "forwarding",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ROUTE_FOUND",
+                      "params": {
+                        "from": "lb",
+                        "to": "web"
+                      },
+                      "message": "lb has a route to web."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "SAME_NETWORK",
+                      "params": {
+                        "from": "lb",
+                        "to": "web",
+                        "network": "lan"
+                      },
+                      "message": "lb and web are in the same network, lan."
+                    },
+                    {
+                      "code": "FILTER_DEFAULT_ALLOWS",
+                      "params": {
+                        "filter": "fw",
+                        "direction": "outbound",
+                        "peer": "web"
+                      },
+                      "message": "No rule of fw matches outbound traffic with web; its default allows it."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "fw",
+                        "direction": "inbound",
+                        "peer": "lb",
+                        "rule": 1
+                      },
+                      "message": "fw allows inbound traffic with lb (rule 1)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "ops-db",
+              "verdict": "fail",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "onprem.server",
+                        "toType": "onprem.database",
+                        "purpose": "read on port postgresql",
+                        "rule": 0
+                      },
+                      "message": "onprem.database accepts read on port postgresql from onprem.server (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "fail",
+                  "evidence": [
+                    {
+                      "code": "SAME_NETWORK",
+                      "params": {
+                        "from": "ops",
+                        "to": "db",
+                        "network": "lan"
+                      },
+                      "message": "ops and db are in the same network, lan."
+                    },
+                    {
+                      "code": "FILTER_DEFAULT_DENIES",
+                      "params": {
+                        "filter": "fw",
+                        "direction": "inbound",
+                        "peer": "ops"
+                      },
+                      "message": "No rule of fw matches inbound traffic with ops; its default denies it."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "users-lb",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "onprem.load-balancer",
+                        "purpose": "port https",
+                        "rule": 0
+                      },
+                      "message": "onprem.load-balancer accepts port https from core.internet (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "INTERNET_ROUTE",
+                      "params": {
+                        "zone": "dmz",
+                        "gateway": "fw"
+                      },
+                      "message": "dmz reaches the internet through fw."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "fw",
+                        "direction": "inbound",
+                        "peer": "users",
+                        "rule": 0
+                      },
+                      "message": "fw allows inbound traffic with users (rule 0)."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "fw",
+                        "direction": "inbound",
+                        "peer": "users",
+                        "rule": 0
+                      },
+                      "message": "fw allows inbound traffic with users (rule 0)."
+                    },
+                    {
+                      "code": "PORT_OPEN",
+                      "params": {
+                        "to": "lb",
+                        "port": "https"
+                      },
+                      "message": "lb listens on port https."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "users-web",
+              "verdict": "fail",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "onprem.server-cluster",
+                        "purpose": "port http",
+                        "rule": 0
+                      },
+                      "message": "onprem.server-cluster accepts port http from core.internet (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "fail",
+                  "evidence": [
+                    {
+                      "code": "ENDPOINT_PRIVATE",
+                      "params": {
+                        "from": "users",
+                        "to": "web"
+                      },
+                      "message": "web has a private endpoint, and users is not inside its network."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "web-db",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "onprem.server-cluster",
+                        "toType": "onprem.database",
+                        "purpose": "read on port postgresql",
+                        "rule": 0
+                      },
+                      "message": "onprem.database accepts read on port postgresql from onprem.server-cluster (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "SAME_NETWORK",
+                      "params": {
+                        "from": "web",
+                        "to": "db",
+                        "network": "lan"
+                      },
+                      "message": "web and db are in the same network, lan."
+                    },
+                    {
+                      "code": "FILTER_DEFAULT_ALLOWS",
+                      "params": {
+                        "filter": "fw",
+                        "direction": "outbound",
+                        "peer": "db"
+                      },
+                      "message": "No rule of fw matches outbound traffic with db; its default allows it."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "fw",
+                        "direction": "inbound",
+                        "peer": "web",
+                        "rule": 2
+                      },
+                      "message": "fw allows inbound traffic with web (rule 2)."
+                    },
+                    {
+                      "code": "PORT_OPEN",
+                      "params": {
+                        "to": "db",
+                        "port": "postgresql"
+                      },
+                      "message": "db listens on port postgresql."
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "summary": {
+            "pass": 3,
+            "fail": 2,
+            "undecidable": 0
+          },
+          "exposure": [
+            {
+              "component": "db",
+              "exposure": "not-exposed",
+              "evidence": [
+                {
+                  "code": "ENDPOINT_NOT_PUBLIC",
+                  "params": {
+                    "component": "db"
+                  },
+                  "message": "db has no public endpoint."
+                }
+              ]
+            },
+            {
+              "component": "lb",
+              "exposure": "exposed",
+              "ports": [
+                "https"
+              ],
+              "evidence": [
+                {
+                  "code": "ENDPOINT_PUBLIC",
+                  "params": {
+                    "from": "the internet",
+                    "to": "lb"
+                  },
+                  "message": "lb has a public endpoint."
+                },
+                {
+                  "code": "INTERNET_ROUTE",
+                  "params": {
+                    "zone": "dmz",
+                    "gateway": "fw"
+                  },
+                  "message": "dmz reaches the internet through fw."
+                },
+                {
+                  "code": "FILTER_ALLOWS",
+                  "params": {
+                    "filter": "fw",
+                    "direction": "inbound",
+                    "peer": "the internet",
+                    "rule": 0
+                  },
+                  "message": "fw allows inbound traffic with the internet (rule 0)."
+                },
+                {
+                  "code": "FILTER_ALLOWS",
+                  "params": {
+                    "filter": "fw",
+                    "direction": "inbound",
+                    "peer": "the internet",
+                    "rule": 0
+                  },
+                  "message": "fw allows inbound traffic with the internet (rule 0)."
+                },
+                {
+                  "code": "ANONYMOUS_ALLOWED",
+                  "params": {
+                    "component": "lb"
+                  },
+                  "message": "lb does not control access."
+                }
+              ]
+            },
+            {
+              "component": "ops",
+              "exposure": "not-exposed",
+              "evidence": [
+                {
+                  "code": "ENDPOINT_NOT_PUBLIC",
+                  "params": {
+                    "component": "ops"
+                  },
+                  "message": "ops has no public endpoint."
+                }
+              ]
+            },
+            {
+              "component": "web",
+              "exposure": "not-exposed",
+              "evidence": [
+                {
+                  "code": "ENDPOINT_NOT_PUBLIC",
+                  "params": {
+                    "component": "web"
+                  },
+                  "message": "web has no public endpoint."
+                }
+              ]
+            }
+          ],
+          "assumptions": [],
+          "findings": [
+            {
+              "code": "EXPOSED_TO_INTERNET",
+              "severity": "info",
+              "subjects": [
+                "lb"
+              ],
+              "params": {
+                "component": "lb"
+              },
+              "message": "lb is directly accessible from the internet."
+            },
+            {
+              "code": "ACCESS_NOT_REACHABLE",
+              "severity": "error",
+              "subjects": [
+                "ops-db"
+              ],
+              "params": {
+                "intent": "ops-db",
+                "from": "ops",
+                "to": "db"
+              },
+              "message": "Intent ops-db: db cannot be reached from ops."
+            },
+            {
+              "code": "ACCESS_NOT_REACHABLE",
+              "severity": "error",
+              "subjects": [
+                "users-web"
+              ],
+              "params": {
+                "intent": "users-web",
+                "from": "users",
+                "to": "web"
+              },
+              "message": "Intent users-web: web cannot be reached from users."
+            }
+          ]
+        },
+        {
+          "id": "address-plan",
+          "zones": [
+            {
+              "zone": "app",
+              "parent": "lan",
+              "space": "192.168.20.0/24",
+              "size": 256
+            },
+            {
+              "zone": "data",
+              "parent": "lan",
+              "space": "192.168.30.0/24",
+              "size": 256
+            },
+            {
+              "zone": "dmz",
+              "parent": "lan",
+              "space": "192.168.10.0/24",
+              "size": 256
+            },
+            {
+              "zone": "lan",
+              "space": "192.168.0.0/16",
+              "size": 65536
+            },
+            {
+              "zone": "office",
+              "parent": "lan",
+              "space": "192.168.40.0/24",
+              "size": 256
+            }
+          ],
+          "findings": []
+        },
+        {
+          "id": "availability",
+          "components": [
+            {
+              "component": "db",
+              "availability": "single",
+              "domains": [
+                "rack-a"
+              ],
+              "evidence": [
+                {
+                  "code": "FAILURE_DOMAINS",
+                  "params": {
+                    "component": "db",
+                    "domains": "rack-a"
+                  },
+                  "message": "db runs in: rack-a."
+                }
+              ]
+            },
+            {
+              "component": "fw",
+              "availability": "single",
+              "domains": [
+                "rack-a"
+              ],
+              "evidence": [
+                {
+                  "code": "FAILURE_DOMAINS",
+                  "params": {
+                    "component": "fw",
+                    "domains": "rack-a"
+                  },
+                  "message": "fw runs in: rack-a."
+                }
+              ]
+            },
+            {
+              "component": "lb",
+              "availability": "redundant",
+              "domains": [
+                "rack-a",
+                "rack-b"
+              ],
+              "evidence": [
+                {
+                  "code": "FAILURE_DOMAINS",
+                  "params": {
+                    "component": "lb",
+                    "domains": "rack-a, rack-b"
+                  },
+                  "message": "lb runs in: rack-a, rack-b."
+                }
+              ]
+            },
+            {
+              "component": "ops",
+              "availability": "single",
+              "domains": [
+                "rack-c"
+              ],
+              "evidence": [
+                {
+                  "code": "FAILURE_DOMAINS",
+                  "params": {
+                    "component": "ops",
+                    "domains": "rack-c"
+                  },
+                  "message": "ops runs in: rack-c."
+                }
+              ]
+            },
+            {
+              "component": "web",
+              "availability": "redundant",
+              "domains": [
+                "rack-a",
+                "rack-b"
+              ],
+              "evidence": [
+                {
+                  "code": "FAILURE_DOMAINS",
+                  "params": {
+                    "component": "web",
+                    "domains": "rack-a, rack-b"
+                  },
+                  "message": "web runs in: rack-a, rack-b."
+                }
+              ]
+            }
+          ],
+          "findings": [
+            {
+              "code": "AVAILABILITY_SINGLE_POINT",
+              "severity": "warning",
+              "subjects": [
+                "db"
+              ],
+              "params": {
+                "component": "db",
+                "domain": "rack-a",
+                "intents": "web-db"
+              },
+              "message": "db runs in a single failure domain (rack-a), and intents depend on it: web-db."
+            },
+            {
+              "code": "AVAILABILITY_SINGLE_POINT",
+              "severity": "warning",
+              "subjects": [
+                "fw"
+              ],
+              "params": {
+                "component": "fw",
+                "domain": "rack-a",
+                "intents": "users-lb"
+              },
+              "message": "fw runs in a single failure domain (rack-a), and intents depend on it: users-lb."
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

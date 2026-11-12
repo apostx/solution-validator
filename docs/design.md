@@ -350,11 +350,19 @@ These details implement the decisions above. They are not product decisions; ope
 - **The `azure` pack 0.1.0** covers Functions, API Management, Cosmos DB, Blob Storage, virtual networks, subnets, network security groups, NAT gateways, virtual machines, scale sets and Application Gateway. Tasks that select by category work across the `aws` and `azure` packs; a test checks one task against both.
 - **Known simplifications:** route tables (UDR), Azure Firewall, service endpoints and private endpoints are not modeled. A subnet's network security group does not filter traffic that stays inside the subnet. Security rules are checked in array order, so the array must follow rule priority. Outbound traffic in AWS networks still does not check whether the source has a public address, as before.
 
+### Implementation notes (Iteration 10)
+
+- **The `onprem` pack 0.1.0** covers networks (LANs), VLANs, firewalls, routers, servers, server clusters, load balancers and database servers. It needs no new traits (Q24):
+  - The firewall is the network's implicit gateway in both directions, with one set of rules for traffic through it (`self`) and for the VLANs it protects (`zone`). Its default policy denies inbound and allows outbound traffic, so rules describe what each VLAN accepts.
+  - A server is published to the internet through the firewall when its endpoint is `public`.
+  - Racks, rooms and sites are failure domains that each component lists itself (`redundancy.domains`), as Azure availability zones are.
+- **Cross-provider tasks:** a test checks one web tier task, selecting only by category, against an AWS, an Azure and an on-premises solution.
+- **Known simplifications:** firewall rules name the peer and the ports, not the internal destination, so a rule that admits internet traffic admits it to every published server in the protected VLANs. Site-to-site VPNs, several sites in one network and host firewalls are not modeled.
+
 ## 11. Out of scope for the first version
 
 - Scoring, weighting and complexity metrics (consumers build these; see [§7](#7-requirements-metadata-and-facts))
 - Terraform import or export
-- An on-premises pack (the model is designed for it; see [component-model.md §6](component-model.md#6-cross-provider-mapping))
 - Policy documents (IAM, RBAC), cost estimation and runtime simulation
 - AI of any kind
 - ArchitectMate itself (separate repository)
@@ -385,4 +393,5 @@ These details implement the decisions above. They are not product decisions; ope
 | Q21 | Private access to provider services (VPC endpoints): a gateway lists the services it reaches (`gateway.services`), and a route whose destination is such a service sends that traffic through it, without the internet. | Decided (initial) | [formats.md](formats.md#trait-parameters-vocabulary-5) |
 | Q22 | Availability: zones name their failure domain (`zone.failureDomain`); types say whether the provider makes them redundant (`redundancy.managed`) or run one instance whatever their placement (`redundancy.spread: false`). A component is redundant in two or more failure domains; findings are warnings, and the library does not score them. | Decided (initial) | [formats.md](formats.md#availability) |
 | Q23 | Azure networking with generic parameters: zones with direct internet access for public endpoints, implicit gateways associated with zones, base rules of traffic filter types with a `network` peer, and failure domains and zone redundancy as component settings. | Decided (initial) | [formats.md](formats.md#trait-parameters-vocabulary-5) |
+| Q24 | On-premises infrastructure on the existing traits: the firewall is an implicit gateway with its own filter for traffic through it and for the VLANs it protects (inbound denied, outbound allowed by default); published servers have public endpoints; racks, rooms and sites are failure domains listed per component. | Decided (initial) | Iteration 10 notes above |
 | Q17 | Groups and multiple placements: an intent through a group or a component in several zones passes only if every member or placement passes. | Decided (initial) | [formats.md](formats.md#access-checks-logical-level) |

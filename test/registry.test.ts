@@ -9,6 +9,7 @@ describe("createRegistry", () => {
       "aws@0.5.0",
       "azure@0.1.0",
       "core@0.2.0",
+      "onprem@0.1.0",
     ]);
     expect(officialRegistry.types.map((type) => type.id)).toEqual([
       "core.internet",
@@ -40,6 +41,14 @@ describe("createRegistry", () => {
       "azure.vm",
       "azure.vm-scale-set",
       "azure.application-gateway",
+      "onprem.network",
+      "onprem.vlan",
+      "onprem.firewall",
+      "onprem.router",
+      "onprem.server",
+      "onprem.server-cluster",
+      "onprem.load-balancer",
+      "onprem.database",
     ]);
     expect(officialRegistry.getType("aws.lambda")?.category).toBe("compute");
     expect(officialRegistry.getAction("invoke")?.pack).toBe("core");

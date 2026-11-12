@@ -127,13 +127,13 @@ The table below checks whether the proposed vocabulary covers the components the
 | Concept | AWS | Azure | On-premises | Traits |
 |---|---|---|---|---|
 | Network area | VPC, Subnet | VNet, Subnet | LAN, VLAN | `zone` |
-| Internet access | Internet Gateway | Public IP address | Edge router | `gateway`; Azure: `zone` (`directInternet`) |
-| Outbound-only internet | NAT Gateway | NAT Gateway (associated with subnets) | NAT on the edge router | `gateway` (`outbound-only`; Azure: `implicit`) |
+| Internet access | Internet Gateway | Public IP address | Firewall (the default gateway) | `gateway`; Azure: `zone` (`directInternet`); on-premises: `gateway` (`implicit`) |
+| Outbound-only internet | NAT Gateway | NAT Gateway (associated with subnets) | NAT on the firewall | `gateway` (`outbound-only`; Azure: `implicit`); on-premises: part of the firewall |
 | Private access to provider services | Gateway VPC endpoint | Service endpoint | — | `gateway` (`services`) |
 | Routing | Route table | Route table (UDR) | Router | `router` |
 | Instance-level firewall | Security Group | NSG on a NIC | Host firewall | `traffic-filter` (`component`) |
-| Subnet-level firewall | Network ACL | NSG on a subnet (with default rules) | — | `traffic-filter` (`zone`; Azure: `baseRules`) |
-| Perimeter firewall | Network Firewall | Azure Firewall | Firewall appliance | `gateway` + `traffic-filter` (`self`) |
+| Subnet-level firewall | Network ACL | NSG on a subnet (with default rules) | Firewall between VLANs | `traffic-filter` (`zone`; Azure: `baseRules`) |
+| Perimeter firewall | Network Firewall | Azure Firewall | Firewall | `gateway` + `traffic-filter` (`self`) |
 | Function | Lambda | Azure Functions | App server | `principal` (+ zone membership when placed in a network) |
 | Scaling group | Auto Scaling Group | VM Scale Set | Server cluster | `group` |
 | API entry point | API Gateway | API Management | Reverse proxy | `endpoint` + `forwarder` |
@@ -141,7 +141,7 @@ The table below checks whether the proposed vocabulary covers the components the
 | NoSQL database | DynamoDB | Cosmos DB | Database server | `endpoint` + `access-controlled` |
 | Object storage | S3 | Blob Storage | File / object server | `endpoint` + `access-controlled` |
 | Workload identity | IAM role | Managed identity | Service account | grants on `principal` |
-| Failure domain | Availability zone (on a subnet) | Availability zone (on a resource) | Data center, rack | `zone` (`failureDomain`); Azure: `redundancy` (`domains`) |
+| Failure domain | Availability zone (on a subnet) | Availability zone (on a resource) | Rack, room or site (on a resource) | `zone` (`failureDomain`); Azure and on-premises: `redundancy` (`domains`) |
 | Provider-managed redundancy | S3, DynamoDB, Lambda | Zone-redundant Blob Storage, Cosmos DB, Functions, API Management | — | `redundancy` (`managed`, a setting in Azure) |
 
 Every row maps onto the traits. No row needs provider-specific engine code.
