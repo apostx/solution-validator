@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.0](https://github.com/apostx/solution-validator/compare/v0.8.0...v0.9.0) (2026-11-12)
+
+
+### Features
+
+* azure pack (iteration 9) ([#18](https://github.com/apostx/solution-validator/issues/18)) ([009f143](https://github.com/apostx/solution-validator/commit/009f143553298bc01327dd2befb7730accbbc10c))
+
 ## [0.8.0](https://github.com/apostx/solution-validator/compare/v0.7.0...v0.8.0) (2026-11-12)
 
 
