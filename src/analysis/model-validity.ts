@@ -2,6 +2,7 @@ import type { SolutionModel } from "../core/model";
 import { findComponentReferences, propertiesValidationSchema } from "../core/property-schema";
 import { issuesToFindings, validateSchema } from "../core/schema-issues";
 import type { Component } from "../core/solution-schema";
+import { PEER_KEYWORDS } from "../core/traits";
 import { createFinding, type Finding } from "../messages/finding";
 import { compareStrings } from "../util/compare";
 import { isCidr } from "../util/ipv4";
@@ -195,12 +196,12 @@ function checkIntents(model: SolutionModel): Finding[] {
   return findings;
 }
 
-const RULE_PEERS = ["any", "internet"];
+const RULE_PEERS: readonly string[] = PEER_KEYWORDS;
 
 /**
  * Checks what network traits refer to: routers serve zones and route to gateways, gateways
  * connect zones, traffic filters attach to the kinds their `attachTo` allows, and rule peers are
- * `any`, `internet` or an existing id. Missing ids are reported by the property schemas.
+ * keywords (`any`, `internet`, `network`), IPv4 ranges or existing ids. Missing ids are reported by the property schemas.
  */
 function checkNetworkReferences(model: SolutionModel): Finding[] {
   const findings: Finding[] = [];

@@ -98,8 +98,30 @@ function factOf(network: Network, component: Component, type: ComponentType): Av
     evidence: Evidence[],
   ): AvailabilityFact => ({ component: component.id, availability, domains, evidence });
   const redundancy = type.traits.redundancy;
-  if (redundancy?.managed) {
-    return fact("managed", [], [createEvidence("MANAGED_SERVICE", { component: component.id })]);
+  const name = { component: component.id };
+  if (redundancy?.managed !== undefined) {
+    const managed = network.resolveParameter(component, type, redundancy.managed);
+    if (!managed.known) return fact("undecidable", [], managed.step.evidence);
+    if (managed.value === true) {
+      return fact("managed", [], [...managed.evidence, createEvidence("MANAGED_SERVICE", name)]);
+    }
+    if (redundancy.domains === undefined) {
+      return fact("single", [], [...managed.evidence, createEvidence("NOT_MANAGED", name)]);
+    }
+  }
+  if (redundancy?.domains !== undefined) {
+    const value = network.resolveParameter(component, type, redundancy.domains);
+    if (!value.known) return fact("undecidable", [], value.step.evidence);
+    const list = Array.isArray(value.value) ? value.value : [];
+    const domains = sortedUnique(list.filter((item): item is string => typeof item === "string"));
+    if (domains.length === 0) {
+      return fact("single", [], [...value.evidence, createEvidence("NO_FAILURE_DOMAIN", name)]);
+    }
+    const evidence = [
+      ...value.evidence,
+      createEvidence("FAILURE_DOMAINS", { component: component.id, domains: domains.join(", ") }),
+    ];
+    return fact(domains.length >= 2 ? "redundant" : "single", domains, evidence);
   }
   const members = network.members(component);
   if (!members.known) return fact("undecidable", [], members.step.evidence);
@@ -168,13 +190,15 @@ function dependencies(
       if (same) continue;
       if (source.position !== undefined) {
         gatewaysOf(
-          network.internet(source.position, "outbound", target, { kind: "unknown" }).evidence,
+          network.internet(source.position, "outbound", target, { kind: "unknown" }, 0, source)
+            .evidence,
           ids,
         );
       }
       if (target.position !== undefined) {
         gatewaysOf(
-          network.internet(target.position, "inbound", source, { kind: "unknown" }).evidence,
+          network.internet(target.position, "inbound", source, { kind: "unknown" }, 0, target)
+            .evidence,
           ids,
         );
       }

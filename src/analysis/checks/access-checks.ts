@@ -201,10 +201,10 @@ function path(
       return step("fail", [createEvidence("ENDPOINT_PRIVATE", { from, to })]);
     }
     if (source.position !== undefined) {
-      steps.push(network.internet(source.position, "outbound", target, ports));
+      steps.push(network.internet(source.position, "outbound", target, ports, 0, source));
     }
     if (target.position !== undefined) {
-      steps.push(network.internet(target.position, "inbound", source, ports));
+      steps.push(network.internet(target.position, "inbound", source, ports, 0, target));
     } else {
       steps.push(step("pass", [createEvidence("ENDPOINT_PUBLIC", { from, to })]));
     }
@@ -424,7 +424,7 @@ export function exposureOf(
         const party: Party = { component, ids: [component.id], position };
         if (position === undefined) return step("pass", []);
         return combineSteps([
-          network.internet(position, "inbound", outsider, ports),
+          network.internet(position, "inbound", outsider, ports, 0, party),
           network.filtersOnSide(party, outsider, "inbound", ports),
         ]);
       });

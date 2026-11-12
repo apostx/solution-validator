@@ -352,6 +352,26 @@
                         "additionalProperties": false
                       }
                     ]
+                  },
+                  "directInternet": {
+                    "anyOf": [
+                      {
+                        "type": "boolean"
+                      },
+                      {
+                        "type": "object",
+                        "required": [
+                          "property"
+                        ],
+                        "properties": {
+                          "property": {
+                            "type": "string",
+                            "pattern": "^[a-z][A-Za-z0-9]*$"
+                          }
+                        },
+                        "additionalProperties": false
+                      }
+                    ]
                   }
                 },
                 "additionalProperties": false
@@ -410,6 +430,9 @@
                       }
                     },
                     "additionalProperties": false
+                  },
+                  "implicit": {
+                    "type": "boolean"
                   }
                 },
                 "additionalProperties": false
@@ -482,6 +505,43 @@
                       }
                     },
                     "additionalProperties": false
+                  },
+                  "baseRules": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "required": [
+                        "direction",
+                        "peer"
+                      ],
+                      "properties": {
+                        "direction": {
+                          "enum": [
+                            "inbound",
+                            "outbound"
+                          ]
+                        },
+                        "peer": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "ports": {
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "minItems": 1
+                        },
+                        "effect": {
+                          "enum": [
+                            "allow",
+                            "deny"
+                          ]
+                        }
+                      },
+                      "additionalProperties": false
+                    }
                   },
                   "targets": {
                     "type": "object",
@@ -565,7 +625,24 @@
                 "type": "object",
                 "properties": {
                   "managed": {
-                    "type": "boolean"
+                    "anyOf": [
+                      {
+                        "type": "boolean"
+                      },
+                      {
+                        "type": "object",
+                        "required": [
+                          "property"
+                        ],
+                        "properties": {
+                          "property": {
+                            "type": "string",
+                            "pattern": "^[a-z][A-Za-z0-9]*$"
+                          }
+                        },
+                        "additionalProperties": false
+                      }
+                    ]
                   },
                   "spread": {
                     "anyOf": [
@@ -586,6 +663,19 @@
                         "additionalProperties": false
                       }
                     ]
+                  },
+                  "domains": {
+                    "type": "object",
+                    "required": [
+                      "property"
+                    ],
+                    "properties": {
+                      "property": {
+                        "type": "string",
+                        "pattern": "^[a-z][A-Za-z0-9]*$"
+                      }
+                    },
+                    "additionalProperties": false
                   }
                 },
                 "additionalProperties": false
