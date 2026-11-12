@@ -157,6 +157,7 @@ export function Canvas({
             id: component.id,
             label: component.label ?? component.id,
             typeLabel: type?.label ?? component.type,
+            roles: component.roles ?? [],
             category: type?.category ?? "unknown",
             severity: evaluation.severityBySubject.get(component.id),
             exposure: evaluation.exposure.get(component.id)?.exposure,

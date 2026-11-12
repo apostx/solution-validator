@@ -11,7 +11,8 @@ export type ParseTaskResult =
 
 /**
  * Checks a task against the task schema and the registry: packs, unique ids, known types,
- * categories, traits, actions and ports, and id selectors that refer to provided components.
+ * categories, traits, actions and ports, id selectors that refer to provided components, and
+ * role selectors that refer to declared roles.
  * It never throws for invalid input. JSON text is accepted as well.
  */
 export function parseTask(input: unknown, registry: Registry): ParseTaskResult {
@@ -55,8 +56,23 @@ function checkTask(task: Task, registry: Registry): Finding[] {
     }
   });
 
+  const roles = new Set<string>();
+  for (const role of task.roles ?? []) {
+    if (roles.has(role.id))
+      findings.push(createFinding("TASK_ROLE_DUPLICATE", [], { role: role.id }));
+    roles.add(role.id);
+  }
+
   const providedIds = new Set(provided.map((component) => component.id));
   const checkSelector = (subject: string, path: string, selector: Selector) => {
+    if (selector.role !== undefined && !roles.has(selector.role)) {
+      findings.push(
+        createFinding("TASK_ROLE_UNKNOWN", [subject], {
+          path: `${path}/role`,
+          role: selector.role,
+        }),
+      );
+    }
     if (selector.id !== undefined && !providedIds.has(selector.id)) {
       findings.push(
         createFinding("TASK_SELECTOR_NOT_PROVIDED", [subject], {

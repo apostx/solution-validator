@@ -6,6 +6,8 @@ export type ComponentNodeData = {
   label: string;
   id: string;
   typeLabel: string;
+  /** Role tags the solver gave the component. */
+  roles: readonly string[];
   category: string;
   severity?: Severity | undefined;
   /** Shown as a badge when the component is or may be accessible from the internet. */
@@ -40,6 +42,9 @@ export function ComponentNode({ data, selected }: NodeProps<ComponentNodeType>) 
         <AvailabilityBadge fact={data.availability} />
       </div>
       <div className="node-type">{data.typeLabel}</div>
+      {data.roles.length > 0 && (
+        <div className="node-roles">{data.roles.map((role) => `#${role}`).join(" ")}</div>
+      )}
       {data.label !== data.id && <div className="node-id">{data.id}</div>}
       <AttachmentBadges attachments={data.attachments} />
       <Handle type="source" position={Position.Right} />

@@ -38,6 +38,8 @@ export const TypeId = Type.String({ pattern: TYPE_ID_PATTERN });
 export const Name = Type.String({ pattern: NAME_PATTERN });
 export const PropertyName = Type.String({ pattern: PROPERTY_NAME_PATTERN });
 export const ElementId = Type.String({ pattern: ELEMENT_ID_PATTERN, maxLength: 128 });
+/** Role tags that solvers put on components and tasks select, for example `orders-store`. */
+export const RoleName = Type.String({ pattern: PACK_ID_PATTERN });
 
 /** Free-form consumer data. The library never interprets it. */
 export const Meta = Type.Record(Type.String(), Type.Unknown());

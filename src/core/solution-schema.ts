@@ -1,5 +1,5 @@
 import Type from "typebox";
-import { ElementId, Meta } from "./ids";
+import { ElementId, Meta, RoleName } from "./ids";
 
 const closed = { additionalProperties: false } as const;
 const Reference = Type.String({ minLength: 1 });
@@ -17,6 +17,11 @@ export const Component = Type.Object(
     placement: Type.Optional(Type.Array(Reference)),
     /** Values for the properties the type defines. */
     properties: Type.Optional(Type.Record(Type.String(), Type.Unknown())),
+    /**
+     * Role tags the solver gives the component, so that tasks can select it by its purpose, for
+     * example `orders-store`. Roles are not interpreted otherwise.
+     */
+    roles: Type.Optional(Type.Array(RoleName, { uniqueItems: true })),
     meta: Type.Optional(Meta),
   },
   closed,

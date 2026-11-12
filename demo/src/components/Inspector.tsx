@@ -1,5 +1,18 @@
-import type { Finding, IntentVerdict, Registry, Solution } from "solution-validator";
-import { type Selection, setLabel, setPlacement, setProperty, updateIntent } from "../model";
+import type {
+  Finding,
+  IntentVerdict,
+  Registry,
+  RoleDefinition,
+  Solution,
+} from "solution-validator";
+import {
+  type Selection,
+  setLabel,
+  setPlacement,
+  setProperty,
+  setRoles,
+  updateIntent,
+} from "../model";
 import { PropertyField } from "./PropertyField";
 
 interface InspectorProps {
@@ -8,6 +21,8 @@ interface InspectorProps {
   findings: readonly Finding[];
   intentVerdicts: ReadonlyMap<string, IntentVerdict>;
   selection: Selection;
+  /** The roles the scenario's task declares, if any. */
+  roles: readonly RoleDefinition[];
   onChange(solution: Solution): void;
 }
 
@@ -18,6 +33,7 @@ export function Inspector({
   findings,
   intentVerdicts,
   selection,
+  roles,
   onChange,
 }: InspectorProps) {
   if (!selection) {
@@ -106,6 +122,35 @@ export function Inspector({
           onChange={(event) => onChange(setLabel(solution, component.id, event.target.value))}
         />
       </label>
+      {roles.length > 0 && (
+        <fieldset className="placement">
+          <legend>Roles</legend>
+          {roles.map((role) => {
+            const current = component.roles ?? [];
+            return (
+              <label key={role.id} className="checkbox" title={role.description}>
+                <input
+                  type="checkbox"
+                  checked={current.includes(role.id)}
+                  onChange={(event) =>
+                    onChange(
+                      setRoles(
+                        solution,
+                        component.id,
+                        event.target.checked
+                          ? [...current, role.id]
+                          : current.filter((id) => id !== role.id),
+                      ),
+                    )
+                  }
+                />
+                {role.label ?? role.id} <code>{role.id}</code>
+              </label>
+            );
+          })}
+          <span className="hint">The task selects components by these roles.</span>
+        </fieldset>
+      )}
       {zones.length > 0 && (
         <fieldset className="placement">
           <legend>Placed in</legend>

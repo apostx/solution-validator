@@ -107,6 +107,7 @@ export {
   ReachableRequirement,
   RedundantRequirement,
   Requirement,
+  RoleDefinition,
   Selector,
   TASK_SCHEMA_VERSION,
   Task,

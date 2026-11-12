@@ -73,6 +73,28 @@
         "additionalProperties": false
       }
     },
+    "roles": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+          },
+          "label": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
     "requirements": {
       "type": "array",
       "items": {
@@ -123,6 +145,10 @@
                   "trait": {
                     "type": "string",
                     "minLength": 1
+                  },
+                  "role": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
                   }
                 },
                 "additionalProperties": false
@@ -146,6 +172,10 @@
                   "trait": {
                     "type": "string",
                     "minLength": 1
+                  },
+                  "role": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
                   }
                 },
                 "additionalProperties": false
@@ -216,6 +246,10 @@
                   "trait": {
                     "type": "string",
                     "minLength": 1
+                  },
+                  "role": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
                   }
                 },
                 "additionalProperties": false
@@ -239,6 +273,10 @@
                   "trait": {
                     "type": "string",
                     "minLength": 1
+                  },
+                  "role": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
                   }
                 },
                 "additionalProperties": false
@@ -295,6 +333,10 @@
                   "trait": {
                     "type": "string",
                     "minLength": 1
+                  },
+                  "role": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
                   }
                 },
                 "additionalProperties": false
@@ -351,6 +393,10 @@
                   "trait": {
                     "type": "string",
                     "minLength": 1
+                  },
+                  "role": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
                   }
                 },
                 "additionalProperties": false

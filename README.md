@@ -2,7 +2,7 @@
 
 A deterministic, provider-neutral library that analyzes designed software and infrastructure solutions. It answers two questions: does the solution work, and does it meet a task's requirements?
 
-> **Status: 0.x.** Iterations 1–12 of the [roadmap](docs/roadmap.md) are implemented: the model and pack format, the `model-validity`, `connection-validity` and `access` analyses (including networks: zones, routes, gateways, security groups, network ACLs and private service endpoints), the `availability` analysis (failure domains and single points of failure), the opt-in detailed level with IPv4 and IPv6 address plans, requirement checks, the metadata query and a Terraform export. The API may change before 1.0.
+> **Status: 0.x.** Iterations 1–13 of the [roadmap](docs/roadmap.md) are implemented: the model and pack format, the `model-validity`, `connection-validity` and `access` analyses (including networks: zones, routes, gateways, security groups, network ACLs and private service endpoints), the `availability` analysis (failure domains and single points of failure), the opt-in detailed level with IPv4 and IPv6 address plans, requirement checks (selecting components by type, category, trait or role), the metadata query and a Terraform export. The API may change before 1.0.
 
 ## What it does
 

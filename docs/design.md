@@ -167,7 +167,7 @@ The caller chooses which analyses run and at which level. Each analysis declares
 - by component type (for example any `aws.dynamodb`);
 - by category or trait (for example any `data-store`). This keeps tasks provider-neutral.
 
-Role tags assigned by the solver are an alternative, deferred unless needed.
+**Decided (Q27, initial):** role tags are a fourth way: the task declares roles, the solver tags components with them (`roles`), and selectors match them (`role`). This lets a task name the component it means, such as the orders store, among several data stores, without knowing its id or type.
 
 | Type | Meaning | Example |
 |---|---|---|
@@ -374,6 +374,12 @@ These details implement the decisions above. They are not product decisions; ope
 - **Packs:** `aws` 0.7.0 maps every type except CloudFront (VPCs, subnets, gateways, route tables with their associations, security groups with rules, instances, load balancers, functions, tables, buckets with public access blocks, databases); `azure` 0.2.0 maps every type (networks, subnets, security groups with numbered rules and subnet associations, NAT gateways with subnet associations, virtual machines, scale sets and the PaaS services); `onprem` has no Terraform resources.
 - **Known simplifications:** an `internet` route or rule maps to `0.0.0.0/0` only; security group peers that name subnets, and route destinations that name services, are left out; network ACL rules, API routes, load balancer targets and IAM or role assignments are notes.
 
+### Implementation notes (Iteration 13)
+
+- **Role tags** (Q27): components get optional `roles`, tasks declare `roles`, and selectors get `role`, combinable with type, category and trait. `parseTask` checks that role selectors name declared roles (`TASK_ROLE_UNKNOWN`, `TASK_ROLE_DUPLICATE`); `checkRequirements` warns about declared roles no component has (`TASK_ROLE_UNASSIGNED`); `collect` returns each component's roles.
+- **Honest verdicts:** a `not-reachable` requirement whose target is a role nobody has yet is `undecidable` (`ROLE_UNASSIGNED`), not vacuously met; with a type or category that matches nothing it still passes, because then nothing exists to reach.
+- **No other meaning:** roles are labels for selection only; analyses ignore them.
+
 ## 11. Out of scope for the first version
 
 - Scoring, weighting and complexity metrics (consumers build these; see [§7](#7-requirements-metadata-and-facts))
@@ -411,4 +417,5 @@ These details implement the decisions above. They are not product decisions; ope
 | Q24 | On-premises infrastructure on the existing traits: the firewall is an implicit gateway with its own filter for traffic through it and for the VLANs it protects (inbound denied, outbound allowed by default); published servers have public endpoints; racks, rooms and sites are failure domains listed per component. | Decided (initial) | Iteration 10 notes above |
 | Q25 | IPv6: optional per zone (`zone.ipv6AddressSpace`), every zone keeps IPv4; each address family both ends have is checked on its own and one working family is enough; ranges, default routes (`::/0`) and gateways (`families`) apply to their own family; the logical level stays IPv4. | Decided (initial) | [formats.md](formats.md#detailed-level) |
 | Q26 | Terraform export: pack-level declarative mappings (values, properties, references, blocks, extra resources, variables), output as HCL and Terraform JSON; never guess, so unknown arguments become variables or notes and inexpressible items are reported. | Decided (initial) | [formats.md](formats.md#terraform-export) |
+| Q27 | Role tags: tasks declare roles, solvers tag components with `roles`, selectors match `role`; a role nobody has makes `not-reachable` undecidable and is reported. | Decided (initial) | [formats.md](formats.md#task) |
 | Q17 | Groups and multiple placements: an intent through a group or a component in several zones passes only if every member or placement passes. | Decided (initial) | [formats.md](formats.md#access-checks-logical-level) |

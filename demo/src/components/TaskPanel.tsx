@@ -1,14 +1,16 @@
-import type { Finding, RequirementsResult, Task } from "solution-validator";
+import type { Component, Finding, RequirementsResult, Task } from "solution-validator";
 
 interface TaskPanelProps {
   task: Task | undefined;
   /** Problems with the task itself, from parseTask. */
   taskFindings: readonly Finding[];
   result: RequirementsResult | undefined;
+  /** The solution's components, to show which ones carry the task's roles. */
+  components: readonly Component[];
 }
 
 /** The task's requirements as a checklist with verdicts and evidence. */
-export function TaskPanel({ task, taskFindings, result }: TaskPanelProps) {
+export function TaskPanel({ task, taskFindings, result, components }: TaskPanelProps) {
   if (!task) {
     return <p className="hint">This scenario has no task. It is analyzed on its own.</p>;
   }
@@ -16,6 +18,27 @@ export function TaskPanel({ task, taskFindings, result }: TaskPanelProps) {
     <div className="task-panel">
       <h2>{task.title ?? task.id}</h2>
       {task.description && <p className="hint">{task.description}</p>}
+      {task.roles && task.roles.length > 0 && (
+        <>
+          <h3>Roles</h3>
+          <p className="hint">Tag components with these roles in the Properties tab.</p>
+          <ul className="roles">
+            {task.roles.map((role) => {
+              const tagged = components.filter((component) => component.roles?.includes(role.id));
+              return (
+                <li key={role.id}>
+                  <code>{role.id}</code> {role.label ?? ""}{" "}
+                  <span className="hint">
+                    {tagged.length > 0
+                      ? `→ ${tagged.map((component) => component.id).join(", ")}`
+                      : "→ not assigned"}
+                  </span>
+                </li>
+              );
+            })}
+          </ul>
+        </>
+      )}
       {taskFindings.length > 0 && (
         <ul className="related-findings">
           {taskFindings.map((finding) => (

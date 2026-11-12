@@ -13,6 +13,8 @@ export interface CollectedComponent {
   /** Unset when the type is unknown. */
   category?: string;
   traits: TraitId[];
+  /** The role tags the solver gave the component, when it has any. */
+  roles?: string[];
   /** The type's `meta` merged with the component's `meta`; the component wins. */
   meta: Meta;
   /** Intents that end at the component. */
@@ -89,6 +91,7 @@ export function collect(model: SolutionModel, analysis?: AnalysisResult): Facts 
         type: component.type,
         ...(type ? { category: type.category } : {}),
         traits: type ? (Object.keys(type.traits) as TraitId[]).sort(compareStrings) : [],
+        ...(component.roles ? { roles: [...component.roles] } : {}),
         meta: { ...type?.meta, ...component.meta },
         incoming: model.intents.filter((intent) => intent.to === component.id).length,
         outgoing: model.intents.filter((intent) => intent.from === component.id).length,

@@ -1,6 +1,6 @@
 # Roadmap
 
-> **Status:** Approved (initial) · 2026-11-10 · **Current iteration: 13 — Role-tag selectors** (Iterations 11–13 approved in this order from the backlog)
+> **Status:** Approved (initial) · 2026-11-10 · **Current iteration: none** (Iterations 0–13 are done; the next one needs the product owner's approval)
 >
 > Iterations 0–4 are approved. Only the current iteration is a commitment. The scope of later iterations may still change and is confirmed before each one starts. Open questions (Q1, Q2, …) are listed in [design.md](design.md#12-open-questions).
 
@@ -45,7 +45,7 @@ Trade-off: the vision's own example (network placement, Security Group and ACL r
 | 10 | On-premises pack | 0.10.0 | Q24 | Done |
 | 11 | IPv6 for the detailed level | 0.11.0 | Q25 | Done |
 | 12 | Terraform export | 0.12.0 | Q26 | Done |
-| 13 | Role-tag selectors | 0.13.0 | to be scoped | Approved |
+| 13 | Role-tag selectors | 0.13.0 | Q27 | Done |
 
 ### Iteration 0 — Foundations
 
@@ -170,7 +170,8 @@ The product owner approved the backlog items as Iterations 11–13, in this orde
 
 ### Iteration 13 — Role-tag selectors (0.13.0)
 
-Role tags that the solver assigns to components, and task selectors that match them ([design.md §7](design.md#7-requirements-metadata-and-facts)). Scoped when it starts.
+- **Library:** components get `roles`, tasks declare `roles`, selectors get `role` (Q27); role checks in `parseTask` and `checkRequirements`; `collect` returns roles.
+- **Demo:** role checkboxes in the inspector, roles on the canvas and in the Task tab, and a role-tags scenario.
 
 ## Backlog (not scheduled; each item needs approval)
 
