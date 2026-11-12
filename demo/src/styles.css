@@ -410,6 +410,17 @@ button.link:hover {
   gap: 0.4rem;
 }
 
+.node-roles {
+  color: var(--accent);
+  font-size: 0.65rem;
+}
+
+.roles {
+  margin: 0 0 0.5rem;
+  padding-left: 1.1rem;
+  font-size: 0.85rem;
+}
+
 .terraform-panel {
   display: flex;
   flex-direction: column;

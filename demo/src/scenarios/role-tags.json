@@ -1,0 +1,182 @@
+{
+  "id": "role-tags",
+  "title": "Role tags (task selects by role)",
+  "description": "The same serverless application, with a task that selects components by role instead of by type or category. The solver tags components with the roles the task declares (Properties tab, Roles). The orders table is tagged orders-store; the uploads role is not assigned yet, so the requirement about it matches nothing. Tag the bucket with uploads and watch the Task tab.",
+  "packs": ["core", "aws"],
+  "solution": {
+    "schemaVersion": 1,
+    "packs": ["core", "aws"],
+    "components": [
+      {
+        "id": "users",
+        "type": "core.internet",
+        "label": "Users",
+        "meta": {
+          "position": {
+            "x": 0,
+            "y": 120
+          }
+        }
+      },
+      {
+        "id": "api",
+        "type": "aws.api-gateway",
+        "properties": {
+          "endpoint": "public",
+          "routes": [
+            {
+              "path": "/orders",
+              "target": "orders-fn"
+            }
+          ]
+        },
+        "label": "Orders API",
+        "meta": {
+          "position": {
+            "x": 240,
+            "y": 120
+          }
+        }
+      },
+      {
+        "id": "orders-fn",
+        "type": "aws.lambda",
+        "properties": {
+          "permissions": [
+            {
+              "resource": "orders-table",
+              "access": "read-write"
+            }
+          ]
+        },
+        "meta": {
+          "points": 2,
+          "position": {
+            "x": 480,
+            "y": 120
+          }
+        },
+        "label": "Orders function"
+      },
+      {
+        "id": "orders-table",
+        "type": "aws.dynamodb",
+        "label": "Orders table",
+        "meta": {
+          "position": {
+            "x": 740,
+            "y": 40
+          }
+        },
+        "roles": ["orders-store"]
+      },
+      {
+        "id": "uploads",
+        "type": "aws.s3",
+        "properties": {
+          "publicAccess": false
+        },
+        "label": "Uploads bucket",
+        "meta": {
+          "position": {
+            "x": 740,
+            "y": 220
+          }
+        }
+      }
+    ],
+    "intents": [
+      {
+        "id": "i1",
+        "from": "users",
+        "to": "api",
+        "port": "https"
+      },
+      {
+        "id": "i2",
+        "from": "api",
+        "to": "orders-fn",
+        "action": "invoke"
+      },
+      {
+        "id": "i3",
+        "from": "orders-fn",
+        "to": "orders-table",
+        "action": "write"
+      },
+      {
+        "id": "i4",
+        "from": "orders-fn",
+        "to": "uploads",
+        "action": "write"
+      }
+    ]
+  },
+  "task": {
+    "schemaVersion": 1,
+    "id": "role-tags",
+    "title": "Orders API with roles",
+    "packs": ["core"],
+    "provided": [
+      {
+        "id": "users",
+        "type": "core.internet",
+        "locked": true
+      }
+    ],
+    "roles": [
+      {
+        "id": "orders-store",
+        "label": "Orders store",
+        "description": "Where the orders are kept."
+      },
+      {
+        "id": "uploads",
+        "label": "Uploads store",
+        "description": "Where uploaded files are kept."
+      }
+    ],
+    "requirements": [
+      {
+        "id": "r1",
+        "type": "reachable",
+        "description": "Users on the internet can write to the orders store.",
+        "from": {
+          "id": "users"
+        },
+        "to": {
+          "role": "orders-store"
+        },
+        "action": "write"
+      },
+      {
+        "id": "r2",
+        "type": "not-reachable",
+        "description": "The uploads store is not directly accessible from the internet.",
+        "from": {
+          "id": "users"
+        },
+        "to": {
+          "role": "uploads"
+        }
+      },
+      {
+        "id": "r3",
+        "type": "uses",
+        "description": "An uploads store exists.",
+        "select": {
+          "role": "uploads",
+          "category": "data-store"
+        }
+      },
+      {
+        "id": "r4",
+        "type": "redundant",
+        "description": "The orders store survives the loss of an availability zone.",
+        "select": {
+          "role": "orders-store"
+        }
+      }
+    ]
+  }
+}

@@ -9,6 +9,7 @@ import connectionMistakes from "./scenarios/connection-mistakes.json";
 import dualStack from "./scenarios/dual-stack.json";
 import highAvailability from "./scenarios/high-availability.json";
 import onpremWebTier from "./scenarios/onprem-web-tier.json";
+import roleTags from "./scenarios/role-tags.json";
 import serverlessOrders from "./scenarios/serverless-orders.json";
 import webAndWorkers from "./scenarios/web-and-workers.json";
 import webTier from "./scenarios/web-tier.json";
@@ -44,4 +45,5 @@ export const SCENARIOS: Scenario[] = [
   azureServerless as Scenario,
   azureWebTier as Scenario,
   onpremWebTier as Scenario,
+  roleTags as Scenario,
 ];

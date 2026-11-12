@@ -197,6 +197,7 @@ export function App() {
                 findings={evaluation.findings}
                 intentVerdicts={evaluation.intentVerdicts}
                 selection={selection}
+                roles={scenario.task?.roles ?? []}
                 onChange={change}
               />
             ) : (
@@ -207,6 +208,7 @@ export function App() {
               task={scenario.task}
               taskFindings={parsedTask?.findings ?? []}
               result={evaluation.requirements}
+              components={solution?.components ?? []}
             />
           )}
           {tab === "facts" && <FactsPanel facts={evaluation.facts} />}

@@ -80,6 +80,14 @@ export function setLabel(solution: Solution, id: string, label: string): Solutio
   });
 }
 
+/** Sets the role tags of a component; an empty list removes them. */
+export function setRoles(solution: Solution, id: string, roles: string[]): Solution {
+  return updateComponent(solution, id, (component) => {
+    const { roles: _old, ...rest } = component;
+    return roles.length > 0 ? { ...rest, roles } : rest;
+  });
+}
+
 /** Removes components and the intents attached to them. */
 export function removeComponents(solution: Solution, ids: readonly string[]): Solution {
   const removed = new Set(ids);
