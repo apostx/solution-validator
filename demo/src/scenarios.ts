@@ -1,6 +1,9 @@
 import type { Pack, Solution, Task } from "solution-validator";
 import awsPack from "solution-validator/packs/aws";
+import azurePack from "solution-validator/packs/azure";
 import corePack from "solution-validator/packs/core";
+import azureServerless from "./scenarios/azure-serverless.json";
+import azureWebTier from "./scenarios/azure-web-tier.json";
 import connectionMistakes from "./scenarios/connection-mistakes.json";
 import highAvailability from "./scenarios/high-availability.json";
 import serverlessOrders from "./scenarios/serverless-orders.json";
@@ -21,7 +24,7 @@ export interface Scenario {
 }
 
 /** The packs the demo can load, by id. */
-export const PACKS: Record<string, Pack> = { core: corePack, aws: awsPack };
+export const PACKS: Record<string, Pack> = { core: corePack, aws: awsPack, azure: azurePack };
 
 export const SCENARIOS: Scenario[] = [
   serverlessOrders as Scenario,
@@ -29,4 +32,6 @@ export const SCENARIOS: Scenario[] = [
   webAndWorkers as Scenario,
   webTier as Scenario,
   highAvailability as Scenario,
+  azureServerless as Scenario,
+  azureWebTier as Scenario,
 ];
