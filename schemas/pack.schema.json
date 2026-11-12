@@ -1728,6 +1728,1141 @@
               "pattern": "^[a-z][A-Za-z0-9]*$"
             }
           },
+          "terraform": {
+            "type": "object",
+            "required": [
+              "resource"
+            ],
+            "properties": {
+              "resource": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_]*$"
+              },
+              "attributes": {
+                "type": "object",
+                "patternProperties": {
+                  "^[a-z][a-z0-9_]*$": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "required": [
+                          "value"
+                        ],
+                        "properties": {
+                          "value": {}
+                        },
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "required": [
+                          "property"
+                        ],
+                        "properties": {
+                          "property": {
+                            "type": "string",
+                            "pattern": "^[a-z][A-Za-z0-9]*$"
+                          },
+                          "map": {
+                            "type": "object",
+                            "patternProperties": {
+                              "^.*$": {}
+                            }
+                          },
+                          "default": {},
+                          "family": {
+                            "anyOf": [
+                              {
+                                "type": "number",
+                                "const": 4
+                              },
+                              {
+                                "type": "number",
+                                "const": 6
+                              }
+                            ]
+                          },
+                          "ranges": {
+                            "type": "boolean"
+                          },
+                          "list": {
+                            "type": "boolean"
+                          },
+                          "first": {
+                            "type": "boolean"
+                          }
+                        },
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "required": [
+                          "reference",
+                          "attribute"
+                        ],
+                        "properties": {
+                          "reference": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "pattern": "^[a-z][A-Za-z0-9]*$"
+                              },
+                              {
+                                "type": "string",
+                                "const": "placement"
+                              },
+                              {
+                                "type": "string",
+                                "const": "item"
+                              }
+                            ]
+                          },
+                          "attribute": {
+                            "type": "string",
+                            "pattern": "^[a-z][a-z0-9_]*$"
+                          },
+                          "network": {
+                            "type": "boolean"
+                          },
+                          "types": {
+                            "type": "array",
+                            "items": {
+                              "type": "string",
+                              "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*\\.[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+                            },
+                            "minItems": 1
+                          },
+                          "list": {
+                            "type": "boolean"
+                          }
+                        },
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "required": [
+                          "referencedBy",
+                          "attribute"
+                        ],
+                        "properties": {
+                          "referencedBy": {
+                            "type": "object",
+                            "required": [
+                              "type",
+                              "property"
+                            ],
+                            "properties": {
+                              "type": {
+                                "type": "string",
+                                "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*\\.[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+                              },
+                              "property": {
+                                "type": "string",
+                                "pattern": "^[a-z][A-Za-z0-9]*$"
+                              }
+                            },
+                            "additionalProperties": false
+                          },
+                          "attribute": {
+                            "type": "string",
+                            "pattern": "^[a-z][a-z0-9_]*$"
+                          }
+                        },
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "required": [
+                          "self"
+                        ],
+                        "properties": {
+                          "self": {
+                            "type": "string",
+                            "pattern": "^[a-z][a-z0-9_]*$"
+                          }
+                        },
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "required": [
+                          "variable"
+                        ],
+                        "properties": {
+                          "variable": {
+                            "type": "string",
+                            "pattern": "^[a-z][a-z0-9_]*$"
+                          }
+                        },
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "required": [
+                          "id"
+                        ],
+                        "properties": {
+                          "id": {
+                            "type": "boolean",
+                            "const": true
+                          }
+                        },
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "required": [
+                          "port",
+                          "property"
+                        ],
+                        "properties": {
+                          "port": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "const": "from"
+                              },
+                              {
+                                "type": "string",
+                                "const": "to"
+                              },
+                              {
+                                "type": "string",
+                                "const": "range"
+                              },
+                              {
+                                "type": "string",
+                                "const": "protocol"
+                              }
+                            ]
+                          },
+                          "property": {
+                            "type": "string",
+                            "pattern": "^[a-z][A-Za-z0-9]*$"
+                          },
+                          "map": {
+                            "type": "object",
+                            "patternProperties": {
+                              "^.*$": {}
+                            }
+                          }
+                        },
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "required": [
+                          "index"
+                        ],
+                        "properties": {
+                          "index": {
+                            "type": "object",
+                            "required": [
+                              "start",
+                              "step"
+                            ],
+                            "properties": {
+                              "start": {
+                                "type": "integer",
+                                "minimum": 0
+                              },
+                              "step": {
+                                "type": "integer",
+                                "minimum": 1
+                              }
+                            },
+                            "additionalProperties": false
+                          },
+                          "prefix": {
+                            "type": "string"
+                          }
+                        },
+                        "additionalProperties": false
+                      }
+                    ]
+                  }
+                },
+                "additionalProperties": false
+              },
+              "blocks": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "name",
+                    "attributes"
+                  ],
+                  "properties": {
+                    "name": {
+                      "type": "string",
+                      "pattern": "^[a-z][a-z0-9_]*$"
+                    },
+                    "each": {
+                      "type": "string",
+                      "pattern": "^[a-z][A-Za-z0-9]*$"
+                    },
+                    "where": {
+                      "type": "object",
+                      "patternProperties": {
+                        "^[a-z][A-Za-z0-9]*$": {
+                          "type": "string"
+                        }
+                      },
+                      "additionalProperties": false
+                    },
+                    "expand": {
+                      "type": "string",
+                      "pattern": "^[a-z][A-Za-z0-9]*$"
+                    },
+                    "attributes": {
+                      "type": "object",
+                      "patternProperties": {
+                        "^[a-z][a-z0-9_]*$": {
+                          "anyOf": [
+                            {
+                              "type": "object",
+                              "required": [
+                                "value"
+                              ],
+                              "properties": {
+                                "value": {}
+                              },
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "required": [
+                                "property"
+                              ],
+                              "properties": {
+                                "property": {
+                                  "type": "string",
+                                  "pattern": "^[a-z][A-Za-z0-9]*$"
+                                },
+                                "map": {
+                                  "type": "object",
+                                  "patternProperties": {
+                                    "^.*$": {}
+                                  }
+                                },
+                                "default": {},
+                                "family": {
+                                  "anyOf": [
+                                    {
+                                      "type": "number",
+                                      "const": 4
+                                    },
+                                    {
+                                      "type": "number",
+                                      "const": 6
+                                    }
+                                  ]
+                                },
+                                "ranges": {
+                                  "type": "boolean"
+                                },
+                                "list": {
+                                  "type": "boolean"
+                                },
+                                "first": {
+                                  "type": "boolean"
+                                }
+                              },
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "required": [
+                                "reference",
+                                "attribute"
+                              ],
+                              "properties": {
+                                "reference": {
+                                  "anyOf": [
+                                    {
+                                      "type": "string",
+                                      "pattern": "^[a-z][A-Za-z0-9]*$"
+                                    },
+                                    {
+                                      "type": "string",
+                                      "const": "placement"
+                                    },
+                                    {
+                                      "type": "string",
+                                      "const": "item"
+                                    }
+                                  ]
+                                },
+                                "attribute": {
+                                  "type": "string",
+                                  "pattern": "^[a-z][a-z0-9_]*$"
+                                },
+                                "network": {
+                                  "type": "boolean"
+                                },
+                                "types": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "string",
+                                    "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*\\.[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+                                  },
+                                  "minItems": 1
+                                },
+                                "list": {
+                                  "type": "boolean"
+                                }
+                              },
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "required": [
+                                "referencedBy",
+                                "attribute"
+                              ],
+                              "properties": {
+                                "referencedBy": {
+                                  "type": "object",
+                                  "required": [
+                                    "type",
+                                    "property"
+                                  ],
+                                  "properties": {
+                                    "type": {
+                                      "type": "string",
+                                      "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*\\.[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+                                    },
+                                    "property": {
+                                      "type": "string",
+                                      "pattern": "^[a-z][A-Za-z0-9]*$"
+                                    }
+                                  },
+                                  "additionalProperties": false
+                                },
+                                "attribute": {
+                                  "type": "string",
+                                  "pattern": "^[a-z][a-z0-9_]*$"
+                                }
+                              },
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "required": [
+                                "self"
+                              ],
+                              "properties": {
+                                "self": {
+                                  "type": "string",
+                                  "pattern": "^[a-z][a-z0-9_]*$"
+                                }
+                              },
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "required": [
+                                "variable"
+                              ],
+                              "properties": {
+                                "variable": {
+                                  "type": "string",
+                                  "pattern": "^[a-z][a-z0-9_]*$"
+                                }
+                              },
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "required": [
+                                "id"
+                              ],
+                              "properties": {
+                                "id": {
+                                  "type": "boolean",
+                                  "const": true
+                                }
+                              },
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "required": [
+                                "port",
+                                "property"
+                              ],
+                              "properties": {
+                                "port": {
+                                  "anyOf": [
+                                    {
+                                      "type": "string",
+                                      "const": "from"
+                                    },
+                                    {
+                                      "type": "string",
+                                      "const": "to"
+                                    },
+                                    {
+                                      "type": "string",
+                                      "const": "range"
+                                    },
+                                    {
+                                      "type": "string",
+                                      "const": "protocol"
+                                    }
+                                  ]
+                                },
+                                "property": {
+                                  "type": "string",
+                                  "pattern": "^[a-z][A-Za-z0-9]*$"
+                                },
+                                "map": {
+                                  "type": "object",
+                                  "patternProperties": {
+                                    "^.*$": {}
+                                  }
+                                }
+                              },
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "required": [
+                                "index"
+                              ],
+                              "properties": {
+                                "index": {
+                                  "type": "object",
+                                  "required": [
+                                    "start",
+                                    "step"
+                                  ],
+                                  "properties": {
+                                    "start": {
+                                      "type": "integer",
+                                      "minimum": 0
+                                    },
+                                    "step": {
+                                      "type": "integer",
+                                      "minimum": 1
+                                    }
+                                  },
+                                  "additionalProperties": false
+                                },
+                                "prefix": {
+                                  "type": "string"
+                                }
+                              },
+                              "additionalProperties": false
+                            }
+                          ]
+                        }
+                      },
+                      "additionalProperties": false
+                    },
+                    "requireAny": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "pattern": "^[a-z][a-z0-9_]*$"
+                      },
+                      "minItems": 1
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "requireAny": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_]*$"
+                },
+                "minItems": 1
+              },
+              "notes": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "extra": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "resource"
+                  ],
+                  "properties": {
+                    "resource": {
+                      "type": "string",
+                      "pattern": "^[a-z][a-z0-9_]*$"
+                    },
+                    "attributes": {
+                      "type": "object",
+                      "patternProperties": {
+                        "^[a-z][a-z0-9_]*$": {
+                          "anyOf": [
+                            {
+                              "type": "object",
+                              "required": [
+                                "value"
+                              ],
+                              "properties": {
+                                "value": {}
+                              },
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "required": [
+                                "property"
+                              ],
+                              "properties": {
+                                "property": {
+                                  "type": "string",
+                                  "pattern": "^[a-z][A-Za-z0-9]*$"
+                                },
+                                "map": {
+                                  "type": "object",
+                                  "patternProperties": {
+                                    "^.*$": {}
+                                  }
+                                },
+                                "default": {},
+                                "family": {
+                                  "anyOf": [
+                                    {
+                                      "type": "number",
+                                      "const": 4
+                                    },
+                                    {
+                                      "type": "number",
+                                      "const": 6
+                                    }
+                                  ]
+                                },
+                                "ranges": {
+                                  "type": "boolean"
+                                },
+                                "list": {
+                                  "type": "boolean"
+                                },
+                                "first": {
+                                  "type": "boolean"
+                                }
+                              },
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "required": [
+                                "reference",
+                                "attribute"
+                              ],
+                              "properties": {
+                                "reference": {
+                                  "anyOf": [
+                                    {
+                                      "type": "string",
+                                      "pattern": "^[a-z][A-Za-z0-9]*$"
+                                    },
+                                    {
+                                      "type": "string",
+                                      "const": "placement"
+                                    },
+                                    {
+                                      "type": "string",
+                                      "const": "item"
+                                    }
+                                  ]
+                                },
+                                "attribute": {
+                                  "type": "string",
+                                  "pattern": "^[a-z][a-z0-9_]*$"
+                                },
+                                "network": {
+                                  "type": "boolean"
+                                },
+                                "types": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "string",
+                                    "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*\\.[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+                                  },
+                                  "minItems": 1
+                                },
+                                "list": {
+                                  "type": "boolean"
+                                }
+                              },
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "required": [
+                                "referencedBy",
+                                "attribute"
+                              ],
+                              "properties": {
+                                "referencedBy": {
+                                  "type": "object",
+                                  "required": [
+                                    "type",
+                                    "property"
+                                  ],
+                                  "properties": {
+                                    "type": {
+                                      "type": "string",
+                                      "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*\\.[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+                                    },
+                                    "property": {
+                                      "type": "string",
+                                      "pattern": "^[a-z][A-Za-z0-9]*$"
+                                    }
+                                  },
+                                  "additionalProperties": false
+                                },
+                                "attribute": {
+                                  "type": "string",
+                                  "pattern": "^[a-z][a-z0-9_]*$"
+                                }
+                              },
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "required": [
+                                "self"
+                              ],
+                              "properties": {
+                                "self": {
+                                  "type": "string",
+                                  "pattern": "^[a-z][a-z0-9_]*$"
+                                }
+                              },
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "required": [
+                                "variable"
+                              ],
+                              "properties": {
+                                "variable": {
+                                  "type": "string",
+                                  "pattern": "^[a-z][a-z0-9_]*$"
+                                }
+                              },
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "required": [
+                                "id"
+                              ],
+                              "properties": {
+                                "id": {
+                                  "type": "boolean",
+                                  "const": true
+                                }
+                              },
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "required": [
+                                "port",
+                                "property"
+                              ],
+                              "properties": {
+                                "port": {
+                                  "anyOf": [
+                                    {
+                                      "type": "string",
+                                      "const": "from"
+                                    },
+                                    {
+                                      "type": "string",
+                                      "const": "to"
+                                    },
+                                    {
+                                      "type": "string",
+                                      "const": "range"
+                                    },
+                                    {
+                                      "type": "string",
+                                      "const": "protocol"
+                                    }
+                                  ]
+                                },
+                                "property": {
+                                  "type": "string",
+                                  "pattern": "^[a-z][A-Za-z0-9]*$"
+                                },
+                                "map": {
+                                  "type": "object",
+                                  "patternProperties": {
+                                    "^.*$": {}
+                                  }
+                                }
+                              },
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "required": [
+                                "index"
+                              ],
+                              "properties": {
+                                "index": {
+                                  "type": "object",
+                                  "required": [
+                                    "start",
+                                    "step"
+                                  ],
+                                  "properties": {
+                                    "start": {
+                                      "type": "integer",
+                                      "minimum": 0
+                                    },
+                                    "step": {
+                                      "type": "integer",
+                                      "minimum": 1
+                                    }
+                                  },
+                                  "additionalProperties": false
+                                },
+                                "prefix": {
+                                  "type": "string"
+                                }
+                              },
+                              "additionalProperties": false
+                            }
+                          ]
+                        }
+                      },
+                      "additionalProperties": false
+                    },
+                    "blocks": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "name",
+                          "attributes"
+                        ],
+                        "properties": {
+                          "name": {
+                            "type": "string",
+                            "pattern": "^[a-z][a-z0-9_]*$"
+                          },
+                          "each": {
+                            "type": "string",
+                            "pattern": "^[a-z][A-Za-z0-9]*$"
+                          },
+                          "where": {
+                            "type": "object",
+                            "patternProperties": {
+                              "^[a-z][A-Za-z0-9]*$": {
+                                "type": "string"
+                              }
+                            },
+                            "additionalProperties": false
+                          },
+                          "expand": {
+                            "type": "string",
+                            "pattern": "^[a-z][A-Za-z0-9]*$"
+                          },
+                          "attributes": {
+                            "type": "object",
+                            "patternProperties": {
+                              "^[a-z][a-z0-9_]*$": {
+                                "anyOf": [
+                                  {
+                                    "type": "object",
+                                    "required": [
+                                      "value"
+                                    ],
+                                    "properties": {
+                                      "value": {}
+                                    },
+                                    "additionalProperties": false
+                                  },
+                                  {
+                                    "type": "object",
+                                    "required": [
+                                      "property"
+                                    ],
+                                    "properties": {
+                                      "property": {
+                                        "type": "string",
+                                        "pattern": "^[a-z][A-Za-z0-9]*$"
+                                      },
+                                      "map": {
+                                        "type": "object",
+                                        "patternProperties": {
+                                          "^.*$": {}
+                                        }
+                                      },
+                                      "default": {},
+                                      "family": {
+                                        "anyOf": [
+                                          {
+                                            "type": "number",
+                                            "const": 4
+                                          },
+                                          {
+                                            "type": "number",
+                                            "const": 6
+                                          }
+                                        ]
+                                      },
+                                      "ranges": {
+                                        "type": "boolean"
+                                      },
+                                      "list": {
+                                        "type": "boolean"
+                                      },
+                                      "first": {
+                                        "type": "boolean"
+                                      }
+                                    },
+                                    "additionalProperties": false
+                                  },
+                                  {
+                                    "type": "object",
+                                    "required": [
+                                      "reference",
+                                      "attribute"
+                                    ],
+                                    "properties": {
+                                      "reference": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string",
+                                            "pattern": "^[a-z][A-Za-z0-9]*$"
+                                          },
+                                          {
+                                            "type": "string",
+                                            "const": "placement"
+                                          },
+                                          {
+                                            "type": "string",
+                                            "const": "item"
+                                          }
+                                        ]
+                                      },
+                                      "attribute": {
+                                        "type": "string",
+                                        "pattern": "^[a-z][a-z0-9_]*$"
+                                      },
+                                      "network": {
+                                        "type": "boolean"
+                                      },
+                                      "types": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "string",
+                                          "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*\\.[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+                                        },
+                                        "minItems": 1
+                                      },
+                                      "list": {
+                                        "type": "boolean"
+                                      }
+                                    },
+                                    "additionalProperties": false
+                                  },
+                                  {
+                                    "type": "object",
+                                    "required": [
+                                      "referencedBy",
+                                      "attribute"
+                                    ],
+                                    "properties": {
+                                      "referencedBy": {
+                                        "type": "object",
+                                        "required": [
+                                          "type",
+                                          "property"
+                                        ],
+                                        "properties": {
+                                          "type": {
+                                            "type": "string",
+                                            "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*\\.[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+                                          },
+                                          "property": {
+                                            "type": "string",
+                                            "pattern": "^[a-z][A-Za-z0-9]*$"
+                                          }
+                                        },
+                                        "additionalProperties": false
+                                      },
+                                      "attribute": {
+                                        "type": "string",
+                                        "pattern": "^[a-z][a-z0-9_]*$"
+                                      }
+                                    },
+                                    "additionalProperties": false
+                                  },
+                                  {
+                                    "type": "object",
+                                    "required": [
+                                      "self"
+                                    ],
+                                    "properties": {
+                                      "self": {
+                                        "type": "string",
+                                        "pattern": "^[a-z][a-z0-9_]*$"
+                                      }
+                                    },
+                                    "additionalProperties": false
+                                  },
+                                  {
+                                    "type": "object",
+                                    "required": [
+                                      "variable"
+                                    ],
+                                    "properties": {
+                                      "variable": {
+                                        "type": "string",
+                                        "pattern": "^[a-z][a-z0-9_]*$"
+                                      }
+                                    },
+                                    "additionalProperties": false
+                                  },
+                                  {
+                                    "type": "object",
+                                    "required": [
+                                      "id"
+                                    ],
+                                    "properties": {
+                                      "id": {
+                                        "type": "boolean",
+                                        "const": true
+                                      }
+                                    },
+                                    "additionalProperties": false
+                                  },
+                                  {
+                                    "type": "object",
+                                    "required": [
+                                      "port",
+                                      "property"
+                                    ],
+                                    "properties": {
+                                      "port": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string",
+                                            "const": "from"
+                                          },
+                                          {
+                                            "type": "string",
+                                            "const": "to"
+                                          },
+                                          {
+                                            "type": "string",
+                                            "const": "range"
+                                          },
+                                          {
+                                            "type": "string",
+                                            "const": "protocol"
+                                          }
+                                        ]
+                                      },
+                                      "property": {
+                                        "type": "string",
+                                        "pattern": "^[a-z][A-Za-z0-9]*$"
+                                      },
+                                      "map": {
+                                        "type": "object",
+                                        "patternProperties": {
+                                          "^.*$": {}
+                                        }
+                                      }
+                                    },
+                                    "additionalProperties": false
+                                  },
+                                  {
+                                    "type": "object",
+                                    "required": [
+                                      "index"
+                                    ],
+                                    "properties": {
+                                      "index": {
+                                        "type": "object",
+                                        "required": [
+                                          "start",
+                                          "step"
+                                        ],
+                                        "properties": {
+                                          "start": {
+                                            "type": "integer",
+                                            "minimum": 0
+                                          },
+                                          "step": {
+                                            "type": "integer",
+                                            "minimum": 1
+                                          }
+                                        },
+                                        "additionalProperties": false
+                                      },
+                                      "prefix": {
+                                        "type": "string"
+                                      }
+                                    },
+                                    "additionalProperties": false
+                                  }
+                                ]
+                              }
+                            },
+                            "additionalProperties": false
+                          },
+                          "requireAny": {
+                            "type": "array",
+                            "items": {
+                              "type": "string",
+                              "pattern": "^[a-z][a-z0-9_]*$"
+                            },
+                            "minItems": 1
+                          }
+                        },
+                        "additionalProperties": false
+                      }
+                    },
+                    "requireAny": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "pattern": "^[a-z][a-z0-9_]*$"
+                      },
+                      "minItems": 1
+                    },
+                    "notes": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "each": {
+                      "type": "string",
+                      "pattern": "^[a-z][A-Za-z0-9]*$"
+                    },
+                    "suffix": {
+                      "type": "string",
+                      "pattern": "^[a-z0-9_]+$"
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              }
+            },
+            "additionalProperties": false
+          },
           "meta": {
             "type": "object",
             "patternProperties": {
@@ -1737,6 +2872,81 @@
         },
         "additionalProperties": false
       }
+    },
+    "terraform": {
+      "type": "object",
+      "required": [
+        "providers"
+      ],
+      "properties": {
+        "providers": {
+          "type": "object",
+          "patternProperties": {
+            "^[a-z][a-z0-9_]*$": {
+              "type": "object",
+              "required": [
+                "source"
+              ],
+              "properties": {
+                "source": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "blocks": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9_]*$"
+                  }
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        },
+        "variables": {
+          "type": "object",
+          "patternProperties": {
+            "^[a-z][a-z0-9_]*$": {
+              "type": "object",
+              "required": [
+                "description",
+                "type"
+              ],
+              "properties": {
+                "description": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "type": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "const": "string"
+                    },
+                    {
+                      "type": "string",
+                      "const": "number"
+                    },
+                    {
+                      "type": "string",
+                      "const": "bool"
+                    },
+                    {
+                      "type": "string",
+                      "const": "list(string)"
+                    }
+                  ]
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
     },
     "meta": {
       "type": "object",

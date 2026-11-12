@@ -1,4 +1,5 @@
 import Type from "typebox";
+import { TerraformMapping, TerraformPackSettings } from "../export/terraform-schema";
 import {
   Meta,
   Name,
@@ -55,6 +56,8 @@ export const TypeDefinition = Type.Object(
     properties: Type.Optional(Type.Record(PropertyName, PropertySchema, closed)),
     /** Properties every component of this type must set. */
     required: Type.Optional(Type.Array(PropertyName)),
+    /** How components of this type are exported to Terraform. */
+    terraform: Type.Optional(TerraformMapping),
     meta: Type.Optional(Meta),
   },
   closed,
@@ -103,6 +106,8 @@ export const Pack = Type.Object(
     actions: Type.Optional(Type.Array(ActionDefinition)),
     ports: Type.Optional(Type.Array(PortDefinition)),
     types: Type.Optional(Type.Array(TypeDefinition)),
+    /** Terraform providers and input variables for the export. */
+    terraform: Type.Optional(TerraformPackSettings),
     meta: Type.Optional(Meta),
   },
   { ...closed, title: "SolutionValidator pack" },

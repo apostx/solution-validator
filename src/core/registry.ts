@@ -1,3 +1,8 @@
+import type {
+  TerraformMapping,
+  TerraformPackSettings,
+  TerraformValue,
+} from "../export/terraform-schema";
 import { createFinding, type Finding, hasErrors, sortFindings } from "../messages/finding";
 import { compareStrings } from "../util/compare";
 import { parseCidr, parsePortRange } from "../util/ip";
@@ -32,6 +37,8 @@ export interface PackInfo {
   readonly description?: string;
   readonly vocabulary: number;
   readonly requires: Readonly<Record<string, string>>;
+  /** Terraform providers and variables, when the pack supports the export. */
+  readonly terraform?: TerraformPackSettings;
   readonly meta: Meta;
 }
 
@@ -47,6 +54,8 @@ export interface ComponentType {
   readonly accepts?: readonly AcceptRule[];
   readonly properties: PropertySchemas;
   readonly required: readonly string[];
+  /** How components of the type are exported to Terraform, when the pack says. */
+  readonly terraform?: TerraformMapping;
   readonly meta: Meta;
 }
 
@@ -221,10 +230,88 @@ function checkDefinitions(packs: readonly Pack[], byId: ReadonlyMap<string, Pack
     visit(pack.id);
     const isVisible = (kind: DefinitionKind, id: string) =>
       all.some((d) => d.kind === kind && d.id === id && visible.has(d.pack));
+    const variables = new Set(Object.keys(pack.terraform?.variables ?? {}));
     (pack.types ?? []).forEach((type, index) => {
       findings.push(...checkType(pack.id, type, `/types/${index}`, isVisible));
+      findings.push(...checkTerraform(pack.id, type, `/types/${index}`, isVisible, variables));
     });
   }
+  return findings;
+}
+
+/**
+ * Checks a type's Terraform mapping: the properties, item fields, types and variables it names
+ * exist. Item fields are checked against the item schema of the array property.
+ */
+function checkTerraform(
+  packId: string,
+  type: TypeDefinition,
+  base: string,
+  isVisible: (kind: DefinitionKind, id: string) => boolean,
+  variables: ReadonlySet<string>,
+): Finding[] {
+  const mapping = type.terraform;
+  if (!mapping) return [];
+  const findings: Finding[] = [];
+  const unknown = (path: string, kind: string, id: string) =>
+    findings.push(
+      createFinding("PACK_REFERENCE_UNKNOWN", [packId, type.id], { path, pack: packId, kind, id }),
+    );
+  const properties = type.properties ?? {};
+  const itemFields = (property: string | undefined): Record<string, unknown> | undefined => {
+    const schema = property === undefined ? undefined : properties[property];
+    return schema?.type === "array" && schema.items.type === "object"
+      ? schema.items.properties
+      : undefined;
+  };
+  const checkValues = (
+    values: Record<string, TerraformValue> | undefined,
+    path: string,
+    fields: Record<string, unknown> | undefined,
+  ) => {
+    for (const [argument, spec] of Object.entries(values ?? {})) {
+      const at = `${path}/${argument}`;
+      const names = fields ?? properties;
+      if ("property" in spec && !(spec.property in names)) unknown(at, "property", spec.property);
+      if (
+        "reference" in spec &&
+        spec.reference !== "placement" &&
+        spec.reference !== "item" &&
+        !(spec.reference in names)
+      ) {
+        unknown(at, "property", spec.reference);
+      }
+      if ("reference" in spec) {
+        for (const id of spec.types ?? []) if (!isVisible("type", id)) unknown(at, "type", id);
+      }
+      if ("referencedBy" in spec && !isVisible("type", spec.referencedBy.type)) {
+        unknown(at, "type", spec.referencedBy.type);
+      }
+      if ("variable" in spec && !variables.has(spec.variable)) {
+        unknown(at, "variable", spec.variable);
+      }
+    }
+  };
+  const checkResource = (
+    resource: Pick<TerraformMapping, "attributes" | "blocks">,
+    path: string,
+  ) => {
+    checkValues(resource.attributes, `${path}/attributes`, undefined);
+    (resource.blocks ?? []).forEach((block, index) => {
+      const at = `${path}/blocks/${index}`;
+      const fields = itemFields(block.each);
+      if (block.each !== undefined && !fields) unknown(`${at}/each`, "property", block.each);
+      checkValues(block.attributes, `${at}/attributes`, fields);
+    });
+  };
+  checkResource(mapping, `${base}/terraform`);
+  (mapping.extra ?? []).forEach((extra, index) => {
+    const at = `${base}/terraform/extra/${index}`;
+    if (extra.each !== undefined && !(extra.each in properties)) {
+      unknown(`${at}/each`, "property", extra.each);
+    }
+    checkResource(extra, at);
+  });
   return findings;
 }
 
@@ -379,6 +466,7 @@ function buildRegistry(packs: readonly Pack[]): Registry {
         ...(pack.description === undefined ? {} : { description: pack.description }),
         vocabulary: pack.vocabulary,
         requires: { ...(pack.requires ?? {}) },
+        ...(pack.terraform === undefined ? {} : { terraform: pack.terraform }),
         meta: pack.meta ?? {},
       }),
     )
@@ -396,6 +484,7 @@ function buildRegistry(packs: readonly Pack[]): Registry {
         ...(type.accepts === undefined ? {} : { accepts: type.accepts }),
         properties: type.properties ?? {},
         required: type.required ?? [],
+        ...(type.terraform === undefined ? {} : { terraform: type.terraform }),
         meta: type.meta ?? {},
       }),
     ),
