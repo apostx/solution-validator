@@ -38,11 +38,16 @@ const COMPONENT_SIZE: Size = { width: 170, height: 64 };
 type CanvasNode = ComponentNodeType | ZoneNodeType;
 
 /** The zone's address space: a fixed value of its type, or the property it is bound to. */
+/** A zone's IPv4 and IPv6 address spaces, as the canvas labels them. */
 function addressSpaceOf(registry: Registry, component: Component): string | undefined {
-  const parameter = registry.getType(component.type)?.traits.zone?.addressSpace;
-  if (typeof parameter === "string") return parameter;
-  const value = parameter ? component.properties?.[parameter.property] : undefined;
-  return typeof value === "string" ? value : undefined;
+  const zone = registry.getType(component.type)?.traits.zone;
+  const spaces = [zone?.addressSpace, zone?.ipv6AddressSpace].map((parameter) => {
+    if (typeof parameter === "string") return parameter;
+    const value = parameter ? component.properties?.[parameter.property] : undefined;
+    return typeof value === "string" ? value : undefined;
+  });
+  const known = spaces.filter((space): space is string => space !== undefined);
+  return known.length > 0 ? known.join(" · ") : undefined;
 }
 
 interface CanvasProps {

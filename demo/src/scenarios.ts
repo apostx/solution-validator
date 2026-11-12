@@ -6,6 +6,7 @@ import onpremPack from "solution-validator/packs/onprem";
 import azureServerless from "./scenarios/azure-serverless.json";
 import azureWebTier from "./scenarios/azure-web-tier.json";
 import connectionMistakes from "./scenarios/connection-mistakes.json";
+import dualStack from "./scenarios/dual-stack.json";
 import highAvailability from "./scenarios/high-availability.json";
 import onpremWebTier from "./scenarios/onprem-web-tier.json";
 import serverlessOrders from "./scenarios/serverless-orders.json";
@@ -39,6 +40,7 @@ export const SCENARIOS: Scenario[] = [
   webAndWorkers as Scenario,
   webTier as Scenario,
   highAvailability as Scenario,
+  dualStack as Scenario,
   azureServerless as Scenario,
   azureWebTier as Scenario,
   onpremWebTier as Scenario,

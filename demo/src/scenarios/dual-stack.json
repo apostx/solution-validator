@@ -1,0 +1,341 @@
+{
+  "id": "dual-stack",
+  "title": "Dual-stack VPC (IPv4 and IPv6)",
+  "description": "A VPC with IPv4 and IPv6 address ranges. The web server's security group admits HTTPS only from ::/0, and the private subnet reaches the internet only through an egress-only internet gateway, which carries IPv6 traffic out. The logical level checks IPv4 only, so these intents fail there; switch the level to detailed to see them pass over IPv6. The legacy subnet has no IPv6 range, so its batch server cannot use the egress-only gateway.",
+  "packs": ["core", "aws"],
+  "solution": {
+    "schemaVersion": 1,
+    "packs": ["core", "aws"],
+    "components": [
+      {
+        "id": "users",
+        "type": "core.internet",
+        "meta": {
+          "position": {
+            "x": -300,
+            "y": 200
+          }
+        }
+      },
+      {
+        "id": "vpc",
+        "type": "aws.vpc",
+        "properties": {
+          "cidrBlock": "10.0.0.0/16",
+          "ipv6CidrBlock": "2600:1f18:1234:5600::/56"
+        },
+        "meta": {
+          "position": {
+            "x": 0,
+            "y": 0
+          },
+          "size": {
+            "width": 1000,
+            "height": 560
+          }
+        }
+      },
+      {
+        "id": "public",
+        "type": "aws.subnet",
+        "placement": ["vpc"],
+        "properties": {
+          "cidrBlock": "10.0.1.0/24",
+          "ipv6CidrBlock": "2600:1f18:1234:5601::/64",
+          "availabilityZone": "us-east-1a"
+        },
+        "meta": {
+          "position": {
+            "x": 30,
+            "y": 50
+          },
+          "size": {
+            "width": 450,
+            "height": 230
+          }
+        }
+      },
+      {
+        "id": "private",
+        "type": "aws.subnet",
+        "placement": ["vpc"],
+        "properties": {
+          "cidrBlock": "10.0.2.0/24",
+          "ipv6CidrBlock": "2600:1f18:1234:5602::/64",
+          "availabilityZone": "us-east-1a"
+        },
+        "meta": {
+          "position": {
+            "x": 520,
+            "y": 50
+          },
+          "size": {
+            "width": 450,
+            "height": 230
+          }
+        }
+      },
+      {
+        "id": "legacy",
+        "type": "aws.subnet",
+        "placement": ["vpc"],
+        "properties": {
+          "cidrBlock": "10.0.3.0/24",
+          "availabilityZone": "us-east-1a"
+        },
+        "meta": {
+          "position": {
+            "x": 520,
+            "y": 310
+          },
+          "size": {
+            "width": 450,
+            "height": 220
+          }
+        }
+      },
+      {
+        "id": "igw",
+        "type": "aws.internet-gateway",
+        "properties": {
+          "attachedTo": ["vpc"]
+        },
+        "meta": {
+          "position": {
+            "x": -300,
+            "y": 40
+          }
+        }
+      },
+      {
+        "id": "eigw",
+        "type": "aws.egress-only-internet-gateway",
+        "properties": {
+          "attachedTo": ["vpc"]
+        },
+        "meta": {
+          "position": {
+            "x": 1080,
+            "y": 40
+          }
+        }
+      },
+      {
+        "id": "public-rt",
+        "type": "aws.route-table",
+        "properties": {
+          "routes": [
+            {
+              "destination": "0.0.0.0/0",
+              "gateway": "igw"
+            },
+            {
+              "destination": "::/0",
+              "gateway": "igw"
+            }
+          ],
+          "associations": ["public"]
+        },
+        "meta": {
+          "position": {
+            "x": 40,
+            "y": 620
+          }
+        }
+      },
+      {
+        "id": "private-rt",
+        "type": "aws.route-table",
+        "properties": {
+          "routes": [
+            {
+              "destination": "::/0",
+              "gateway": "eigw"
+            }
+          ],
+          "associations": ["private", "legacy"]
+        },
+        "meta": {
+          "position": {
+            "x": 240,
+            "y": 620
+          }
+        }
+      },
+      {
+        "id": "web",
+        "type": "aws.ec2",
+        "placement": ["public"],
+        "properties": {
+          "endpoint": "public",
+          "permissions": []
+        },
+        "meta": {
+          "position": {
+            "x": 80,
+            "y": 120
+          }
+        }
+      },
+      {
+        "id": "worker",
+        "type": "aws.ec2",
+        "placement": ["private"],
+        "properties": {
+          "endpoint": "private",
+          "permissions": [
+            {
+              "resource": "bucket",
+              "access": "read"
+            }
+          ]
+        },
+        "meta": {
+          "position": {
+            "x": 560,
+            "y": 120
+          }
+        }
+      },
+      {
+        "id": "batch",
+        "type": "aws.ec2",
+        "placement": ["legacy"],
+        "properties": {
+          "endpoint": "private",
+          "permissions": [
+            {
+              "resource": "bucket",
+              "access": "read"
+            }
+          ]
+        },
+        "meta": {
+          "position": {
+            "x": 560,
+            "y": 380
+          }
+        }
+      },
+      {
+        "id": "bucket",
+        "type": "aws.s3",
+        "properties": {
+          "publicAccess": false
+        },
+        "meta": {
+          "position": {
+            "x": 1080,
+            "y": 250
+          }
+        }
+      },
+      {
+        "id": "web-sg",
+        "type": "aws.security-group",
+        "properties": {
+          "rules": [
+            {
+              "direction": "inbound",
+              "peer": "::/0",
+              "ports": ["https"]
+            },
+            {
+              "direction": "outbound",
+              "peer": "any"
+            }
+          ],
+          "attachedTo": ["web"]
+        },
+        "meta": {
+          "position": {
+            "x": 440,
+            "y": 620
+          }
+        }
+      },
+      {
+        "id": "worker-sg",
+        "type": "aws.security-group",
+        "properties": {
+          "rules": [
+            {
+              "direction": "outbound",
+              "peer": "any"
+            }
+          ],
+          "attachedTo": ["worker", "batch"]
+        },
+        "meta": {
+          "position": {
+            "x": 640,
+            "y": 620
+          }
+        }
+      }
+    ],
+    "intents": [
+      {
+        "id": "users-web",
+        "from": "users",
+        "to": "web",
+        "port": "https"
+      },
+      {
+        "id": "worker-bucket",
+        "from": "worker",
+        "to": "bucket",
+        "action": "read"
+      },
+      {
+        "id": "batch-bucket",
+        "from": "batch",
+        "to": "bucket",
+        "action": "read"
+      },
+      {
+        "id": "users-worker",
+        "from": "users",
+        "to": "worker",
+        "port": "https"
+      }
+    ]
+  },
+  "task": {
+    "schemaVersion": 1,
+    "id": "dual-stack",
+    "title": "IPv6 web tier",
+    "packs": ["core"],
+    "provided": [
+      {
+        "id": "users",
+        "type": "core.internet",
+        "locked": true
+      }
+    ],
+    "requirements": [
+      {
+        "id": "r1",
+        "type": "reachable",
+        "description": "Users on the internet reach a web server.",
+        "from": {
+          "id": "users"
+        },
+        "to": {
+          "category": "compute"
+        }
+      },
+      {
+        "id": "r2",
+        "type": "not-reachable",
+        "description": "No data store is directly accessible from the internet.",
+        "from": {
+          "id": "users"
+        },
+        "to": {
+          "category": "data-store"
+        }
+      }
+    ]
+  }
+}
