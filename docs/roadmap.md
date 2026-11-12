@@ -1,6 +1,6 @@
 # Roadmap
 
-> **Status:** Approved (initial) · 2026-11-10 · **Current iteration: 12 — Terraform export** (Iterations 11–13 approved in this order from the backlog)
+> **Status:** Approved (initial) · 2026-11-10 · **Current iteration: 13 — Role-tag selectors** (Iterations 11–13 approved in this order from the backlog)
 >
 > Iterations 0–4 are approved. Only the current iteration is a commitment. The scope of later iterations may still change and is confirmed before each one starts. Open questions (Q1, Q2, …) are listed in [design.md](design.md#12-open-questions).
 
@@ -44,7 +44,7 @@ Trade-off: the vision's own example (network placement, Security Group and ACL r
 | 9 | Azure pack | 0.9.0 | Q23 | Done |
 | 10 | On-premises pack | 0.10.0 | Q24 | Done |
 | 11 | IPv6 for the detailed level | 0.11.0 | Q25 | Done |
-| 12 | Terraform export | 0.12.0 | to be scoped | Approved |
+| 12 | Terraform export | 0.12.0 | Q26 | Done |
 | 13 | Role-tag selectors | 0.13.0 | to be scoped | Approved |
 
 ### Iteration 0 — Foundations
@@ -164,7 +164,9 @@ The product owner approved the backlog items as Iterations 11–13, in this orde
 
 ### Iteration 12 — Terraform export (0.12.0)
 
-An optional export of a solution to Terraform, as the vision allows. Scoped when it starts.
+- **Library:** `exportTerraform(model)` writes HCL and Terraform JSON from pack-level mappings, with findings for what it cannot export or what is still needed (Q26).
+- **Packs:** `aws` 0.7.0 and `azure` 0.2.0 get Terraform mappings.
+- **Demo:** a Terraform tab with the configuration, a download and the notes.
 
 ### Iteration 13 — Role-tag selectors (0.13.0)
 
