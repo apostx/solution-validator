@@ -1,0 +1,446 @@
+{
+  "$schema": "../schemas/pack.schema.json",
+  "id": "onprem",
+  "version": "0.1.0",
+  "label": "On-premises",
+  "description": "A site's own infrastructure: networks and VLANs, firewalls, routers, servers, server clusters, load balancers and database servers.",
+  "vocabulary": 5,
+  "requires": {
+    "core": "^0.2.0"
+  },
+  "types": [
+    {
+      "id": "onprem.network",
+      "label": "Network",
+      "description": "A site's private network (LAN). Its VLANs reach each other through the core switches unless a firewall filters them; the internet is reached through the network's firewall.",
+      "category": "network",
+      "traits": {
+        "zone": {
+          "addressSpace": {
+            "property": "addressSpace"
+          }
+        }
+      },
+      "accepts": [],
+      "properties": {
+        "addressSpace": {
+          "type": "string",
+          "title": "Address space",
+          "description": "The network's IPv4 address range, for example 192.168.0.0/16. Used by the detailed analysis level.",
+          "pattern": "^([0-9]{1,3}\\.){3}[0-9]{1,3}/[0-9]{1,2}$"
+        }
+      }
+    },
+    {
+      "id": "onprem.vlan",
+      "label": "VLAN",
+      "description": "A segment of the network; place it in the network. A firewall can filter the traffic that enters or leaves it.",
+      "category": "network",
+      "traits": {
+        "zone": {
+          "addressSpace": {
+            "property": "subnet"
+          }
+        }
+      },
+      "accepts": [],
+      "properties": {
+        "vlanId": {
+          "type": "integer",
+          "title": "VLAN id",
+          "description": "Informational only.",
+          "minimum": 1,
+          "maximum": 4094
+        },
+        "subnet": {
+          "type": "string",
+          "title": "Subnet",
+          "description": "The VLAN's IPv4 subnet within the network, for example 192.168.10.0/24. Used by the detailed analysis level.",
+          "pattern": "^([0-9]{1,3}\\.){3}[0-9]{1,3}/[0-9]{1,2}$"
+        }
+      }
+    },
+    {
+      "id": "onprem.firewall",
+      "label": "Firewall",
+      "description": "The network's gateway to the internet and its filter between VLANs. Hosts in the networks it connects use it as their default gateway; it translates their addresses for outbound connections and lets inbound traffic reach published servers only. Its rules apply to traffic through it and to the VLANs it protects.",
+      "category": "network",
+      "traits": {
+        "gateway": {
+          "direction": "both",
+          "connects": {
+            "property": "networks"
+          },
+          "implicit": true
+        },
+        "traffic-filter": {
+          "stateful": true,
+          "attachTo": ["self", "zone"],
+          "rules": {
+            "property": "rules"
+          },
+          "targets": {
+            "property": "protects"
+          },
+          "default": {
+            "inbound": "deny",
+            "outbound": "allow"
+          }
+        },
+        "redundancy": {
+          "domains": {
+            "property": "locations"
+          }
+        }
+      },
+      "accepts": [],
+      "properties": {
+        "networks": {
+          "type": "array",
+          "title": "Networks",
+          "description": "The networks it is the internet gateway of.",
+          "items": {
+            "type": "string",
+            "x-component-ref": true
+          },
+          "default": []
+        },
+        "protects": {
+          "type": "array",
+          "title": "Protected VLANs",
+          "description": "The VLANs whose incoming and outgoing traffic it filters.",
+          "items": {
+            "type": "string",
+            "x-component-ref": true
+          },
+          "default": []
+        },
+        "rules": {
+          "type": "array",
+          "title": "Rules",
+          "description": "Checked in order; the first match decides. Without a match, inbound traffic is denied and outbound traffic is allowed. Stateful: replies are allowed automatically.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "direction": {
+                "type": "string",
+                "title": "Direction",
+                "enum": ["inbound", "outbound"],
+                "description": "Seen from the protected VLAN, or from the network for traffic to and from the internet."
+              },
+              "peer": {
+                "type": "string",
+                "title": "Peer",
+                "minLength": 1,
+                "description": "any, internet, network (anything inside the network), the id of a component, VLAN or network, or an IPv4 range such as 192.168.10.0/24 (matched at the detailed level)."
+              },
+              "ports": {
+                "type": "array",
+                "title": "Ports",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Port ids (https), numbers (443) or ranges (8080-8090). Omitted: all ports."
+              },
+              "effect": {
+                "type": "string",
+                "title": "Effect",
+                "enum": ["allow", "deny"]
+              }
+            },
+            "required": ["direction", "peer"]
+          },
+          "default": []
+        },
+        "locations": {
+          "type": "array",
+          "title": "Locations",
+          "description": "Where its units run, such as racks or rooms; each one is a failure domain. Two units in two locations form a high-availability pair.",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "default": []
+        }
+      }
+    },
+    {
+      "id": "onprem.router",
+      "label": "Router",
+      "description": "Overrides the default gateway of the networks or VLANs it serves, for example to send internet traffic through another firewall.",
+      "category": "network",
+      "traits": {
+        "router": {
+          "routes": {
+            "property": "routes"
+          },
+          "zones": {
+            "property": "serves"
+          }
+        }
+      },
+      "accepts": [],
+      "properties": {
+        "routes": {
+          "type": "array",
+          "title": "Routes",
+          "description": "Routes besides the network's local routes.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "destination": {
+                "type": "string",
+                "title": "Destination",
+                "description": "internet or an IPv4 range such as 0.0.0.0/0 (the detailed level matches the longest prefix).",
+                "minLength": 1
+              },
+              "gateway": {
+                "type": "string",
+                "title": "Gateway",
+                "x-component-ref": true
+              }
+            },
+            "required": ["destination", "gateway"]
+          },
+          "default": []
+        },
+        "serves": {
+          "type": "array",
+          "title": "Serves",
+          "description": "The networks or VLANs that use it.",
+          "items": {
+            "type": "string",
+            "x-component-ref": true
+          },
+          "default": []
+        }
+      }
+    },
+    {
+      "id": "onprem.server",
+      "label": "Server",
+      "description": "A physical or virtual server running an application. Place it in a VLAN. A published server is reachable from the internet through the firewall.",
+      "category": "compute",
+      "traits": {
+        "endpoint": {
+          "visibility": {
+            "property": "endpoint"
+          }
+        },
+        "redundancy": {
+          "domains": {
+            "property": "locations"
+          }
+        }
+      },
+      "accepts": [
+        {
+          "actions": ["connect", "invoke"],
+          "ports": ["http", "https", "ssh"]
+        },
+        {
+          "from": {
+            "category": "compute"
+          },
+          "actions": ["invoke"]
+        }
+      ],
+      "properties": {
+        "endpoint": {
+          "type": "string",
+          "title": "Endpoint",
+          "description": "public: published on a public address through the firewall. private: internal only.",
+          "enum": ["public", "private"],
+          "default": "private"
+        },
+        "locations": {
+          "type": "array",
+          "title": "Locations",
+          "description": "Where it runs, such as a rack or a room.",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "default": [],
+          "maxItems": 1
+        }
+      }
+    },
+    {
+      "id": "onprem.server-cluster",
+      "label": "Server cluster",
+      "description": "A group of equivalent servers running an application. Place it in a VLAN; its locations say which racks, rooms or sites its servers run in.",
+      "category": "compute",
+      "traits": {
+        "endpoint": {
+          "visibility": {
+            "property": "endpoint"
+          }
+        },
+        "group": {
+          "size": {
+            "property": "servers"
+          }
+        },
+        "redundancy": {
+          "domains": {
+            "property": "locations"
+          }
+        }
+      },
+      "accepts": [
+        {
+          "actions": ["connect", "invoke"],
+          "ports": ["http", "https"]
+        },
+        {
+          "from": {
+            "category": "compute"
+          },
+          "actions": ["invoke"]
+        }
+      ],
+      "properties": {
+        "endpoint": {
+          "type": "string",
+          "title": "Endpoint",
+          "description": "public: published on a public address through the firewall. private: internal only.",
+          "enum": ["public", "private"],
+          "default": "private"
+        },
+        "servers": {
+          "type": "integer",
+          "title": "Servers",
+          "description": "Number of servers. Informational only.",
+          "minimum": 0,
+          "default": 2
+        },
+        "locations": {
+          "type": "array",
+          "title": "Locations",
+          "description": "Where its servers run, such as racks, rooms or sites; each one is a failure domain.",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "default": []
+        }
+      }
+    },
+    {
+      "id": "onprem.load-balancer",
+      "label": "Load balancer",
+      "description": "Distributes HTTP(S) requests to servers or clusters. Place it in a VLAN.",
+      "category": "edge",
+      "traits": {
+        "endpoint": {
+          "visibility": {
+            "property": "endpoint"
+          },
+          "ports": ["http", "https"]
+        },
+        "forwarder": {
+          "routes": {
+            "property": "pools"
+          },
+          "authorizes": true
+        },
+        "redundancy": {
+          "domains": {
+            "property": "locations"
+          }
+        }
+      },
+      "accepts": [
+        {
+          "actions": ["invoke", "read"],
+          "ports": ["http", "https"]
+        }
+      ],
+      "properties": {
+        "endpoint": {
+          "type": "string",
+          "title": "Endpoint",
+          "description": "public: published on a public address through the firewall. private: internal only.",
+          "enum": ["public", "private"],
+          "default": "private"
+        },
+        "pools": {
+          "type": "array",
+          "title": "Pools",
+          "description": "Each pool forwards requests on a path to a target.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string",
+                "title": "Path"
+              },
+              "target": {
+                "type": "string",
+                "title": "Target",
+                "x-component-ref": true
+              }
+            },
+            "required": ["target"]
+          },
+          "default": []
+        },
+        "locations": {
+          "type": "array",
+          "title": "Locations",
+          "description": "Where its units run; each one is a failure domain. Two units in two locations form a high-availability pair.",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "default": []
+        }
+      }
+    },
+    {
+      "id": "onprem.database",
+      "label": "Database server",
+      "description": "A relational database server. Place it in a VLAN. Clients authenticate with database credentials, which are not modeled.",
+      "category": "data-store",
+      "traits": {
+        "endpoint": {
+          "visibility": "private",
+          "ports": ["postgresql", "mysql"]
+        },
+        "redundancy": {
+          "domains": {
+            "property": "locations"
+          }
+        }
+      },
+      "accepts": [
+        {
+          "from": {
+            "category": "compute"
+          },
+          "actions": ["read", "write", "connect"],
+          "ports": ["postgresql", "mysql"]
+        }
+      ],
+      "properties": {
+        "engine": {
+          "type": "string",
+          "title": "Engine",
+          "enum": ["postgresql", "mysql"],
+          "description": "Informational only."
+        },
+        "locations": {
+          "type": "array",
+          "title": "Locations",
+          "description": "Where its primary and replicas run; each one is a failure domain. A replica in a second location makes it redundant.",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "default": []
+        }
+      }
+    }
+  ]
+}

@@ -38,6 +38,10 @@
       "types": "./dist/packs/azure.d.ts",
       "default": "./dist/packs/azure.js"
     },
+    "./packs/onprem": {
+      "types": "./dist/packs/onprem.d.ts",
+      "default": "./dist/packs/onprem.js"
+    },
     "./packs/*.json": "./packs/*.json",
     "./schemas/*.json": "./schemas/*.json",
     "./package.json": "./package.json"
