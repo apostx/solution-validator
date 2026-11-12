@@ -34,6 +34,10 @@
       "types": "./dist/packs/aws.d.ts",
       "default": "./dist/packs/aws.js"
     },
+    "./packs/azure": {
+      "types": "./dist/packs/azure.d.ts",
+      "default": "./dist/packs/azure.js"
+    },
     "./packs/*.json": "./packs/*.json",
     "./schemas/*.json": "./schemas/*.json",
     "./package.json": "./package.json"

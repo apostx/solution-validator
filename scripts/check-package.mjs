@@ -29,8 +29,9 @@ if (library.VERSION !== packageJson.version) {
 
 const { default: corePack } = await import(`${packageJson.name}/packs/core`);
 const { default: awsPack } = await import(`${packageJson.name}/packs/aws`);
+const { default: azurePack } = await import(`${packageJson.name}/packs/azure`);
 try {
-  const registry = library.createRegistry([corePack, awsPack]);
+  const registry = library.createRegistry([corePack, awsPack, azurePack]);
   const parsed = library.parseSolution(
     { schemaVersion: 1, packs: ["aws"], components: [{ id: "fn", type: "aws.lambda" }] },
     registry,
