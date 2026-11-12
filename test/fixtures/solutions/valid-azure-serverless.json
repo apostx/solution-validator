@@ -1,0 +1,102 @@
+{
+  "$schema": "../../../schemas/solution.schema.json",
+  "schemaVersion": 1,
+  "packs": ["core", "azure"],
+  "components": [
+    {
+      "id": "users",
+      "type": "core.internet"
+    },
+    {
+      "id": "api",
+      "type": "azure.api-management",
+      "properties": {
+        "endpoint": "public",
+        "apis": [
+          {
+            "path": "/orders",
+            "backend": "orders-fn"
+          }
+        ],
+        "zoneRedundant": true
+      }
+    },
+    {
+      "id": "orders-fn",
+      "type": "azure.function-app",
+      "properties": {
+        "anonymous": false,
+        "roleAssignments": [
+          {
+            "resource": "orders-db",
+            "access": "read-write"
+          }
+        ],
+        "zoneRedundant": true
+      }
+    },
+    {
+      "id": "orders-db",
+      "type": "azure.cosmos-db",
+      "properties": {
+        "zoneRedundant": true
+      }
+    },
+    {
+      "id": "uploads",
+      "type": "azure.blob-storage",
+      "properties": {
+        "anonymousRead": false,
+        "zoneRedundant": false
+      }
+    },
+    {
+      "id": "public-fn",
+      "type": "azure.function-app",
+      "properties": {
+        "anonymous": true,
+        "roleAssignments": []
+      }
+    }
+  ],
+  "intents": [
+    {
+      "id": "i1",
+      "from": "users",
+      "to": "api",
+      "port": "https"
+    },
+    {
+      "id": "i2",
+      "from": "api",
+      "to": "orders-fn",
+      "action": "invoke"
+    },
+    {
+      "id": "i3",
+      "from": "orders-fn",
+      "to": "orders-db",
+      "action": "write"
+    },
+    {
+      "id": "i4",
+      "from": "orders-fn",
+      "to": "uploads",
+      "action": "write"
+    },
+    {
+      "id": "i5",
+      "from": "users",
+      "to": "orders-fn",
+      "action": "invoke",
+      "port": "https"
+    },
+    {
+      "id": "i6",
+      "from": "users",
+      "to": "public-fn",
+      "action": "invoke",
+      "port": "https"
+    }
+  ]
+}

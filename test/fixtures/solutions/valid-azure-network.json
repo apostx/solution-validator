@@ -1,0 +1,204 @@
+{
+  "$schema": "../../../schemas/solution.schema.json",
+  "schemaVersion": 1,
+  "packs": ["core", "azure"],
+  "components": [
+    {
+      "id": "users",
+      "type": "core.internet"
+    },
+    {
+      "id": "vnet",
+      "type": "azure.vnet",
+      "properties": {
+        "addressSpace": "10.1.0.0/16"
+      }
+    },
+    {
+      "id": "gw-subnet",
+      "type": "azure.subnet",
+      "placement": ["vnet"],
+      "properties": {
+        "addressPrefix": "10.1.0.0/24"
+      }
+    },
+    {
+      "id": "app-subnet",
+      "type": "azure.subnet",
+      "placement": ["vnet"],
+      "properties": {
+        "addressPrefix": "10.1.1.0/24"
+      }
+    },
+    {
+      "id": "ops-subnet",
+      "type": "azure.subnet",
+      "placement": ["vnet"],
+      "properties": {
+        "addressPrefix": "10.1.2.0/24"
+      }
+    },
+    {
+      "id": "appgw",
+      "type": "azure.application-gateway",
+      "placement": ["gw-subnet"],
+      "properties": {
+        "frontend": "public",
+        "backends": [
+          {
+            "path": "/*",
+            "backend": "web"
+          }
+        ],
+        "zones": ["1", "2"]
+      }
+    },
+    {
+      "id": "web",
+      "type": "azure.vm-scale-set",
+      "placement": ["app-subnet"],
+      "properties": {
+        "endpoint": "private",
+        "zones": ["1", "2", "3"],
+        "roleAssignments": [
+          {
+            "resource": "orders",
+            "access": "read"
+          }
+        ]
+      }
+    },
+    {
+      "id": "nat",
+      "type": "azure.nat-gateway",
+      "properties": {
+        "subnets": ["app-subnet"],
+        "zones": ["1"]
+      }
+    },
+    {
+      "id": "jump",
+      "type": "azure.vm",
+      "placement": ["ops-subnet"],
+      "properties": {
+        "endpoint": "public",
+        "zones": ["1"],
+        "roleAssignments": []
+      }
+    },
+    {
+      "id": "batch",
+      "type": "azure.vm",
+      "placement": ["ops-subnet"],
+      "properties": {
+        "endpoint": "private",
+        "zones": [],
+        "roleAssignments": [
+          {
+            "resource": "orders",
+            "access": "read"
+          }
+        ]
+      }
+    },
+    {
+      "id": "orders",
+      "type": "azure.cosmos-db",
+      "properties": {
+        "zoneRedundant": true
+      }
+    },
+    {
+      "id": "gw-nsg",
+      "type": "azure.nsg",
+      "properties": {
+        "rules": [
+          {
+            "direction": "inbound",
+            "peer": "internet",
+            "ports": ["https"]
+          }
+        ],
+        "associations": ["gw-subnet"]
+      }
+    },
+    {
+      "id": "web-nsg",
+      "type": "azure.nsg",
+      "properties": {
+        "rules": [
+          {
+            "direction": "inbound",
+            "peer": "gw-subnet",
+            "ports": ["http"]
+          },
+          {
+            "direction": "inbound",
+            "peer": "network",
+            "effect": "deny"
+          }
+        ],
+        "associations": ["web"]
+      }
+    },
+    {
+      "id": "ops-nsg",
+      "type": "azure.nsg",
+      "properties": {
+        "rules": [
+          {
+            "direction": "inbound",
+            "peer": "internet",
+            "ports": ["ssh"]
+          }
+        ],
+        "associations": ["ops-subnet"]
+      }
+    }
+  ],
+  "intents": [
+    {
+      "id": "users-appgw",
+      "from": "users",
+      "to": "appgw",
+      "port": "https"
+    },
+    {
+      "id": "appgw-web",
+      "from": "appgw",
+      "to": "web",
+      "action": "invoke",
+      "port": "http"
+    },
+    {
+      "id": "web-orders",
+      "from": "web",
+      "to": "orders",
+      "action": "read"
+    },
+    {
+      "id": "users-web",
+      "from": "users",
+      "to": "web",
+      "port": "http"
+    },
+    {
+      "id": "users-jump",
+      "from": "users",
+      "to": "jump",
+      "port": "ssh"
+    },
+    {
+      "id": "jump-web",
+      "from": "jump",
+      "to": "web",
+      "port": "ssh"
+    },
+    {
+      "id": "batch-orders",
+      "from": "batch",
+      "to": "orders",
+      "action": "read"
+    }
+  ]
+}
