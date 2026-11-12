@@ -1,7 +1,7 @@
 {
   "$schema": "../schemas/pack.schema.json",
   "id": "aws",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "label": "Amazon Web Services",
   "description": "Serverless (API Gateway, Lambda, DynamoDB, S3), web (CloudFront, Application Load Balancer, EC2, Auto Scaling, RDS) and networking (VPC, subnets, gateways, VPC endpoints, IPv6, route tables, security groups, network ACLs).",
   "vocabulary": 6,
@@ -67,6 +67,20 @@
           },
           "default": []
         }
+      },
+      "terraform": {
+        "resource": "aws_apigatewayv2_api",
+        "attributes": {
+          "name": {
+            "id": true
+          },
+          "protocol_type": {
+            "value": "HTTP"
+          }
+        },
+        "notes": [
+          "Routes, integrations and a stage (aws_apigatewayv2_route, aws_apigatewayv2_integration, aws_apigatewayv2_stage) are not exported. A private endpoint needs a REST API instead."
+        ]
       }
     },
     {
@@ -141,6 +155,40 @@
           },
           "default": []
         }
+      },
+      "terraform": {
+        "resource": "aws_lambda_function",
+        "attributes": {
+          "function_name": {
+            "id": true
+          },
+          "runtime": {
+            "property": "runtime"
+          }
+        },
+        "blocks": [
+          {
+            "name": "vpc_config",
+            "attributes": {
+              "subnet_ids": {
+                "reference": "placement",
+                "attribute": "id",
+                "list": true
+              },
+              "security_group_ids": {
+                "referencedBy": {
+                  "type": "aws.security-group",
+                  "property": "attachedTo"
+                },
+                "attribute": "id"
+              }
+            },
+            "requireAny": ["subnet_ids"]
+          }
+        ],
+        "notes": [
+          "Set role (an IAM role whose policies grant its permissions), handler and the code (filename or image_uri)."
+        ]
       }
     },
     {
@@ -171,7 +219,18 @@
           },
           "actions": ["read", "write"]
         }
-      ]
+      ],
+      "terraform": {
+        "resource": "aws_dynamodb_table",
+        "attributes": {
+          "name": {
+            "id": true
+          }
+        },
+        "notes": [
+          "Set hash_key with its attribute block, and billing_mode or the read and write capacities."
+        ]
+      }
     },
     {
       "id": "aws.s3",
@@ -226,6 +285,60 @@
           "description": "Whether anyone on the internet may read objects. New buckets block public access by default.",
           "default": false
         }
+      },
+      "terraform": {
+        "resource": "aws_s3_bucket",
+        "attributes": {
+          "bucket": {
+            "id": true
+          }
+        },
+        "extra": [
+          {
+            "resource": "aws_s3_bucket_public_access_block",
+            "suffix": "public_access",
+            "attributes": {
+              "bucket": {
+                "self": "id"
+              },
+              "block_public_acls": {
+                "property": "publicAccess",
+                "map": {
+                  "true": false,
+                  "false": true
+                },
+                "default": false
+              },
+              "block_public_policy": {
+                "property": "publicAccess",
+                "map": {
+                  "true": false,
+                  "false": true
+                },
+                "default": false
+              },
+              "ignore_public_acls": {
+                "property": "publicAccess",
+                "map": {
+                  "true": false,
+                  "false": true
+                },
+                "default": false
+              },
+              "restrict_public_buckets": {
+                "property": "publicAccess",
+                "map": {
+                  "true": false,
+                  "false": true
+                },
+                "default": false
+              }
+            }
+          }
+        ],
+        "notes": [
+          "Public reads also need a bucket policy (aws_s3_bucket_policy), which is not exported."
+        ]
       }
     },
     {
@@ -256,6 +369,17 @@
           "title": "IPv6 CIDR block",
           "description": "The VPC's IPv6 address range, for example 2600:1f18:1234:5600::/56. Optional: a VPC without one has no IPv6 addresses. Used by the detailed analysis level.",
           "pattern": "^[0-9a-fA-F:]+/[0-9]{1,3}$"
+        }
+      },
+      "terraform": {
+        "resource": "aws_vpc",
+        "attributes": {
+          "cidr_block": {
+            "property": "cidrBlock"
+          },
+          "ipv6_cidr_block": {
+            "property": "ipv6CidrBlock"
+          }
         }
       }
     },
@@ -297,6 +421,25 @@
           "description": "The subnet's IPv6 range within its VPC's, a /64 such as 2600:1f18:1234:5601::/64. Optional. Used by the detailed analysis level.",
           "pattern": "^[0-9a-fA-F:]+/[0-9]{1,3}$"
         }
+      },
+      "terraform": {
+        "resource": "aws_subnet",
+        "attributes": {
+          "vpc_id": {
+            "reference": "placement",
+            "attribute": "id",
+            "types": ["aws.vpc"]
+          },
+          "cidr_block": {
+            "property": "cidrBlock"
+          },
+          "ipv6_cidr_block": {
+            "property": "ipv6CidrBlock"
+          },
+          "availability_zone": {
+            "property": "availabilityZone"
+          }
+        }
       }
     },
     {
@@ -327,6 +470,15 @@
           },
           "default": [],
           "maxItems": 1
+        }
+      },
+      "terraform": {
+        "resource": "aws_internet_gateway",
+        "attributes": {
+          "vpc_id": {
+            "reference": "attachedTo",
+            "attribute": "id"
+          }
         }
       }
     },
@@ -360,6 +512,15 @@
           "default": [],
           "maxItems": 1
         }
+      },
+      "terraform": {
+        "resource": "aws_egress_only_internet_gateway",
+        "attributes": {
+          "vpc_id": {
+            "reference": "attachedTo",
+            "attribute": "id"
+          }
+        }
       }
     },
     {
@@ -373,7 +534,17 @@
           "families": [4]
         }
       },
-      "accepts": []
+      "accepts": [],
+      "terraform": {
+        "resource": "aws_nat_gateway",
+        "attributes": {
+          "subnet_id": {
+            "reference": "placement",
+            "attribute": "id"
+          }
+        },
+        "notes": ["A public NAT gateway needs an Elastic IP: add an aws_eip and set allocation_id."]
+      }
     },
     {
       "id": "aws.route-table",
@@ -425,6 +596,73 @@
           },
           "default": []
         }
+      },
+      "terraform": {
+        "resource": "aws_route_table",
+        "attributes": {
+          "vpc_id": {
+            "reference": "associations",
+            "attribute": "id",
+            "network": true,
+            "types": ["aws.vpc"]
+          }
+        },
+        "blocks": [
+          {
+            "name": "route",
+            "each": "routes",
+            "attributes": {
+              "cidr_block": {
+                "property": "destination",
+                "map": {
+                  "internet": "0.0.0.0/0"
+                },
+                "family": 4
+              },
+              "ipv6_cidr_block": {
+                "property": "destination",
+                "family": 6
+              },
+              "gateway_id": {
+                "reference": "gateway",
+                "attribute": "id",
+                "types": ["aws.internet-gateway"]
+              },
+              "nat_gateway_id": {
+                "reference": "gateway",
+                "attribute": "id",
+                "types": ["aws.nat-gateway"]
+              },
+              "egress_only_gateway_id": {
+                "reference": "gateway",
+                "attribute": "id",
+                "types": ["aws.egress-only-internet-gateway"]
+              }
+            },
+            "requireAny": ["cidr_block", "ipv6_cidr_block"]
+          }
+        ],
+        "extra": [
+          {
+            "resource": "aws_route_table_association",
+            "suffix": "association",
+            "each": "associations",
+            "attributes": {
+              "subnet_id": {
+                "reference": "item",
+                "attribute": "id",
+                "types": ["aws.subnet"]
+              },
+              "route_table_id": {
+                "self": "id"
+              }
+            },
+            "requireAny": ["subnet_id"]
+          }
+        ],
+        "notes": [
+          "Routes to services through a gateway endpoint become aws_vpc_endpoint_route_table_association resources, which are not exported."
+        ]
       }
     },
     {
@@ -496,6 +734,108 @@
           },
           "default": []
         }
+      },
+      "terraform": {
+        "resource": "aws_security_group",
+        "attributes": {
+          "name": {
+            "id": true
+          },
+          "vpc_id": {
+            "reference": "attachedTo",
+            "attribute": "id",
+            "network": true,
+            "types": ["aws.vpc"]
+          }
+        },
+        "blocks": [
+          {
+            "name": "ingress",
+            "each": "rules",
+            "where": {
+              "direction": "inbound"
+            },
+            "expand": "ports",
+            "attributes": {
+              "from_port": {
+                "port": "from",
+                "property": "ports"
+              },
+              "to_port": {
+                "port": "to",
+                "property": "ports"
+              },
+              "protocol": {
+                "port": "protocol",
+                "property": "ports"
+              },
+              "cidr_blocks": {
+                "property": "peer",
+                "map": {
+                  "internet": "0.0.0.0/0",
+                  "any": "0.0.0.0/0"
+                },
+                "family": 4,
+                "list": true
+              },
+              "ipv6_cidr_blocks": {
+                "property": "peer",
+                "family": 6,
+                "list": true
+              },
+              "security_groups": {
+                "reference": "peer",
+                "attribute": "id",
+                "types": ["aws.security-group"],
+                "list": true
+              }
+            },
+            "requireAny": ["cidr_blocks", "ipv6_cidr_blocks", "security_groups"]
+          },
+          {
+            "name": "egress",
+            "each": "rules",
+            "where": {
+              "direction": "outbound"
+            },
+            "expand": "ports",
+            "attributes": {
+              "from_port": {
+                "port": "from",
+                "property": "ports"
+              },
+              "to_port": {
+                "port": "to",
+                "property": "ports"
+              },
+              "protocol": {
+                "port": "protocol",
+                "property": "ports"
+              },
+              "cidr_blocks": {
+                "property": "peer",
+                "map": {
+                  "internet": "0.0.0.0/0",
+                  "any": "0.0.0.0/0"
+                },
+                "family": 4,
+                "list": true
+              },
+              "ipv6_cidr_blocks": {
+                "property": "peer",
+                "family": 6,
+                "list": true
+              },
+              "security_groups": {
+                "reference": "peer",
+                "attribute": "id",
+                "types": ["aws.security-group"],
+                "list": true
+              }
+            },
+            "requireAny": ["cidr_blocks", "ipv6_cidr_blocks", "security_groups"]
+          }
+        ]
       }
     },
     {
@@ -578,6 +918,23 @@
           },
           "default": []
         }
+      },
+      "terraform": {
+        "resource": "aws_network_acl",
+        "attributes": {
+          "vpc_id": {
+            "reference": "subnets",
+            "attribute": "id",
+            "network": true,
+            "types": ["aws.vpc"]
+          },
+          "subnet_ids": {
+            "reference": "subnets",
+            "attribute": "id",
+            "list": true
+          }
+        },
+        "notes": ["Rules are not exported: add ingress and egress blocks with rule numbers."]
       }
     },
     {
@@ -650,6 +1007,25 @@
           },
           "default": []
         }
+      },
+      "terraform": {
+        "resource": "aws_autoscaling_group",
+        "attributes": {
+          "name": {
+            "id": true
+          },
+          "vpc_zone_identifier": {
+            "reference": "placement",
+            "attribute": "id",
+            "list": true
+          },
+          "desired_capacity": {
+            "property": "desiredCapacity"
+          }
+        },
+        "notes": [
+          "Set min_size, max_size and a launch template with the image, the instance type and the security groups attached to the group."
+        ]
       }
     },
     {
@@ -756,6 +1132,39 @@
           },
           "default": []
         }
+      },
+      "terraform": {
+        "resource": "aws_lb",
+        "attributes": {
+          "name": {
+            "id": true
+          },
+          "load_balancer_type": {
+            "value": "application"
+          },
+          "internal": {
+            "property": "scheme",
+            "map": {
+              "public": false,
+              "private": true
+            }
+          },
+          "subnets": {
+            "reference": "placement",
+            "attribute": "id",
+            "list": true
+          },
+          "security_groups": {
+            "referencedBy": {
+              "type": "aws.security-group",
+              "property": "attachedTo"
+            },
+            "attribute": "id"
+          }
+        },
+        "notes": [
+          "Targets become target groups and listeners (aws_lb_target_group, aws_lb_listener), which are not exported."
+        ]
       }
     },
     {
@@ -820,6 +1229,38 @@
           },
           "default": []
         }
+      },
+      "terraform": {
+        "resource": "aws_instance",
+        "attributes": {
+          "ami": {
+            "variable": "ami"
+          },
+          "instance_type": {
+            "variable": "instance_type"
+          },
+          "subnet_id": {
+            "reference": "placement",
+            "attribute": "id"
+          },
+          "vpc_security_group_ids": {
+            "referencedBy": {
+              "type": "aws.security-group",
+              "property": "attachedTo"
+            },
+            "attribute": "id"
+          },
+          "associate_public_ip_address": {
+            "property": "endpoint",
+            "map": {
+              "public": true,
+              "private": false
+            }
+          }
+        },
+        "notes": [
+          "Its permissions become an IAM role and an instance profile, which are not exported."
+        ]
       }
     },
     {
@@ -869,6 +1310,41 @@
           "description": "A standby in another availability zone of the DB subnet group.",
           "default": false
         }
+      },
+      "terraform": {
+        "resource": "aws_db_instance",
+        "attributes": {
+          "identifier": {
+            "id": true
+          },
+          "engine": {
+            "property": "engine",
+            "map": {
+              "postgresql": "postgres",
+              "mysql": "mysql"
+            }
+          },
+          "multi_az": {
+            "property": "multiAz"
+          },
+          "publicly_accessible": {
+            "property": "endpoint",
+            "map": {
+              "public": true,
+              "private": false
+            }
+          },
+          "vpc_security_group_ids": {
+            "referencedBy": {
+              "type": "aws.security-group",
+              "property": "attachedTo"
+            },
+            "attribute": "id"
+          }
+        },
+        "notes": [
+          "Set instance_class, allocated_storage, the credentials and a DB subnet group with the subnets it is placed in."
+        ]
       }
     },
     {
@@ -913,7 +1389,39 @@
           },
           "default": []
         }
+      },
+      "terraform": {
+        "resource": "aws_vpc_endpoint",
+        "attributes": {
+          "vpc_id": {
+            "reference": "vpc",
+            "attribute": "id"
+          },
+          "vpc_endpoint_type": {
+            "value": "Gateway"
+          }
+        },
+        "notes": [
+          "Set service_name for the region, for example com.amazonaws.REGION.dynamodb, and associate the route tables that route to it."
+        ]
       }
     }
-  ]
+  ],
+  "terraform": {
+    "providers": {
+      "aws": {
+        "source": "hashicorp/aws"
+      }
+    },
+    "variables": {
+      "ami": {
+        "description": "The machine image (AMI) of EC2 instances.",
+        "type": "string"
+      },
+      "instance_type": {
+        "description": "The EC2 instance type, for example t3.micro.",
+        "type": "string"
+      }
+    }
+  }
 }

@@ -10,7 +10,8 @@ export type FindingSource =
   | "access"
   | "address-plan"
   | "availability"
-  | "requirements";
+  | "requirements"
+  | "terraform";
 
 export interface FindingCodeDefinition {
   /** Severity of every finding with this code. */
@@ -437,6 +438,39 @@ export const FINDING_CODES = {
     source: "requirements",
     template: "Requirement {requirement} cannot be decided.",
     description: "The requirement's verdict is undecidable; its evidence says what is missing.",
+  },
+  TERRAFORM_NOT_MAPPED: {
+    severity: "info",
+    source: "terraform",
+    template: "{component} ({type}) has no Terraform mapping, so it is not exported.",
+    description: "The component's type has no `terraform` mapping in its pack.",
+  },
+  TERRAFORM_NOTE: {
+    severity: "info",
+    source: "terraform",
+    template: "{component} ({resource}): {note}",
+    description:
+      "Something the configuration still needs that the model does not hold, as the pack describes it.",
+  },
+  TERRAFORM_REFERENCE_UNMAPPED: {
+    severity: "warning",
+    source: "terraform",
+    template: "{component} refers to {target}, which is not exported, so {argument} leaves it out.",
+    description: "A reference to a component without a Terraform mapping cannot be exported.",
+  },
+  TERRAFORM_ITEM_SKIPPED: {
+    severity: "warning",
+    source: "terraform",
+    template:
+      "{component}: item {index} of {property} has no Terraform equivalent here, so it is left out of {target}.",
+    description:
+      "A rule, route or association uses something the mapping cannot express, such as a rule peer that names a component.",
+  },
+  TERRAFORM_PORT_UNKNOWN: {
+    severity: "warning",
+    source: "terraform",
+    template: "{component}: port {port} is not known, so {argument} is left out.",
+    description: "A rule names a port that no loaded pack defines.",
   },
 } as const satisfies Record<string, FindingCodeDefinition>;
 

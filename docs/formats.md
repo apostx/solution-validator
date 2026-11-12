@@ -62,6 +62,7 @@ This document describes the implemented JSON formats. The reasoning behind them 
 | `requires` | Packs this pack builds on, with an exact version or a caret range. A pack sees its own definitions and those of the packs it requires, transitively. |
 | `categories`, `actions`, `ports` | Definitions with `id`, `label` and optional `description`. Ports also have `protocol` (`tcp` or `udp`) and `port`. |
 | `types` | Component type definitions (below). |
+| `terraform` | Optional: the Terraform `providers` (with `source` and empty configuration `blocks`) and input `variables` (`description`, `type`) the type mappings use. See [Terraform export](#terraform-export). |
 
 **Namespaces.** Type ids are `<pack>.<name>`. Category, action and port ids are unprefixed only in the `core` pack (`invoke`, `https`); other packs prefix theirs (`aws.publish`). Defining an id twice, in one pack or across packs, is an error, never an override.
 
@@ -298,6 +299,37 @@ The analysis states what the model supports and nothing more: it does not model 
 | `summary`, `findings`, `meta` | Counts per verdict, task findings (`TASK_PROVIDED_MISSING`, `REQUIREMENT_FAILED`, …) and the task's `meta`. |
 
 A `reachable` requirement fails when no chain exists, and is `undecidable` when the only chains include undecidable intents or the result has no `access` report. A `not-reachable` requirement is `undecidable` when its source matches nothing.
+
+## Terraform export
+
+`exportTerraform(model)` turns a solution into a Terraform configuration, using the `terraform` mapping of each component type. It returns:
+
+| Field | Meaning |
+|---|---|
+| `hcl` | The configuration in HCL, for a `main.tf` file. |
+| `json` | The same configuration in Terraform's JSON syntax, for a `main.tf.json` file. |
+| `resources`, `providers`, `variables` | The configuration as data. |
+| `findings` | What could not be exported (`TERRAFORM_NOT_MAPPED`, `TERRAFORM_REFERENCE_UNMAPPED`, `TERRAFORM_ITEM_SKIPPED`, `TERRAFORM_PORT_UNKNOWN`) and what the configuration still needs (`TERRAFORM_NOTE`). |
+
+The export is a starting point, not a deployable configuration. It does not guess: arguments the model does not hold become input variables (for example `var.ami` or `var.location`) or notes, and items the mapping cannot express are left out with a finding. It does not analyze the solution. Resource names are the component ids, with characters Terraform does not allow replaced by `_`.
+
+**Mappings.** A type's `terraform` has the main `resource` type, its `attributes` (argument name → value), nested `blocks`, `notes`, and `extra` resources (once, or for each id in an array property, named `<component>_<suffix>[_<item>]`). An extra resource or a block with `requireAny` is left out unless one of the named arguments has a value. Values:
+
+| Value | Meaning |
+|---|---|
+| `{ "value": … }` | A fixed value. |
+| `{ "id": true }` | The component id. |
+| `{ "variable": "ami" }` | An input variable of the pack. |
+| `{ "property": "cidrBlock" }` | A property, or a field of the current item in a block. `map` replaces values (`"internet": "0.0.0.0/0"`), `default` applies when unset, `family` keeps address ranges of one family, `ranges` keeps address ranges and mapped values, `list` makes a list and `first` takes the first element. Unset values leave the argument out. |
+| `{ "reference": "placement", "attribute": "id" }` | An expression that refers to the resource of another component: the ids in a property or item field, `placement`, or `item` (the current id of an extra resource's `each`). `network` refers to the outermost zone instead, `types` keeps references to those types, `list` makes a list. |
+| `{ "referencedBy": { "type": "aws.security-group", "property": "attachedTo" }, "attribute": "id" }` | References to the components of a type whose property lists this component. |
+| `{ "self": "id" }` | An attribute of the component's own main resource, for extra resources. |
+| `{ "port": "from", "property": "ports" }` | From the item's ports: `from` and `to` (0 for all), `range` (`443`, `1024-65535`, `*`), `protocol` (`tcp`, `udp`, `-1`); `map` replaces the result. |
+| `{ "index": { "start": 100, "step": 10 }, "prefix": "rule-" }` | A number that counts the blocks of a block definition, for rule priorities and names. |
+
+A block has a `name`, optional `each` (one block per item of an array property), `where` (item fields that must match), `expand` (one block per entry of an item's array field, such as its ports), `attributes` and `requireAny`. `createRegistry` checks that the properties, item fields, types and variables a mapping names exist.
+
+The official `aws` and `azure` packs have mappings; CloudFront and the `onprem` pack have none.
 
 ## Metadata and facts
 

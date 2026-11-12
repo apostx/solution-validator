@@ -410,6 +410,37 @@ button.link:hover {
   gap: 0.4rem;
 }
 
+.terraform-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-height: 0;
+}
+
+.terraform-code {
+  flex-shrink: 0;
+  margin: 0;
+  min-height: 12rem;
+  max-height: 50vh;
+  overflow: auto;
+  padding: 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--code-background);
+  font-size: 0.75rem;
+  line-height: 1.4;
+}
+
+.terraform-notes {
+  margin: 0;
+  padding-left: 1.1rem;
+  font-size: 0.8rem;
+}
+
+.terraform-notes .severity-warning {
+  color: var(--warning);
+}
+
 .json-panel textarea {
   flex: 1;
   min-height: 300px;

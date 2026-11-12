@@ -367,10 +367,17 @@ These details implement the decisions above. They are not product decisions; ope
 - **Packs:** `aws` 0.6.0 adds IPv6 CIDR blocks on VPCs and subnets, the egress-only internet gateway, and makes the NAT gateway IPv4-only; `onprem` 0.2.0 adds IPv6 prefixes on networks and VLANs. The `azure` pack has no IPv6 yet.
 - **Known simplifications:** every zone is assumed to have IPv4 (IPv6-only subnets are not modeled); NAT64 and DNS64 are not modeled.
 
+### Implementation notes (Iteration 12)
+
+- **Terraform export** (Q26): `exportTerraform(model)` returns HCL, Terraform's JSON syntax and the resources as data. The mapping from types to Terraform resources is pack data (`terraform` on a type, and providers and variables on the pack), written in a small declarative language, so the engine stays provider-neutral.
+- **Honest output:** the export never invents values. Arguments the model does not hold become input variables or notes, and rules, routes or associations the mapping cannot express are left out with a finding. It is a scaffold to complete, not a deployable configuration, and it does not run the analyses.
+- **Packs:** `aws` 0.7.0 maps every type except CloudFront (VPCs, subnets, gateways, route tables with their associations, security groups with rules, instances, load balancers, functions, tables, buckets with public access blocks, databases); `azure` 0.2.0 maps every type (networks, subnets, security groups with numbered rules and subnet associations, NAT gateways with subnet associations, virtual machines, scale sets and the PaaS services); `onprem` has no Terraform resources.
+- **Known simplifications:** an `internet` route or rule maps to `0.0.0.0/0` only; security group peers that name subnets, and route destinations that name services, are left out; network ACL rules, API routes, load balancer targets and IAM or role assignments are notes.
+
 ## 11. Out of scope for the first version
 
 - Scoring, weighting and complexity metrics (consumers build these; see [§7](#7-requirements-metadata-and-facts))
-- Terraform import or export
+- Terraform import (an export exists since Iteration 12)
 - Policy documents (IAM, RBAC), cost estimation and runtime simulation
 - AI of any kind
 - ArchitectMate itself (separate repository)
@@ -403,4 +410,5 @@ These details implement the decisions above. They are not product decisions; ope
 | Q23 | Azure networking with generic parameters: zones with direct internet access for public endpoints, implicit gateways associated with zones, base rules of traffic filter types with a `network` peer, and failure domains and zone redundancy as component settings. | Decided (initial) | [formats.md](formats.md#trait-parameters-vocabulary-6) |
 | Q24 | On-premises infrastructure on the existing traits: the firewall is an implicit gateway with its own filter for traffic through it and for the VLANs it protects (inbound denied, outbound allowed by default); published servers have public endpoints; racks, rooms and sites are failure domains listed per component. | Decided (initial) | Iteration 10 notes above |
 | Q25 | IPv6: optional per zone (`zone.ipv6AddressSpace`), every zone keeps IPv4; each address family both ends have is checked on its own and one working family is enough; ranges, default routes (`::/0`) and gateways (`families`) apply to their own family; the logical level stays IPv4. | Decided (initial) | [formats.md](formats.md#detailed-level) |
+| Q26 | Terraform export: pack-level declarative mappings (values, properties, references, blocks, extra resources, variables), output as HCL and Terraform JSON; never guess, so unknown arguments become variables or notes and inexpressible items are reported. | Decided (initial) | [formats.md](formats.md#terraform-export) |
 | Q17 | Groups and multiple placements: an intent through a group or a component in several zones passes only if every member or placement passes. | Decided (initial) | [formats.md](formats.md#access-checks-logical-level) |

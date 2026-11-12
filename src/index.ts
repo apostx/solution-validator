@@ -65,6 +65,20 @@ export {
   Traits,
 } from "./core/traits";
 export {
+  exportTerraform,
+  type TerraformBlockOutput,
+  type TerraformData,
+  type TerraformExport,
+  type TerraformReference,
+  type TerraformResource,
+} from "./export/terraform";
+export {
+  TerraformBlock,
+  TerraformMapping,
+  TerraformPackSettings,
+  TerraformValue,
+} from "./export/terraform-schema";
+export {
   EVIDENCE_CODES,
   type EvidenceCode,
   type EvidenceCodeDefinition,

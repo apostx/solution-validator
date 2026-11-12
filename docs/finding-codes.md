@@ -105,6 +105,18 @@ Failure domains per component, single points of failure on the paths of passing 
 | `AVAILABILITY_SINGLE_POINT` | warning | {component} runs in a single failure domain ({domain}), and intents depend on it: {intents}. | A component that passing intents depend on would fail with its failure domain. |
 | `AVAILABILITY_CROSS_DOMAIN` | warning | {zone} ({domain}) reaches the internet through {gateway} in {gatewayDomain}; if {gatewayDomain} fails, {zone} loses its outbound connections. | An outbound-only gateway in another failure domain ties the zone to that domain. |
 
+## Terraform export
+
+Reported by `exportTerraform` for what it could not export and for what the configuration still needs.
+
+| Code | Severity | Message template | Meaning |
+|---|---|---|---|
+| `TERRAFORM_NOT_MAPPED` | info | {component} ({type}) has no Terraform mapping, so it is not exported. | The component's type has no `terraform` mapping in its pack. |
+| `TERRAFORM_NOTE` | info | {component} ({resource}): {note} | Something the configuration still needs that the model does not hold, as the pack describes it. |
+| `TERRAFORM_REFERENCE_UNMAPPED` | warning | {component} refers to {target}, which is not exported, so {argument} leaves it out. | A reference to a component without a Terraform mapping cannot be exported. |
+| `TERRAFORM_ITEM_SKIPPED` | warning | {component}: item {index} of {property} has no Terraform equivalent here, so it is left out of {target}. | A rule, route or association uses something the mapping cannot express, such as a rule peer that names a component. |
+| `TERRAFORM_PORT_UNKNOWN` | warning | {component}: port {port} is not known, so {argument} is left out. | A rule names a port that no loaded pack defines. |
+
 ## Tasks and requirements
 
 Reported by `parseTask` for invalid tasks and by `checkRequirements` for provided components and requirement verdicts.

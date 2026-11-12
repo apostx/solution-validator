@@ -42,6 +42,12 @@ const SECTIONS: { source: FindingSource; title: string; intro: string }[] = [
       "Failure domains per component, single points of failure on the paths of passing intents, and zones tied to another failure domain.",
   },
   {
+    source: "terraform",
+    title: "Terraform export",
+    intro:
+      "Reported by `exportTerraform` for what it could not export and for what the configuration still needs.",
+  },
+  {
     source: "requirements",
     title: "Tasks and requirements",
     intro:

@@ -15,18 +15,20 @@ import { Inspector } from "./components/Inspector";
 import { JsonPanel } from "./components/JsonPanel";
 import { Palette } from "./components/Palette";
 import { TaskPanel } from "./components/TaskPanel";
+import { TerraformPanel } from "./components/TerraformPanel";
 import { evaluate } from "./evaluation";
 import { addComponent, type Selection } from "./model";
 import { PACKS, SCENARIOS, type Scenario } from "./scenarios";
 
 const REPOSITORY_URL = "https://github.com/apostx/solution-validator";
 
-type Tab = "properties" | "task" | "facts" | "json";
+type Tab = "properties" | "task" | "facts" | "terraform" | "json";
 
 const TABS: { id: Tab; label: string }[] = [
   { id: "properties", label: "Properties" },
   { id: "task", label: "Task" },
   { id: "facts", label: "Facts" },
+  { id: "terraform", label: "Terraform" },
   { id: "json", label: "JSON" },
 ];
 
@@ -208,6 +210,7 @@ export function App() {
             />
           )}
           {tab === "facts" && <FactsPanel facts={evaluation.facts} />}
+          {tab === "terraform" && <TerraformPanel model={evaluation.model} />}
           {tab === "json" && (
             <JsonPanel
               document={document}

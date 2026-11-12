@@ -6,8 +6,8 @@ import { officialPacks, officialRegistry, registryErrorCodes, testPack } from ".
 describe("createRegistry", () => {
   it("loads the official packs", () => {
     expect(officialRegistry.packs.map((pack) => `${pack.id}@${pack.version}`)).toEqual([
-      "aws@0.6.0",
-      "azure@0.1.0",
+      "aws@0.7.0",
+      "azure@0.2.0",
       "core@0.2.0",
       "onprem@0.2.0",
     ]);
@@ -71,7 +71,7 @@ describe("createRegistry", () => {
   });
 
   it("resolves required packs transitively", () => {
-    const registry = createRegistry([...officialPacks, testPack({ requires: { aws: "^0.6.0" } })]);
+    const registry = createRegistry([...officialPacks, testPack({ requires: { aws: "^0.7.0" } })]);
     expect(registry.resolvePacks(["acme"])).toEqual(["acme", "aws", "core"]);
     expect(registry.resolvePacks(["unknown"])).toEqual([]);
   });
