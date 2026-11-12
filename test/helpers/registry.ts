@@ -2,9 +2,10 @@ import { createRegistry, type Pack, RegistryError } from "../../src/index";
 import awsPack from "../../src/packs/aws";
 import azurePack from "../../src/packs/azure";
 import corePack from "../../src/packs/core";
+import onpremPack from "../../src/packs/onprem";
 
 /** The official packs. */
-export const officialPacks: Pack[] = [corePack, awsPack, azurePack];
+export const officialPacks: Pack[] = [corePack, awsPack, azurePack, onpremPack];
 
 /** A registry with the official packs. */
 export const officialRegistry = createRegistry(officialPacks);
