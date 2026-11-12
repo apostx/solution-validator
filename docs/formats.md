@@ -33,6 +33,7 @@ This document describes the implemented JSON formats. The reasoning behind them 
 | `components[].label` | Optional display name. |
 | `components[].placement` | Optional ids of the zones the component is placed in. Only components with the `zone` trait are zones. |
 | `components[].properties` | Values for the properties the type defines. Unset properties stay unset; they are not filled with defaults. |
+| `components[].roles` | Optional role tags the solver gives the component, such as `orders-store`, so that a task can select it by purpose (lowercase kebab case, unique). The library does not interpret them otherwise. |
 | `intents[]` | "`from` must be able to reach `to`" for an `action` (for example `invoke`, `write`), a `port` (a symbolic name such as `https`, or a number), or both. |
 | `meta` | Free-form consumer data on the solution, components and intents. The library never interprets it. |
 
@@ -270,9 +271,10 @@ The analysis states what the model supports and nothing more: it does not model 
   "title": "Orders API",
   "packs": ["core", "aws"],
   "provided": [{ "id": "users", "type": "core.internet", "locked": true }],
+  "roles": [{ "id": "orders-store", "label": "Orders store" }],
   "requirements": [
     { "id": "r1", "type": "reachable", "from": { "id": "users" },
-      "to": { "category": "data-store" }, "action": "write", "meta": { "points": 3 } },
+      "to": { "role": "orders-store" }, "action": "write", "meta": { "points": 3 } },
     { "id": "r2", "type": "not-reachable", "from": { "id": "users" }, "to": { "type": "aws.s3" } },
     { "id": "r3", "type": "uses", "select": { "type": "aws.lambda" }, "min": 1 }
   ],
@@ -283,7 +285,8 @@ The analysis states what the model supports and nothing more: it does not model 
 | Field | Meaning |
 |---|---|
 | `provided` | Components every solution gets, such as the users on the internet. `locked` tells consumers not to let the solver change or remove them. |
-| Selectors (`from`, `to`, `select`) | `{ id, type, category, trait }`; every given field must match. `id` may only name a provided component, because the solver chooses every other id. Selecting by category or trait keeps tasks provider-neutral. |
+| `roles` | Optional roles the solver assigns with `components[].roles`: `{ id, label?, description? }`. |
+| Selectors (`from`, `to`, `select`) | `{ id, type, category, trait, role }`; every given field must match. `id` may only name a provided component, because the solver chooses every other id; `role` names a declared role, and matches the components tagged with it. Selecting by category, trait or role keeps tasks provider-neutral. |
 | `reachable` | A matching target can be reached from a matching source through a chain of intents whose `access` verdict is `pass`. `action` and `port`, if given, apply to the last intent of the chain. |
 | `not-reachable` | No matching target is directly accessible from a matching source, whether or not an intent exists. Direct access means the forwarding, connectivity and authorization checks pass for a hypothetical intent, under the assumption policy of the analysis. Without `action`, every action the target controls access for is tried. |
 | `uses` | At least `min` (default 1) components match `select`. |
@@ -298,7 +301,7 @@ The analysis states what the model supports and nothing more: it does not model 
 | `requirements[]` | `{ requirement, type, verdict, evidence, meta }`, in the task's order. |
 | `summary`, `findings`, `meta` | Counts per verdict, task findings (`TASK_PROVIDED_MISSING`, `REQUIREMENT_FAILED`, …) and the task's `meta`. |
 
-A `reachable` requirement fails when no chain exists, and is `undecidable` when the only chains include undecidable intents or the result has no `access` report. A `not-reachable` requirement is `undecidable` when its source matches nothing.
+A `reachable` requirement fails when no chain exists, and is `undecidable` when the only chains include undecidable intents or the result has no `access` report. A `not-reachable` requirement is `undecidable` when its source matches nothing, or when its target selects a role that no component has yet (`ROLE_UNASSIGNED`); a target type or category that matches nothing makes it pass. `checkRequirements` warns about every declared role that no component has (`TASK_ROLE_UNASSIGNED`).
 
 ## Terraform export
 
