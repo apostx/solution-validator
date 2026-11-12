@@ -6,8 +6,8 @@ import { officialPacks, officialRegistry, registryErrorCodes, testPack } from ".
 describe("createRegistry", () => {
   it("loads the official packs", () => {
     expect(officialRegistry.packs.map((pack) => `${pack.id}@${pack.version}`)).toEqual([
-      "aws@0.3.0",
-      "core@0.1.0",
+      "aws@0.4.0",
+      "core@0.2.0",
     ]);
     expect(officialRegistry.types.map((type) => type.id)).toEqual([
       "core.internet",
@@ -23,6 +23,11 @@ describe("createRegistry", () => {
       "aws.security-group",
       "aws.network-acl",
       "aws.autoscaling-group",
+      "aws.cloudfront",
+      "aws.alb",
+      "aws.ec2",
+      "aws.rds",
+      "aws.gateway-endpoint",
     ]);
     expect(officialRegistry.getType("aws.lambda")?.category).toBe("compute");
     expect(officialRegistry.getAction("invoke")?.pack).toBe("core");
@@ -44,7 +49,7 @@ describe("createRegistry", () => {
   });
 
   it("resolves required packs transitively", () => {
-    const registry = createRegistry([...officialPacks, testPack({ requires: { aws: "^0.3.0" } })]);
+    const registry = createRegistry([...officialPacks, testPack({ requires: { aws: "^0.4.0" } })]);
     expect(registry.resolvePacks(["acme"])).toEqual(["acme", "aws", "core"]);
     expect(registry.resolvePacks(["unknown"])).toEqual([]);
   });

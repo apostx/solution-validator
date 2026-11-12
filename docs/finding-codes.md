@@ -150,6 +150,8 @@ Evidence explains an intent's verdict: each check lists the evidence it used. Ev
 | `GATEWAY_INVALID` | {gateway} is not a gateway. | A route points to a component without the gateway trait. |
 | `GATEWAY_NOT_ATTACHED` | {gateway} is not attached to the network {network}. | A route points to a gateway of another network. |
 | `GATEWAY_OUTBOUND_ONLY` | {gateway} only allows outbound connections, so {zone} cannot be reached from the internet. | Inbound traffic needs a gateway that allows both directions. |
+| `PRIVATE_SERVICE_ROUTE` | {zone} reaches {service} privately through {gateway}. | A route names the service, and its gateway reaches the service without the internet. |
+| `SERVICE_NOT_SERVED` | {gateway} does not reach {service}. | A route sends traffic for a service to a gateway that does not list it. |
 | `NAT_WITHOUT_INTERNET` | {gateway} sits in {zone}, which has no route to the internet through a gateway that allows both directions. | An outbound-only gateway needs a route to the internet itself. |
 | `FILTER_ALLOWS` | {filter} allows {direction} traffic with {peer} (rule {rule}). | The first matching rule of a traffic filter allows the traffic. |
 | `FILTER_DENIES` | {filter} denies {direction} traffic with {peer} (rule {rule}). | The first matching rule of a traffic filter denies the traffic. |

@@ -9,15 +9,15 @@
         "name": "solution-validator",
         "version": "<version>"
       },
-      "vocabulary": 2,
+      "vocabulary": 3,
       "packs": [
         {
           "id": "aws",
-          "version": "0.3.0"
+          "version": "0.4.0"
         },
         {
           "id": "core",
-          "version": "0.1.0"
+          "version": "0.2.0"
         }
       ],
       "options": {
@@ -1289,15 +1289,15 @@
         "name": "solution-validator",
         "version": "<version>"
       },
-      "vocabulary": 2,
+      "vocabulary": 3,
       "packs": [
         {
           "id": "aws",
-          "version": "0.3.0"
+          "version": "0.4.0"
         },
         {
           "id": "core",
-          "version": "0.1.0"
+          "version": "0.2.0"
         }
       ],
       "options": {
@@ -2745,15 +2745,15 @@
         "name": "solution-validator",
         "version": "<version>"
       },
-      "vocabulary": 2,
+      "vocabulary": 3,
       "packs": [
         {
           "id": "aws",
-          "version": "0.3.0"
+          "version": "0.4.0"
         },
         {
           "id": "core",
-          "version": "0.1.0"
+          "version": "0.2.0"
         }
       ],
       "options": {

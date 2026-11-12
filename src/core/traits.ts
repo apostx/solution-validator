@@ -10,8 +10,10 @@ import { LevelName, Name, PropertyName } from "./ids";
  * - 2: behavior for the network traits (zone, gateway, router, traffic-filter, group);
  *   `endpoint.via`, `router.zones` and `traffic-filter.targets` added; `group.zones` removed
  *   (placement says where a group runs). Version 1 packs used no network trait behavior.
+ * - 3: `gateway.services`: gateways that give private access to provider services, used by
+ *   routes whose destination is such a service.
  */
-export const TRAIT_VOCABULARY_VERSION = 2;
+export const TRAIT_VOCABULARY_VERSION = 3;
 
 /** Binds a trait parameter to a property of the component, for example its endpoint type. */
 export const Binding = Type.Object({ property: PropertyName }, { additionalProperties: false });
@@ -105,6 +107,12 @@ export const TraitParameters = {
        * belongs to the network of the zone it is placed in.
        */
       connects: Type.Optional(Binding),
+      /**
+       * Array property with the ids of the provider services (components outside every zone)
+       * the gateway reaches privately, without the internet. A route whose destination is one of
+       * them sends that traffic through the gateway.
+       */
+      services: Type.Optional(Binding),
     },
     closed,
   ),
@@ -245,6 +253,7 @@ export function bindingSlots(traits: Traits): BindingSlot[] {
   if (t.gateway) {
     add("gateway", "direction", t.gateway.direction, { kind: "enum", values: GATEWAY_DIRECTIONS });
     add("gateway", "connects", t.gateway.connects, { kind: "references" });
+    add("gateway", "services", t.gateway.services, { kind: "references" });
   }
   if (t.router) {
     add("router", "routes", t.router.routes, {

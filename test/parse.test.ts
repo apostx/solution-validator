@@ -81,7 +81,7 @@ describe("analyze", () => {
   it("records the library, packs and options", () => {
     const result = analyze(parsed.model);
     expect(result.library.name).toBe("solution-validator");
-    expect(result.packs).toEqual([{ id: "core", version: "0.1.0" }]);
+    expect(result.packs).toEqual([{ id: "core", version: "0.2.0" }]);
     expect(result.options).toEqual({
       level: "logical",
       analyses: ["model-validity", "connection-validity", "access"],

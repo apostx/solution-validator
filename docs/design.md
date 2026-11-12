@@ -326,6 +326,12 @@ These details implement the decisions above. They are not product decisions; ope
 - **Logical results are unchanged** except that an address range other than `0.0.0.0/0` in a rule is `undecidable` at the logical level, where it was an unknown reference before.
 - **IPv4 arithmetic** uses plain integers, so results are identical in every runtime.
 
+### Implementation notes (Iteration 7)
+
+- **Trait vocabulary 3** adds `gateway.services` (Q21). Route destinations may now name a service component; that route takes precedence over the internet route for traffic to the service, and its gateway must list the service. Gateway endpoints are modeled; interface endpoints (private DNS) are not.
+- **New AWS types** use existing traits only: CloudFront and the Application Load Balancer are forwarders (a CloudFront origin with origin access control and an ALB target are authorized by their routes), EC2 is like a single instance of an Auto Scaling group, and RDS is a placed data store reached on database ports. Database credentials are not modeled, so RDS has no access control.
+- **Known simplifications:** an internal ALB invoking a Lambda function needs an internet route in this model, because Lambda is reached at the provider; RDS accepts both database ports regardless of `engine`.
+
 ## 11. Out of scope for the first version
 
 - Scoring, weighting and complexity metrics (consumers build these; see [§7](#7-requirements-metadata-and-facts))
@@ -358,4 +364,5 @@ These details implement the decisions above. They are not product decisions; ope
 | Q18 | Address family for the detailed level: IPv4 only for now; IPv6 can follow as its own step. | Decided (initial) | §6 |
 | Q19 | Return traffic through stateless filters at the detailed level uses the ephemeral ports 1024–65535; a rule must cover the whole range. | Decided (initial) | [formats.md](formats.md#detailed-level) |
 | Q20 | Matching address ranges when an address is unknown (parties outside every zone, or a range that covers part of a zone): `undecidable`, never a guess; route choice for internet traffic is `undecidable` when a more specific public route leads elsewhere. | Decided (initial) | [formats.md](formats.md#detailed-level) |
+| Q21 | Private access to provider services (VPC endpoints): a gateway lists the services it reaches (`gateway.services`), and a route whose destination is such a service sends that traffic through it, without the internet. | Decided (initial) | [formats.md](formats.md#trait-parameters-vocabulary-3) |
 | Q17 | Groups and multiple placements: an intent through a group or a component in several zones passes only if every member or placement passes. | Decided (initial) | [formats.md](formats.md#access-checks-logical-level) |

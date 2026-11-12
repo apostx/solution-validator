@@ -1,6 +1,6 @@
 # Roadmap
 
-> **Status:** Approved (initial) · 2026-11-10 · **Current iteration: none — Iterations 0–6 are done; the next step is chosen from the backlog**
+> **Status:** Approved (initial) · 2026-11-10 · **Current iteration: 8 — Availability analysis** (Iterations 7–10 approved in this order)
 >
 > Iterations 0–4 are approved. Only the current iteration is a commitment. The scope of later iterations may still change and is confirmed before each one starts. Open questions (Q1, Q2, …) are listed in [design.md](design.md#12-open-questions).
 
@@ -39,6 +39,10 @@ Trade-off: the vision's own example (network placement, Security Group and ACL r
 | 4 | Requirement checks and metadata query | 0.4.0 | Q4, Q5, Q12 | Done |
 | 5 | Network traits | 0.5.0 | Q15, Q16, Q17 | Done |
 | 6 | Detailed level (IPv4) | 0.6.0 | Q18, Q19, Q20 | Done |
+| 7 | More AWS types | 0.7.0 | Q21 | Done |
+| 8 | Availability analysis | 0.8.0 | to be scoped | Approved |
+| 9 | Azure pack | 0.9.0 | to be scoped | Approved |
+| 10 | On-premises pack | 0.10.0 | to be scoped | Approved |
 
 ### Iteration 0 — Foundations
 
@@ -120,11 +124,28 @@ Chosen by the product owner from the backlog after Iteration 5.
 - **Packs:** `aws` 0.3.0 with `cidrBlock` on VPCs and subnets and IPv4 route destinations.
 - **Demo:** a level switch, address spaces on zones, address plan findings.
 
+### Iteration 7 — More AWS types (0.7.0)
+
+The product owner approved Iterations 7–10 in this order after Iteration 6.
+
+- **Packs:** `aws` 0.4.0 adds CloudFront (with origin access control), Application Load Balancer, EC2, RDS and gateway VPC endpoints; `core` 0.2.0 adds the `ssh`, `postgresql` and `mysql` ports.
+- **Library:** trait vocabulary 3 adds `gateway.services`: a gateway that reaches provider services privately, used by routes whose destination is the service (Q21).
+- **Demo:** a three-tier web app scenario.
+
+### Iteration 8 — Availability analysis (0.8.0)
+
+Availability facts: which failure domains (for example availability zones) each component spans, and single points of failure on the paths that intents use. Scoped when it starts.
+
+### Iteration 9 — Azure pack (0.9.0)
+
+A second provider pack (Functions, API Management, Cosmos DB, Blob Storage, VNet, subnets, NSG, NAT gateway and more) built on the same traits, proving that tasks selecting by category work across providers. Scoped when it starts.
+
+### Iteration 10 — On-premises pack (0.10.0)
+
+LANs and VLANs, firewalls, routers, servers, load balancers and databases on premises, built on the same traits. Scoped when it starts.
+
 ## Backlog (not scheduled; each item needs approval)
 
-- A second pack (Azure or on-premises), to prove in practice that the model is generic
 - IPv6 for the detailed level
-- More AWS types: CloudFront, ALB, EC2, RDS, VPC endpoints
-- Availability analysis: multi-AZ, single points of failure
 - Terraform export
 - Role-tag selectors

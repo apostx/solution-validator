@@ -8,7 +8,7 @@ A deterministic, provider-neutral library that analyzes designed software and in
 
 - Checks relationships, not just components. A connection between an application and a database does not prove that the application can reach it. An API route, a permission or a public access setting decides that.
 - Returns three-state verdicts: `pass`, `fail` or `undecidable`. It never claims more than the input supports.
-- Takes component types from JSON packs. The `aws` pack covers a serverless subset (API Gateway, Lambda, DynamoDB, S3) and networking (VPC, subnets, gateways, route tables, security groups, network ACLs, Auto Scaling groups). The engine itself contains no provider-specific logic.
+- Takes component types from JSON packs. The `aws` pack covers serverless (API Gateway, Lambda, DynamoDB, S3), web tiers (CloudFront, Application Load Balancer, EC2, Auto Scaling, RDS) and networking (VPC, subnets, internet and NAT gateways, VPC endpoints, route tables, security groups, network ACLs). The engine itself contains no provider-specific logic.
 - Runs in browsers and in Node.js, with no backend.
 - Is deterministic: no randomness, clock, network access or AI. It does not score; consumers build scoring from its verdicts, metadata and facts.
 

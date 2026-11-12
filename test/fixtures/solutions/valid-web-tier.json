@@ -1,0 +1,285 @@
+{
+  "$schema": "../../../schemas/solution.schema.json",
+  "schemaVersion": 1,
+  "packs": ["core", "aws"],
+  "components": [
+    {
+      "id": "users",
+      "type": "core.internet"
+    },
+    {
+      "id": "cdn",
+      "type": "aws.cloudfront",
+      "properties": {
+        "origins": [
+          {
+            "path": "/static/*",
+            "target": "assets"
+          },
+          {
+            "path": "/*",
+            "target": "alb"
+          }
+        ]
+      }
+    },
+    {
+      "id": "assets",
+      "type": "aws.s3",
+      "properties": {
+        "publicAccess": false
+      }
+    },
+    {
+      "id": "vpc",
+      "type": "aws.vpc",
+      "properties": {
+        "cidrBlock": "10.0.0.0/16"
+      }
+    },
+    {
+      "id": "public",
+      "type": "aws.subnet",
+      "placement": ["vpc"],
+      "properties": {
+        "cidrBlock": "10.0.1.0/24"
+      }
+    },
+    {
+      "id": "private",
+      "type": "aws.subnet",
+      "placement": ["vpc"],
+      "properties": {
+        "cidrBlock": "10.0.2.0/24"
+      }
+    },
+    {
+      "id": "igw",
+      "type": "aws.internet-gateway",
+      "properties": {
+        "attachedTo": ["vpc"]
+      }
+    },
+    {
+      "id": "ddb-endpoint",
+      "type": "aws.gateway-endpoint",
+      "properties": {
+        "vpc": ["vpc"],
+        "services": ["orders"]
+      }
+    },
+    {
+      "id": "public-rt",
+      "type": "aws.route-table",
+      "properties": {
+        "routes": [
+          {
+            "destination": "internet",
+            "gateway": "igw"
+          }
+        ],
+        "associations": ["public"]
+      }
+    },
+    {
+      "id": "private-rt",
+      "type": "aws.route-table",
+      "properties": {
+        "routes": [
+          {
+            "destination": "orders",
+            "gateway": "ddb-endpoint"
+          },
+          {
+            "destination": "reports",
+            "gateway": "ddb-endpoint"
+          }
+        ],
+        "associations": ["private"]
+      }
+    },
+    {
+      "id": "alb",
+      "type": "aws.alb",
+      "placement": ["public"],
+      "properties": {
+        "scheme": "public",
+        "targets": [
+          {
+            "path": "/*",
+            "target": "app"
+          }
+        ]
+      }
+    },
+    {
+      "id": "alb-sg",
+      "type": "aws.security-group",
+      "properties": {
+        "rules": [
+          {
+            "direction": "inbound",
+            "peer": "internet",
+            "ports": ["https"]
+          },
+          {
+            "direction": "outbound",
+            "peer": "app-sg",
+            "ports": ["http"]
+          }
+        ],
+        "attachedTo": ["alb"]
+      }
+    },
+    {
+      "id": "app",
+      "type": "aws.autoscaling-group",
+      "placement": ["private"],
+      "properties": {
+        "endpoint": "private",
+        "permissions": []
+      }
+    },
+    {
+      "id": "app-sg",
+      "type": "aws.security-group",
+      "properties": {
+        "rules": [
+          {
+            "direction": "inbound",
+            "peer": "alb-sg",
+            "ports": ["http"]
+          },
+          {
+            "direction": "outbound",
+            "peer": "db-sg",
+            "ports": ["postgresql"]
+          }
+        ],
+        "attachedTo": ["app"]
+      }
+    },
+    {
+      "id": "db",
+      "type": "aws.rds",
+      "placement": ["private"],
+      "properties": {
+        "endpoint": "private",
+        "engine": "postgresql"
+      }
+    },
+    {
+      "id": "db-sg",
+      "type": "aws.security-group",
+      "properties": {
+        "rules": [
+          {
+            "direction": "inbound",
+            "peer": "app-sg",
+            "ports": ["postgresql"]
+          }
+        ],
+        "attachedTo": ["db"]
+      }
+    },
+    {
+      "id": "worker",
+      "type": "aws.lambda",
+      "placement": ["private"],
+      "properties": {
+        "permissions": [
+          {
+            "resource": "orders",
+            "access": "read-write"
+          },
+          {
+            "resource": "reports",
+            "access": "read"
+          }
+        ]
+      }
+    },
+    {
+      "id": "worker-sg",
+      "type": "aws.security-group",
+      "properties": {
+        "rules": [
+          {
+            "direction": "outbound",
+            "peer": "any"
+          }
+        ],
+        "attachedTo": ["worker"]
+      }
+    },
+    {
+      "id": "orders",
+      "type": "aws.dynamodb"
+    },
+    {
+      "id": "reports",
+      "type": "aws.dynamodb"
+    }
+  ],
+  "intents": [
+    {
+      "id": "users-cdn",
+      "from": "users",
+      "to": "cdn",
+      "port": "https"
+    },
+    {
+      "id": "cdn-assets",
+      "from": "cdn",
+      "to": "assets",
+      "action": "read"
+    },
+    {
+      "id": "cdn-alb",
+      "from": "cdn",
+      "to": "alb",
+      "action": "invoke",
+      "port": "https"
+    },
+    {
+      "id": "alb-app",
+      "from": "alb",
+      "to": "app",
+      "action": "invoke",
+      "port": "http"
+    },
+    {
+      "id": "app-db",
+      "from": "app",
+      "to": "db",
+      "action": "read",
+      "port": "postgresql"
+    },
+    {
+      "id": "users-db",
+      "from": "users",
+      "to": "db",
+      "action": "read",
+      "port": "postgresql"
+    },
+    {
+      "id": "users-assets",
+      "from": "users",
+      "to": "assets",
+      "action": "read",
+      "port": "https"
+    },
+    {
+      "id": "worker-orders",
+      "from": "worker",
+      "to": "orders",
+      "action": "write"
+    },
+    {
+      "id": "worker-reports",
+      "from": "worker",
+      "to": "reports",
+      "action": "read"
+    }
+  ]
+}

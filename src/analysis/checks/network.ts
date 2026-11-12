@@ -529,6 +529,57 @@ export class Network {
   }
 
   /**
+   * Traffic to a provider service through a route that names it: the route's gateway must be
+   * attached to the zone's network and list the service among the services it reaches.
+   */
+  #serviceRoute(
+    zone: string,
+    id: string,
+    peer: Party,
+    ports: PortSpec,
+    routeEvidence: Evidence[],
+  ): Step {
+    const service = peer.component?.id ?? "";
+    const gateway = this.#component(id);
+    const type = gateway && this.#type(gateway);
+    const params = type?.traits.gateway;
+    if (!gateway || !type || !params) {
+      return step("fail", [...routeEvidence, createEvidence("GATEWAY_INVALID", { gateway: id })]);
+    }
+    const network = this.root(zone);
+    const connects = this.#references(gateway, type, params.connects);
+    if (!connects.known) return connects.step;
+    const networks = [
+      ...connects.value.map((target) => this.root(target)),
+      ...this.placements(gateway).map((placement) => this.root(placement)),
+    ];
+    if (!networks.includes(network)) {
+      return step("fail", [
+        ...routeEvidence,
+        createEvidence("GATEWAY_NOT_ATTACHED", { gateway: id, network: network ?? zone }),
+      ]);
+    }
+    const services = this.#references(gateway, type, params.services);
+    if (!services.known) return services.step;
+    const evidence = [...routeEvidence, ...connects.evidence, ...services.evidence];
+    if (!services.value.includes(service)) {
+      return step("fail", [
+        ...evidence,
+        createEvidence("SERVICE_NOT_SERVED", { gateway: id, service }),
+      ]);
+    }
+    const self = this.#attached([id], "self");
+    if (!self.known) return self.step;
+    return combineSteps([
+      step("pass", [
+        ...evidence,
+        createEvidence("PRIVATE_SERVICE_ROUTE", { zone, gateway: id, service }),
+      ]),
+      ...self.value.map((filter) => this.evaluate(filter, "outbound", peer, ports, network)),
+    ]);
+  }
+
+  /**
    * How traffic between a zone and the internet goes: through the gateway of its `internet`
    * route. `inbound` traffic needs a gateway that allows both directions; `outbound` traffic may
    * also use an outbound-only gateway, which itself needs such a route.
@@ -546,6 +597,13 @@ export class Network {
       return step("fail", [createEvidence("LOCAL_ROUTES_ONLY", { zone })]);
     }
     const router = found.value.router.id;
+    const service = peer.component?.id;
+    if (direction === "outbound" && service !== undefined && peer.position === undefined) {
+      const private_ = found.value.routes.find((route) => route.destination === service);
+      if (private_ && typeof private_.gateway === "string") {
+        return this.#serviceRoute(zone, private_.gateway, peer, ports, found.evidence);
+      }
+    }
     const selected = this.#internetRoute(found.value.routes);
     if (selected === "ambiguous") {
       return {
