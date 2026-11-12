@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.0](https://github.com/apostx/solution-validator/compare/v0.7.0...v0.8.0) (2026-11-12)
+
+
+### Features
+
+* availability analysis (iteration 8) ([#16](https://github.com/apostx/solution-validator/issues/16)) ([a0fb5f8](https://github.com/apostx/solution-validator/commit/a0fb5f824760181e870089c536a5121d39e4dfbe))
+
 ## [0.7.0](https://github.com/apostx/solution-validator/compare/v0.6.0...v0.7.0) (2026-11-12)
 
 
