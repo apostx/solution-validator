@@ -1,5 +1,5 @@
 import { Handle, type Node, type NodeProps, Position } from "@xyflow/react";
-import type { Severity } from "solution-validator";
+import type { AvailabilityFact, Severity } from "solution-validator";
 import type { Attachment } from "../attachments";
 
 export type ComponentNodeData = {
@@ -10,6 +10,8 @@ export type ComponentNodeData = {
   severity?: Severity | undefined;
   /** Shown as a badge when the component is or may be accessible from the internet. */
   exposure?: "exposed" | "not-exposed" | "undecidable" | undefined;
+  /** The failure domains the component spans, when it runs. */
+  availability?: AvailabilityFact | undefined;
   /** Filters, routers and gateways attached to the component. */
   attachments: Attachment[];
 };
@@ -35,6 +37,7 @@ export function ComponentNode({ data, selected }: NodeProps<ComponentNodeType>) 
             internet?
           </span>
         )}
+        <AvailabilityBadge fact={data.availability} />
       </div>
       <div className="node-type">{data.typeLabel}</div>
       {data.label !== data.id && <div className="node-id">{data.id}</div>}
@@ -42,6 +45,41 @@ export function ComponentNode({ data, selected }: NodeProps<ComponentNodeType>) 
       <Handle type="source" position={Position.Right} />
     </div>
   );
+}
+
+/** How many failure domains the component spans, or that the provider manages it. */
+function AvailabilityBadge({ fact }: { fact: AvailabilityFact | undefined }) {
+  if (!fact) return null;
+  const domains = fact.domains.join(", ");
+  switch (fact.availability) {
+    case "managed":
+      return (
+        <span
+          className="badge badge-managed"
+          title="The provider spreads it across failure domains"
+        >
+          managed
+        </span>
+      );
+    case "redundant":
+      return (
+        <span className="badge badge-redundant" title={`Runs in ${domains}`}>
+          {fact.domains.length} domains
+        </span>
+      );
+    case "single":
+      return (
+        <span className="badge badge-single" title={`Runs only in ${domains}`}>
+          1 domain
+        </span>
+      );
+    default:
+      return (
+        <span className="badge badge-undecidable" title="Its failure domains are not known">
+          domain?
+        </span>
+      );
+  }
 }
 
 const ATTACHMENT_TITLES = {

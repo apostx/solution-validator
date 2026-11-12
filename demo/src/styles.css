@@ -595,6 +595,17 @@ button.link:hover {
   color: var(--undecidable);
 }
 
+.badge-managed,
+.badge-redundant {
+  background: var(--surface);
+  color: var(--pass);
+}
+
+.badge-single {
+  background: var(--warning-surface);
+  color: var(--warning);
+}
+
 .findings h3 {
   margin: 0.6rem 0 0.2rem;
   font-size: 0.9rem;

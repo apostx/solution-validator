@@ -1,0 +1,3639 @@
+{
+  "parse": {
+    "ok": true,
+    "findings": []
+  },
+  "analysis": {
+    "strict": {
+      "library": {
+        "name": "solution-validator",
+        "version": "<version>"
+      },
+      "vocabulary": 4,
+      "packs": [
+        {
+          "id": "aws",
+          "version": "0.5.0"
+        },
+        {
+          "id": "core",
+          "version": "0.2.0"
+        }
+      ],
+      "options": {
+        "level": "logical",
+        "analyses": [
+          "model-validity",
+          "connection-validity",
+          "access",
+          "availability"
+        ],
+        "assumptions": "strict"
+      },
+      "analyses": [
+        {
+          "id": "model-validity",
+          "valid": true,
+          "findings": []
+        },
+        {
+          "id": "connection-validity",
+          "intents": [
+            {
+              "intent": "alb-app",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.alb",
+                        "toType": "aws.autoscaling-group",
+                        "purpose": "invoke on port http",
+                        "rule": 0
+                      },
+                      "message": "aws.autoscaling-group accepts invoke on port http from aws.alb (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "app-db",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.autoscaling-group",
+                        "toType": "aws.rds",
+                        "purpose": "read on port postgresql",
+                        "rule": 0
+                      },
+                      "message": "aws.rds accepts read on port postgresql from aws.autoscaling-group (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "app-orders",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.autoscaling-group",
+                        "toType": "aws.dynamodb",
+                        "purpose": "read",
+                        "rule": 0
+                      },
+                      "message": "aws.dynamodb accepts read from aws.autoscaling-group (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "users-alb",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "aws.alb",
+                        "purpose": "port https",
+                        "rule": 0
+                      },
+                      "message": "aws.alb accepts port https from core.internet (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "users-bastion",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "aws.ec2",
+                        "purpose": "port ssh",
+                        "rule": 0
+                      },
+                      "message": "aws.ec2 accepts port ssh from core.internet (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "summary": {
+            "pass": 5,
+            "fail": 0,
+            "undecidable": 0
+          },
+          "findings": []
+        },
+        {
+          "id": "access",
+          "intents": [
+            {
+              "intent": "alb-app",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.alb",
+                        "toType": "aws.autoscaling-group",
+                        "purpose": "invoke on port http",
+                        "rule": 0
+                      },
+                      "message": "aws.autoscaling-group accepts invoke on port http from aws.alb (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "forwarding",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ROUTE_FOUND",
+                      "params": {
+                        "from": "alb",
+                        "to": "app"
+                      },
+                      "message": "alb has a route to app."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "SAME_NETWORK",
+                      "params": {
+                        "from": "alb",
+                        "to": "app",
+                        "network": "vpc"
+                      },
+                      "message": "alb and app are in the same network, vpc."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "sg",
+                        "direction": "outbound",
+                        "peer": "app",
+                        "rule": 1
+                      },
+                      "message": "sg allows outbound traffic with app (rule 1)."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "sg",
+                        "direction": "inbound",
+                        "peer": "alb",
+                        "rule": 0
+                      },
+                      "message": "sg allows inbound traffic with alb (rule 0)."
+                    },
+                    {
+                      "code": "SAME_NETWORK",
+                      "params": {
+                        "from": "alb",
+                        "to": "app",
+                        "network": "vpc"
+                      },
+                      "message": "alb and app are in the same network, vpc."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "sg",
+                        "direction": "outbound",
+                        "peer": "app",
+                        "rule": 1
+                      },
+                      "message": "sg allows outbound traffic with app (rule 1)."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "sg",
+                        "direction": "inbound",
+                        "peer": "alb",
+                        "rule": 0
+                      },
+                      "message": "sg allows inbound traffic with alb (rule 0)."
+                    },
+                    {
+                      "code": "SAME_NETWORK",
+                      "params": {
+                        "from": "alb",
+                        "to": "app",
+                        "network": "vpc"
+                      },
+                      "message": "alb and app are in the same network, vpc."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "sg",
+                        "direction": "outbound",
+                        "peer": "app",
+                        "rule": 1
+                      },
+                      "message": "sg allows outbound traffic with app (rule 1)."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "sg",
+                        "direction": "inbound",
+                        "peer": "alb",
+                        "rule": 0
+                      },
+                      "message": "sg allows inbound traffic with alb (rule 0)."
+                    },
+                    {
+                      "code": "SAME_NETWORK",
+                      "params": {
+                        "from": "alb",
+                        "to": "app",
+                        "network": "vpc"
+                      },
+                      "message": "alb and app are in the same network, vpc."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "sg",
+                        "direction": "outbound",
+                        "peer": "app",
+                        "rule": 1
+                      },
+                      "message": "sg allows outbound traffic with app (rule 1)."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "sg",
+                        "direction": "inbound",
+                        "peer": "alb",
+                        "rule": 0
+                      },
+                      "message": "sg allows inbound traffic with alb (rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "app-db",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.autoscaling-group",
+                        "toType": "aws.rds",
+                        "purpose": "read on port postgresql",
+                        "rule": 0
+                      },
+                      "message": "aws.rds accepts read on port postgresql from aws.autoscaling-group (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "SAME_NETWORK",
+                      "params": {
+                        "from": "app",
+                        "to": "db",
+                        "network": "vpc"
+                      },
+                      "message": "app and db are in the same network, vpc."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "sg",
+                        "direction": "outbound",
+                        "peer": "db",
+                        "rule": 1
+                      },
+                      "message": "sg allows outbound traffic with db (rule 1)."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "sg",
+                        "direction": "inbound",
+                        "peer": "app",
+                        "rule": 0
+                      },
+                      "message": "sg allows inbound traffic with app (rule 0)."
+                    },
+                    {
+                      "code": "SAME_NETWORK",
+                      "params": {
+                        "from": "app",
+                        "to": "db",
+                        "network": "vpc"
+                      },
+                      "message": "app and db are in the same network, vpc."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "sg",
+                        "direction": "outbound",
+                        "peer": "db",
+                        "rule": 1
+                      },
+                      "message": "sg allows outbound traffic with db (rule 1)."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "sg",
+                        "direction": "inbound",
+                        "peer": "app",
+                        "rule": 0
+                      },
+                      "message": "sg allows inbound traffic with app (rule 0)."
+                    },
+                    {
+                      "code": "SAME_NETWORK",
+                      "params": {
+                        "from": "app",
+                        "to": "db",
+                        "network": "vpc"
+                      },
+                      "message": "app and db are in the same network, vpc."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "sg",
+                        "direction": "outbound",
+                        "peer": "db",
+                        "rule": 1
+                      },
+                      "message": "sg allows outbound traffic with db (rule 1)."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "sg",
+                        "direction": "inbound",
+                        "peer": "app",
+                        "rule": 0
+                      },
+                      "message": "sg allows inbound traffic with app (rule 0)."
+                    },
+                    {
+                      "code": "SAME_NETWORK",
+                      "params": {
+                        "from": "app",
+                        "to": "db",
+                        "network": "vpc"
+                      },
+                      "message": "app and db are in the same network, vpc."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "sg",
+                        "direction": "outbound",
+                        "peer": "db",
+                        "rule": 1
+                      },
+                      "message": "sg allows outbound traffic with db (rule 1)."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "sg",
+                        "direction": "inbound",
+                        "peer": "app",
+                        "rule": 0
+                      },
+                      "message": "sg allows inbound traffic with app (rule 0)."
+                    },
+                    {
+                      "code": "PORT_OPEN",
+                      "params": {
+                        "to": "db",
+                        "port": "postgresql"
+                      },
+                      "message": "db listens on port postgresql."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "app-orders",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.autoscaling-group",
+                        "toType": "aws.dynamodb",
+                        "purpose": "read",
+                        "rule": 0
+                      },
+                      "message": "aws.dynamodb accepts read from aws.autoscaling-group (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "NAT_ROUTE",
+                      "params": {
+                        "zone": "private-a",
+                        "gateway": "nat-a"
+                      },
+                      "message": "private-a reaches the internet through nat-a, for outbound connections only."
+                    },
+                    {
+                      "code": "INTERNET_ROUTE",
+                      "params": {
+                        "zone": "public-a",
+                        "gateway": "igw"
+                      },
+                      "message": "public-a reaches the internet through igw."
+                    },
+                    {
+                      "code": "ENDPOINT_PUBLIC",
+                      "params": {
+                        "from": "app",
+                        "to": "orders"
+                      },
+                      "message": "orders has a public endpoint."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "sg",
+                        "direction": "outbound",
+                        "peer": "orders",
+                        "rule": 1
+                      },
+                      "message": "sg allows outbound traffic with orders (rule 1)."
+                    },
+                    {
+                      "code": "NAT_ROUTE",
+                      "params": {
+                        "zone": "private-b",
+                        "gateway": "nat-a"
+                      },
+                      "message": "private-b reaches the internet through nat-a, for outbound connections only."
+                    },
+                    {
+                      "code": "INTERNET_ROUTE",
+                      "params": {
+                        "zone": "public-a",
+                        "gateway": "igw"
+                      },
+                      "message": "public-a reaches the internet through igw."
+                    },
+                    {
+                      "code": "ENDPOINT_PUBLIC",
+                      "params": {
+                        "from": "app",
+                        "to": "orders"
+                      },
+                      "message": "orders has a public endpoint."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "sg",
+                        "direction": "outbound",
+                        "peer": "orders",
+                        "rule": 1
+                      },
+                      "message": "sg allows outbound traffic with orders (rule 1)."
+                    }
+                  ]
+                },
+                {
+                  "check": "authorization",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "GRANT_FOUND",
+                      "params": {
+                        "from": "app",
+                        "to": "orders",
+                        "access": "read",
+                        "action": "read"
+                      },
+                      "message": "app has read access to orders, which allows read."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "users-alb",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "aws.alb",
+                        "purpose": "port https",
+                        "rule": 0
+                      },
+                      "message": "aws.alb accepts port https from core.internet (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "INTERNET_ROUTE",
+                      "params": {
+                        "zone": "public-a",
+                        "gateway": "igw"
+                      },
+                      "message": "public-a reaches the internet through igw."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "sg",
+                        "direction": "inbound",
+                        "peer": "users",
+                        "rule": 0
+                      },
+                      "message": "sg allows inbound traffic with users (rule 0)."
+                    },
+                    {
+                      "code": "INTERNET_ROUTE",
+                      "params": {
+                        "zone": "public-b",
+                        "gateway": "igw"
+                      },
+                      "message": "public-b reaches the internet through igw."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "sg",
+                        "direction": "inbound",
+                        "peer": "users",
+                        "rule": 0
+                      },
+                      "message": "sg allows inbound traffic with users (rule 0)."
+                    },
+                    {
+                      "code": "PORT_OPEN",
+                      "params": {
+                        "to": "alb",
+                        "port": "https"
+                      },
+                      "message": "alb listens on port https."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "users-bastion",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "aws.ec2",
+                        "purpose": "port ssh",
+                        "rule": 0
+                      },
+                      "message": "aws.ec2 accepts port ssh from core.internet (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "INTERNET_ROUTE",
+                      "params": {
+                        "zone": "public-a",
+                        "gateway": "igw"
+                      },
+                      "message": "public-a reaches the internet through igw."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "sg",
+                        "direction": "inbound",
+                        "peer": "users",
+                        "rule": 0
+                      },
+                      "message": "sg allows inbound traffic with users (rule 0)."
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "summary": {
+            "pass": 5,
+            "fail": 0,
+            "undecidable": 0
+          },
+          "exposure": [
+            {
+              "component": "alb",
+              "exposure": "exposed",
+              "ports": [
+                "http",
+                "https"
+              ],
+              "evidence": [
+                {
+                  "code": "ENDPOINT_PUBLIC",
+                  "params": {
+                    "from": "the internet",
+                    "to": "alb"
+                  },
+                  "message": "alb has a public endpoint."
+                },
+                {
+                  "code": "INTERNET_ROUTE",
+                  "params": {
+                    "zone": "public-a",
+                    "gateway": "igw"
+                  },
+                  "message": "public-a reaches the internet through igw."
+                },
+                {
+                  "code": "FILTER_ALLOWS",
+                  "params": {
+                    "filter": "sg",
+                    "direction": "inbound",
+                    "peer": "the internet",
+                    "rule": 0
+                  },
+                  "message": "sg allows inbound traffic with the internet (rule 0)."
+                },
+                {
+                  "code": "INTERNET_ROUTE",
+                  "params": {
+                    "zone": "public-b",
+                    "gateway": "igw"
+                  },
+                  "message": "public-b reaches the internet through igw."
+                },
+                {
+                  "code": "FILTER_ALLOWS",
+                  "params": {
+                    "filter": "sg",
+                    "direction": "inbound",
+                    "peer": "the internet",
+                    "rule": 0
+                  },
+                  "message": "sg allows inbound traffic with the internet (rule 0)."
+                },
+                {
+                  "code": "INTERNET_ROUTE",
+                  "params": {
+                    "zone": "public-a",
+                    "gateway": "igw"
+                  },
+                  "message": "public-a reaches the internet through igw."
+                },
+                {
+                  "code": "FILTER_ALLOWS",
+                  "params": {
+                    "filter": "sg",
+                    "direction": "inbound",
+                    "peer": "the internet",
+                    "rule": 0
+                  },
+                  "message": "sg allows inbound traffic with the internet (rule 0)."
+                },
+                {
+                  "code": "INTERNET_ROUTE",
+                  "params": {
+                    "zone": "public-b",
+                    "gateway": "igw"
+                  },
+                  "message": "public-b reaches the internet through igw."
+                },
+                {
+                  "code": "FILTER_ALLOWS",
+                  "params": {
+                    "filter": "sg",
+                    "direction": "inbound",
+                    "peer": "the internet",
+                    "rule": 0
+                  },
+                  "message": "sg allows inbound traffic with the internet (rule 0)."
+                },
+                {
+                  "code": "ANONYMOUS_ALLOWED",
+                  "params": {
+                    "component": "alb"
+                  },
+                  "message": "alb does not control access."
+                }
+              ]
+            },
+            {
+              "component": "app",
+              "exposure": "not-exposed",
+              "evidence": [
+                {
+                  "code": "ENDPOINT_NOT_PUBLIC",
+                  "params": {
+                    "component": "app"
+                  },
+                  "message": "app has no public endpoint."
+                }
+              ]
+            },
+            {
+              "component": "bastion",
+              "exposure": "exposed",
+              "ports": [
+                "http",
+                "https",
+                "ssh",
+                "mysql",
+                "postgresql"
+              ],
+              "evidence": [
+                {
+                  "code": "ENDPOINT_PUBLIC",
+                  "params": {
+                    "from": "the internet",
+                    "to": "bastion"
+                  },
+                  "message": "bastion has a public endpoint."
+                },
+                {
+                  "code": "INTERNET_ROUTE",
+                  "params": {
+                    "zone": "public-a",
+                    "gateway": "igw"
+                  },
+                  "message": "public-a reaches the internet through igw."
+                },
+                {
+                  "code": "FILTER_ALLOWS",
+                  "params": {
+                    "filter": "sg",
+                    "direction": "inbound",
+                    "peer": "the internet",
+                    "rule": 0
+                  },
+                  "message": "sg allows inbound traffic with the internet (rule 0)."
+                },
+                {
+                  "code": "INTERNET_ROUTE",
+                  "params": {
+                    "zone": "public-a",
+                    "gateway": "igw"
+                  },
+                  "message": "public-a reaches the internet through igw."
+                },
+                {
+                  "code": "FILTER_ALLOWS",
+                  "params": {
+                    "filter": "sg",
+                    "direction": "inbound",
+                    "peer": "the internet",
+                    "rule": 0
+                  },
+                  "message": "sg allows inbound traffic with the internet (rule 0)."
+                },
+                {
+                  "code": "INTERNET_ROUTE",
+                  "params": {
+                    "zone": "public-a",
+                    "gateway": "igw"
+                  },
+                  "message": "public-a reaches the internet through igw."
+                },
+                {
+                  "code": "FILTER_ALLOWS",
+                  "params": {
+                    "filter": "sg",
+                    "direction": "inbound",
+                    "peer": "the internet",
+                    "rule": 0
+                  },
+                  "message": "sg allows inbound traffic with the internet (rule 0)."
+                },
+                {
+                  "code": "INTERNET_ROUTE",
+                  "params": {
+                    "zone": "public-a",
+                    "gateway": "igw"
+                  },
+                  "message": "public-a reaches the internet through igw."
+                },
+                {
+                  "code": "FILTER_ALLOWS",
+                  "params": {
+                    "filter": "sg",
+                    "direction": "inbound",
+                    "peer": "the internet",
+                    "rule": 0
+                  },
+                  "message": "sg allows inbound traffic with the internet (rule 0)."
+                },
+                {
+                  "code": "INTERNET_ROUTE",
+                  "params": {
+                    "zone": "public-a",
+                    "gateway": "igw"
+                  },
+                  "message": "public-a reaches the internet through igw."
+                },
+                {
+                  "code": "FILTER_ALLOWS",
+                  "params": {
+                    "filter": "sg",
+                    "direction": "inbound",
+                    "peer": "the internet",
+                    "rule": 0
+                  },
+                  "message": "sg allows inbound traffic with the internet (rule 0)."
+                },
+                {
+                  "code": "ANONYMOUS_ALLOWED",
+                  "params": {
+                    "component": "bastion"
+                  },
+                  "message": "bastion does not control access."
+                }
+              ]
+            },
+            {
+              "component": "db",
+              "exposure": "not-exposed",
+              "evidence": [
+                {
+                  "code": "ENDPOINT_NOT_PUBLIC",
+                  "params": {
+                    "component": "db"
+                  },
+                  "message": "db has no public endpoint."
+                }
+              ]
+            },
+            {
+              "component": "orders",
+              "exposure": "not-exposed",
+              "evidence": [
+                {
+                  "code": "ENDPOINT_PUBLIC",
+                  "params": {
+                    "from": "the internet",
+                    "to": "orders"
+                  },
+                  "message": "orders has a public endpoint."
+                },
+                {
+                  "code": "PUBLIC_ACCESS_OFF",
+                  "params": {
+                    "component": "orders"
+                  },
+                  "message": "orders does not allow public access."
+                }
+              ]
+            }
+          ],
+          "assumptions": [],
+          "findings": [
+            {
+              "code": "EXPOSED_TO_INTERNET",
+              "severity": "info",
+              "subjects": [
+                "alb"
+              ],
+              "params": {
+                "component": "alb"
+              },
+              "message": "alb is directly accessible from the internet."
+            },
+            {
+              "code": "EXPOSED_TO_INTERNET",
+              "severity": "info",
+              "subjects": [
+                "bastion"
+              ],
+              "params": {
+                "component": "bastion"
+              },
+              "message": "bastion is directly accessible from the internet."
+            }
+          ]
+        },
+        {
+          "id": "availability",
+          "components": [
+            {
+              "component": "alb",
+              "availability": "redundant",
+              "domains": [
+                "eu-west-1a",
+                "eu-west-1b"
+              ],
+              "evidence": [
+                {
+                  "code": "FAILURE_DOMAINS",
+                  "params": {
+                    "component": "alb",
+                    "domains": "eu-west-1a, eu-west-1b"
+                  },
+                  "message": "alb runs in: eu-west-1a, eu-west-1b."
+                }
+              ]
+            },
+            {
+              "component": "app",
+              "availability": "redundant",
+              "domains": [
+                "eu-west-1a",
+                "eu-west-1b"
+              ],
+              "evidence": [
+                {
+                  "code": "FAILURE_DOMAINS",
+                  "params": {
+                    "component": "app",
+                    "domains": "eu-west-1a, eu-west-1b"
+                  },
+                  "message": "app runs in: eu-west-1a, eu-west-1b."
+                }
+              ]
+            },
+            {
+              "component": "bastion",
+              "availability": "single",
+              "domains": [
+                "eu-west-1a"
+              ],
+              "evidence": [
+                {
+                  "code": "SINGLE_INSTANCE",
+                  "params": {
+                    "component": "bastion"
+                  },
+                  "message": "bastion runs one instance, in one of the zones it is placed in."
+                },
+                {
+                  "code": "FAILURE_DOMAINS",
+                  "params": {
+                    "component": "bastion",
+                    "domains": "eu-west-1a"
+                  },
+                  "message": "bastion runs in: eu-west-1a."
+                }
+              ]
+            },
+            {
+              "component": "db",
+              "availability": "single",
+              "domains": [
+                "eu-west-1a"
+              ],
+              "evidence": [
+                {
+                  "code": "SINGLE_INSTANCE",
+                  "params": {
+                    "component": "db"
+                  },
+                  "message": "db runs one instance, in one of the zones it is placed in."
+                },
+                {
+                  "code": "FAILURE_DOMAINS",
+                  "params": {
+                    "component": "db",
+                    "domains": "eu-west-1a"
+                  },
+                  "message": "db runs in: eu-west-1a."
+                }
+              ]
+            },
+            {
+              "component": "igw",
+              "availability": "managed",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "MANAGED_SERVICE",
+                  "params": {
+                    "component": "igw"
+                  },
+                  "message": "The provider runs igw across failure domains."
+                }
+              ]
+            },
+            {
+              "component": "nat-a",
+              "availability": "single",
+              "domains": [
+                "eu-west-1a"
+              ],
+              "evidence": [
+                {
+                  "code": "FAILURE_DOMAINS",
+                  "params": {
+                    "component": "nat-a",
+                    "domains": "eu-west-1a"
+                  },
+                  "message": "nat-a runs in: eu-west-1a."
+                }
+              ]
+            },
+            {
+              "component": "orders",
+              "availability": "managed",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "MANAGED_SERVICE",
+                  "params": {
+                    "component": "orders"
+                  },
+                  "message": "The provider runs orders across failure domains."
+                }
+              ]
+            }
+          ],
+          "findings": [
+            {
+              "code": "AVAILABILITY_SINGLE_POINT",
+              "severity": "warning",
+              "subjects": [
+                "bastion"
+              ],
+              "params": {
+                "component": "bastion",
+                "domain": "eu-west-1a",
+                "intents": "users-bastion"
+              },
+              "message": "bastion runs in a single failure domain (eu-west-1a), and intents depend on it: users-bastion."
+            },
+            {
+              "code": "AVAILABILITY_SINGLE_POINT",
+              "severity": "warning",
+              "subjects": [
+                "db"
+              ],
+              "params": {
+                "component": "db",
+                "domain": "eu-west-1a",
+                "intents": "app-db"
+              },
+              "message": "db runs in a single failure domain (eu-west-1a), and intents depend on it: app-db."
+            },
+            {
+              "code": "AVAILABILITY_SINGLE_POINT",
+              "severity": "warning",
+              "subjects": [
+                "nat-a"
+              ],
+              "params": {
+                "component": "nat-a",
+                "domain": "eu-west-1a",
+                "intents": "app-orders"
+              },
+              "message": "nat-a runs in a single failure domain (eu-west-1a), and intents depend on it: app-orders."
+            },
+            {
+              "code": "AVAILABILITY_CROSS_DOMAIN",
+              "severity": "warning",
+              "subjects": [
+                "private-b"
+              ],
+              "params": {
+                "zone": "private-b",
+                "domain": "eu-west-1b",
+                "gateway": "nat-a",
+                "gatewayDomain": "eu-west-1a"
+              },
+              "message": "private-b (eu-west-1b) reaches the internet through nat-a in eu-west-1a; if eu-west-1a fails, private-b loses its outbound connections."
+            }
+          ]
+        }
+      ]
+    },
+    "pack-defaults": {
+      "library": {
+        "name": "solution-validator",
+        "version": "<version>"
+      },
+      "vocabulary": 4,
+      "packs": [
+        {
+          "id": "aws",
+          "version": "0.5.0"
+        },
+        {
+          "id": "core",
+          "version": "0.2.0"
+        }
+      ],
+      "options": {
+        "level": "logical",
+        "analyses": [
+          "model-validity",
+          "connection-validity",
+          "access",
+          "availability"
+        ],
+        "assumptions": "pack-defaults"
+      },
+      "analyses": [
+        {
+          "id": "model-validity",
+          "valid": true,
+          "findings": []
+        },
+        {
+          "id": "connection-validity",
+          "intents": [
+            {
+              "intent": "alb-app",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.alb",
+                        "toType": "aws.autoscaling-group",
+                        "purpose": "invoke on port http",
+                        "rule": 0
+                      },
+                      "message": "aws.autoscaling-group accepts invoke on port http from aws.alb (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "app-db",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.autoscaling-group",
+                        "toType": "aws.rds",
+                        "purpose": "read on port postgresql",
+                        "rule": 0
+                      },
+                      "message": "aws.rds accepts read on port postgresql from aws.autoscaling-group (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "app-orders",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.autoscaling-group",
+                        "toType": "aws.dynamodb",
+                        "purpose": "read",
+                        "rule": 0
+                      },
+                      "message": "aws.dynamodb accepts read from aws.autoscaling-group (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "users-alb",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "aws.alb",
+                        "purpose": "port https",
+                        "rule": 0
+                      },
+                      "message": "aws.alb accepts port https from core.internet (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "users-bastion",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "aws.ec2",
+                        "purpose": "port ssh",
+                        "rule": 0
+                      },
+                      "message": "aws.ec2 accepts port ssh from core.internet (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "summary": {
+            "pass": 5,
+            "fail": 0,
+            "undecidable": 0
+          },
+          "findings": []
+        },
+        {
+          "id": "access",
+          "intents": [
+            {
+              "intent": "alb-app",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.alb",
+                        "toType": "aws.autoscaling-group",
+                        "purpose": "invoke on port http",
+                        "rule": 0
+                      },
+                      "message": "aws.autoscaling-group accepts invoke on port http from aws.alb (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "forwarding",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ROUTE_FOUND",
+                      "params": {
+                        "from": "alb",
+                        "to": "app"
+                      },
+                      "message": "alb has a route to app."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "SAME_NETWORK",
+                      "params": {
+                        "from": "alb",
+                        "to": "app",
+                        "network": "vpc"
+                      },
+                      "message": "alb and app are in the same network, vpc."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "sg",
+                        "direction": "outbound",
+                        "peer": "app",
+                        "rule": 1
+                      },
+                      "message": "sg allows outbound traffic with app (rule 1)."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "sg",
+                        "direction": "inbound",
+                        "peer": "alb",
+                        "rule": 0
+                      },
+                      "message": "sg allows inbound traffic with alb (rule 0)."
+                    },
+                    {
+                      "code": "SAME_NETWORK",
+                      "params": {
+                        "from": "alb",
+                        "to": "app",
+                        "network": "vpc"
+                      },
+                      "message": "alb and app are in the same network, vpc."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "sg",
+                        "direction": "outbound",
+                        "peer": "app",
+                        "rule": 1
+                      },
+                      "message": "sg allows outbound traffic with app (rule 1)."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "sg",
+                        "direction": "inbound",
+                        "peer": "alb",
+                        "rule": 0
+                      },
+                      "message": "sg allows inbound traffic with alb (rule 0)."
+                    },
+                    {
+                      "code": "SAME_NETWORK",
+                      "params": {
+                        "from": "alb",
+                        "to": "app",
+                        "network": "vpc"
+                      },
+                      "message": "alb and app are in the same network, vpc."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "sg",
+                        "direction": "outbound",
+                        "peer": "app",
+                        "rule": 1
+                      },
+                      "message": "sg allows outbound traffic with app (rule 1)."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "sg",
+                        "direction": "inbound",
+                        "peer": "alb",
+                        "rule": 0
+                      },
+                      "message": "sg allows inbound traffic with alb (rule 0)."
+                    },
+                    {
+                      "code": "SAME_NETWORK",
+                      "params": {
+                        "from": "alb",
+                        "to": "app",
+                        "network": "vpc"
+                      },
+                      "message": "alb and app are in the same network, vpc."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "sg",
+                        "direction": "outbound",
+                        "peer": "app",
+                        "rule": 1
+                      },
+                      "message": "sg allows outbound traffic with app (rule 1)."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "sg",
+                        "direction": "inbound",
+                        "peer": "alb",
+                        "rule": 0
+                      },
+                      "message": "sg allows inbound traffic with alb (rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "app-db",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.autoscaling-group",
+                        "toType": "aws.rds",
+                        "purpose": "read on port postgresql",
+                        "rule": 0
+                      },
+                      "message": "aws.rds accepts read on port postgresql from aws.autoscaling-group (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "SAME_NETWORK",
+                      "params": {
+                        "from": "app",
+                        "to": "db",
+                        "network": "vpc"
+                      },
+                      "message": "app and db are in the same network, vpc."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "sg",
+                        "direction": "outbound",
+                        "peer": "db",
+                        "rule": 1
+                      },
+                      "message": "sg allows outbound traffic with db (rule 1)."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "sg",
+                        "direction": "inbound",
+                        "peer": "app",
+                        "rule": 0
+                      },
+                      "message": "sg allows inbound traffic with app (rule 0)."
+                    },
+                    {
+                      "code": "SAME_NETWORK",
+                      "params": {
+                        "from": "app",
+                        "to": "db",
+                        "network": "vpc"
+                      },
+                      "message": "app and db are in the same network, vpc."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "sg",
+                        "direction": "outbound",
+                        "peer": "db",
+                        "rule": 1
+                      },
+                      "message": "sg allows outbound traffic with db (rule 1)."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "sg",
+                        "direction": "inbound",
+                        "peer": "app",
+                        "rule": 0
+                      },
+                      "message": "sg allows inbound traffic with app (rule 0)."
+                    },
+                    {
+                      "code": "SAME_NETWORK",
+                      "params": {
+                        "from": "app",
+                        "to": "db",
+                        "network": "vpc"
+                      },
+                      "message": "app and db are in the same network, vpc."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "sg",
+                        "direction": "outbound",
+                        "peer": "db",
+                        "rule": 1
+                      },
+                      "message": "sg allows outbound traffic with db (rule 1)."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "sg",
+                        "direction": "inbound",
+                        "peer": "app",
+                        "rule": 0
+                      },
+                      "message": "sg allows inbound traffic with app (rule 0)."
+                    },
+                    {
+                      "code": "SAME_NETWORK",
+                      "params": {
+                        "from": "app",
+                        "to": "db",
+                        "network": "vpc"
+                      },
+                      "message": "app and db are in the same network, vpc."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "sg",
+                        "direction": "outbound",
+                        "peer": "db",
+                        "rule": 1
+                      },
+                      "message": "sg allows outbound traffic with db (rule 1)."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "sg",
+                        "direction": "inbound",
+                        "peer": "app",
+                        "rule": 0
+                      },
+                      "message": "sg allows inbound traffic with app (rule 0)."
+                    },
+                    {
+                      "code": "PORT_OPEN",
+                      "params": {
+                        "to": "db",
+                        "port": "postgresql"
+                      },
+                      "message": "db listens on port postgresql."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "app-orders",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.autoscaling-group",
+                        "toType": "aws.dynamodb",
+                        "purpose": "read",
+                        "rule": 0
+                      },
+                      "message": "aws.dynamodb accepts read from aws.autoscaling-group (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "NAT_ROUTE",
+                      "params": {
+                        "zone": "private-a",
+                        "gateway": "nat-a"
+                      },
+                      "message": "private-a reaches the internet through nat-a, for outbound connections only."
+                    },
+                    {
+                      "code": "INTERNET_ROUTE",
+                      "params": {
+                        "zone": "public-a",
+                        "gateway": "igw"
+                      },
+                      "message": "public-a reaches the internet through igw."
+                    },
+                    {
+                      "code": "ENDPOINT_PUBLIC",
+                      "params": {
+                        "from": "app",
+                        "to": "orders"
+                      },
+                      "message": "orders has a public endpoint."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "sg",
+                        "direction": "outbound",
+                        "peer": "orders",
+                        "rule": 1
+                      },
+                      "message": "sg allows outbound traffic with orders (rule 1)."
+                    },
+                    {
+                      "code": "NAT_ROUTE",
+                      "params": {
+                        "zone": "private-b",
+                        "gateway": "nat-a"
+                      },
+                      "message": "private-b reaches the internet through nat-a, for outbound connections only."
+                    },
+                    {
+                      "code": "INTERNET_ROUTE",
+                      "params": {
+                        "zone": "public-a",
+                        "gateway": "igw"
+                      },
+                      "message": "public-a reaches the internet through igw."
+                    },
+                    {
+                      "code": "ENDPOINT_PUBLIC",
+                      "params": {
+                        "from": "app",
+                        "to": "orders"
+                      },
+                      "message": "orders has a public endpoint."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "sg",
+                        "direction": "outbound",
+                        "peer": "orders",
+                        "rule": 1
+                      },
+                      "message": "sg allows outbound traffic with orders (rule 1)."
+                    }
+                  ]
+                },
+                {
+                  "check": "authorization",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "GRANT_FOUND",
+                      "params": {
+                        "from": "app",
+                        "to": "orders",
+                        "access": "read",
+                        "action": "read"
+                      },
+                      "message": "app has read access to orders, which allows read."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "users-alb",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "aws.alb",
+                        "purpose": "port https",
+                        "rule": 0
+                      },
+                      "message": "aws.alb accepts port https from core.internet (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "INTERNET_ROUTE",
+                      "params": {
+                        "zone": "public-a",
+                        "gateway": "igw"
+                      },
+                      "message": "public-a reaches the internet through igw."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "sg",
+                        "direction": "inbound",
+                        "peer": "users",
+                        "rule": 0
+                      },
+                      "message": "sg allows inbound traffic with users (rule 0)."
+                    },
+                    {
+                      "code": "INTERNET_ROUTE",
+                      "params": {
+                        "zone": "public-b",
+                        "gateway": "igw"
+                      },
+                      "message": "public-b reaches the internet through igw."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "sg",
+                        "direction": "inbound",
+                        "peer": "users",
+                        "rule": 0
+                      },
+                      "message": "sg allows inbound traffic with users (rule 0)."
+                    },
+                    {
+                      "code": "PORT_OPEN",
+                      "params": {
+                        "to": "alb",
+                        "port": "https"
+                      },
+                      "message": "alb listens on port https."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "users-bastion",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "aws.ec2",
+                        "purpose": "port ssh",
+                        "rule": 0
+                      },
+                      "message": "aws.ec2 accepts port ssh from core.internet (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "INTERNET_ROUTE",
+                      "params": {
+                        "zone": "public-a",
+                        "gateway": "igw"
+                      },
+                      "message": "public-a reaches the internet through igw."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "sg",
+                        "direction": "inbound",
+                        "peer": "users",
+                        "rule": 0
+                      },
+                      "message": "sg allows inbound traffic with users (rule 0)."
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "summary": {
+            "pass": 5,
+            "fail": 0,
+            "undecidable": 0
+          },
+          "exposure": [
+            {
+              "component": "alb",
+              "exposure": "exposed",
+              "ports": [
+                "http",
+                "https"
+              ],
+              "evidence": [
+                {
+                  "code": "ENDPOINT_PUBLIC",
+                  "params": {
+                    "from": "the internet",
+                    "to": "alb"
+                  },
+                  "message": "alb has a public endpoint."
+                },
+                {
+                  "code": "INTERNET_ROUTE",
+                  "params": {
+                    "zone": "public-a",
+                    "gateway": "igw"
+                  },
+                  "message": "public-a reaches the internet through igw."
+                },
+                {
+                  "code": "FILTER_ALLOWS",
+                  "params": {
+                    "filter": "sg",
+                    "direction": "inbound",
+                    "peer": "the internet",
+                    "rule": 0
+                  },
+                  "message": "sg allows inbound traffic with the internet (rule 0)."
+                },
+                {
+                  "code": "INTERNET_ROUTE",
+                  "params": {
+                    "zone": "public-b",
+                    "gateway": "igw"
+                  },
+                  "message": "public-b reaches the internet through igw."
+                },
+                {
+                  "code": "FILTER_ALLOWS",
+                  "params": {
+                    "filter": "sg",
+                    "direction": "inbound",
+                    "peer": "the internet",
+                    "rule": 0
+                  },
+                  "message": "sg allows inbound traffic with the internet (rule 0)."
+                },
+                {
+                  "code": "INTERNET_ROUTE",
+                  "params": {
+                    "zone": "public-a",
+                    "gateway": "igw"
+                  },
+                  "message": "public-a reaches the internet through igw."
+                },
+                {
+                  "code": "FILTER_ALLOWS",
+                  "params": {
+                    "filter": "sg",
+                    "direction": "inbound",
+                    "peer": "the internet",
+                    "rule": 0
+                  },
+                  "message": "sg allows inbound traffic with the internet (rule 0)."
+                },
+                {
+                  "code": "INTERNET_ROUTE",
+                  "params": {
+                    "zone": "public-b",
+                    "gateway": "igw"
+                  },
+                  "message": "public-b reaches the internet through igw."
+                },
+                {
+                  "code": "FILTER_ALLOWS",
+                  "params": {
+                    "filter": "sg",
+                    "direction": "inbound",
+                    "peer": "the internet",
+                    "rule": 0
+                  },
+                  "message": "sg allows inbound traffic with the internet (rule 0)."
+                },
+                {
+                  "code": "ANONYMOUS_ALLOWED",
+                  "params": {
+                    "component": "alb"
+                  },
+                  "message": "alb does not control access."
+                }
+              ]
+            },
+            {
+              "component": "app",
+              "exposure": "not-exposed",
+              "evidence": [
+                {
+                  "code": "ENDPOINT_NOT_PUBLIC",
+                  "params": {
+                    "component": "app"
+                  },
+                  "message": "app has no public endpoint."
+                }
+              ]
+            },
+            {
+              "component": "bastion",
+              "exposure": "exposed",
+              "ports": [
+                "http",
+                "https",
+                "ssh",
+                "mysql",
+                "postgresql"
+              ],
+              "evidence": [
+                {
+                  "code": "ENDPOINT_PUBLIC",
+                  "params": {
+                    "from": "the internet",
+                    "to": "bastion"
+                  },
+                  "message": "bastion has a public endpoint."
+                },
+                {
+                  "code": "INTERNET_ROUTE",
+                  "params": {
+                    "zone": "public-a",
+                    "gateway": "igw"
+                  },
+                  "message": "public-a reaches the internet through igw."
+                },
+                {
+                  "code": "FILTER_ALLOWS",
+                  "params": {
+                    "filter": "sg",
+                    "direction": "inbound",
+                    "peer": "the internet",
+                    "rule": 0
+                  },
+                  "message": "sg allows inbound traffic with the internet (rule 0)."
+                },
+                {
+                  "code": "INTERNET_ROUTE",
+                  "params": {
+                    "zone": "public-a",
+                    "gateway": "igw"
+                  },
+                  "message": "public-a reaches the internet through igw."
+                },
+                {
+                  "code": "FILTER_ALLOWS",
+                  "params": {
+                    "filter": "sg",
+                    "direction": "inbound",
+                    "peer": "the internet",
+                    "rule": 0
+                  },
+                  "message": "sg allows inbound traffic with the internet (rule 0)."
+                },
+                {
+                  "code": "INTERNET_ROUTE",
+                  "params": {
+                    "zone": "public-a",
+                    "gateway": "igw"
+                  },
+                  "message": "public-a reaches the internet through igw."
+                },
+                {
+                  "code": "FILTER_ALLOWS",
+                  "params": {
+                    "filter": "sg",
+                    "direction": "inbound",
+                    "peer": "the internet",
+                    "rule": 0
+                  },
+                  "message": "sg allows inbound traffic with the internet (rule 0)."
+                },
+                {
+                  "code": "INTERNET_ROUTE",
+                  "params": {
+                    "zone": "public-a",
+                    "gateway": "igw"
+                  },
+                  "message": "public-a reaches the internet through igw."
+                },
+                {
+                  "code": "FILTER_ALLOWS",
+                  "params": {
+                    "filter": "sg",
+                    "direction": "inbound",
+                    "peer": "the internet",
+                    "rule": 0
+                  },
+                  "message": "sg allows inbound traffic with the internet (rule 0)."
+                },
+                {
+                  "code": "INTERNET_ROUTE",
+                  "params": {
+                    "zone": "public-a",
+                    "gateway": "igw"
+                  },
+                  "message": "public-a reaches the internet through igw."
+                },
+                {
+                  "code": "FILTER_ALLOWS",
+                  "params": {
+                    "filter": "sg",
+                    "direction": "inbound",
+                    "peer": "the internet",
+                    "rule": 0
+                  },
+                  "message": "sg allows inbound traffic with the internet (rule 0)."
+                },
+                {
+                  "code": "ANONYMOUS_ALLOWED",
+                  "params": {
+                    "component": "bastion"
+                  },
+                  "message": "bastion does not control access."
+                }
+              ]
+            },
+            {
+              "component": "db",
+              "exposure": "not-exposed",
+              "evidence": [
+                {
+                  "code": "ENDPOINT_NOT_PUBLIC",
+                  "params": {
+                    "component": "db"
+                  },
+                  "message": "db has no public endpoint."
+                }
+              ]
+            },
+            {
+              "component": "orders",
+              "exposure": "not-exposed",
+              "evidence": [
+                {
+                  "code": "ENDPOINT_PUBLIC",
+                  "params": {
+                    "from": "the internet",
+                    "to": "orders"
+                  },
+                  "message": "orders has a public endpoint."
+                },
+                {
+                  "code": "PUBLIC_ACCESS_OFF",
+                  "params": {
+                    "component": "orders"
+                  },
+                  "message": "orders does not allow public access."
+                }
+              ]
+            }
+          ],
+          "assumptions": [],
+          "findings": [
+            {
+              "code": "EXPOSED_TO_INTERNET",
+              "severity": "info",
+              "subjects": [
+                "alb"
+              ],
+              "params": {
+                "component": "alb"
+              },
+              "message": "alb is directly accessible from the internet."
+            },
+            {
+              "code": "EXPOSED_TO_INTERNET",
+              "severity": "info",
+              "subjects": [
+                "bastion"
+              ],
+              "params": {
+                "component": "bastion"
+              },
+              "message": "bastion is directly accessible from the internet."
+            }
+          ]
+        },
+        {
+          "id": "availability",
+          "components": [
+            {
+              "component": "alb",
+              "availability": "redundant",
+              "domains": [
+                "eu-west-1a",
+                "eu-west-1b"
+              ],
+              "evidence": [
+                {
+                  "code": "FAILURE_DOMAINS",
+                  "params": {
+                    "component": "alb",
+                    "domains": "eu-west-1a, eu-west-1b"
+                  },
+                  "message": "alb runs in: eu-west-1a, eu-west-1b."
+                }
+              ]
+            },
+            {
+              "component": "app",
+              "availability": "redundant",
+              "domains": [
+                "eu-west-1a",
+                "eu-west-1b"
+              ],
+              "evidence": [
+                {
+                  "code": "FAILURE_DOMAINS",
+                  "params": {
+                    "component": "app",
+                    "domains": "eu-west-1a, eu-west-1b"
+                  },
+                  "message": "app runs in: eu-west-1a, eu-west-1b."
+                }
+              ]
+            },
+            {
+              "component": "bastion",
+              "availability": "single",
+              "domains": [
+                "eu-west-1a"
+              ],
+              "evidence": [
+                {
+                  "code": "SINGLE_INSTANCE",
+                  "params": {
+                    "component": "bastion"
+                  },
+                  "message": "bastion runs one instance, in one of the zones it is placed in."
+                },
+                {
+                  "code": "FAILURE_DOMAINS",
+                  "params": {
+                    "component": "bastion",
+                    "domains": "eu-west-1a"
+                  },
+                  "message": "bastion runs in: eu-west-1a."
+                }
+              ]
+            },
+            {
+              "component": "db",
+              "availability": "single",
+              "domains": [
+                "eu-west-1a"
+              ],
+              "evidence": [
+                {
+                  "code": "SINGLE_INSTANCE",
+                  "params": {
+                    "component": "db"
+                  },
+                  "message": "db runs one instance, in one of the zones it is placed in."
+                },
+                {
+                  "code": "FAILURE_DOMAINS",
+                  "params": {
+                    "component": "db",
+                    "domains": "eu-west-1a"
+                  },
+                  "message": "db runs in: eu-west-1a."
+                }
+              ]
+            },
+            {
+              "component": "igw",
+              "availability": "managed",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "MANAGED_SERVICE",
+                  "params": {
+                    "component": "igw"
+                  },
+                  "message": "The provider runs igw across failure domains."
+                }
+              ]
+            },
+            {
+              "component": "nat-a",
+              "availability": "single",
+              "domains": [
+                "eu-west-1a"
+              ],
+              "evidence": [
+                {
+                  "code": "FAILURE_DOMAINS",
+                  "params": {
+                    "component": "nat-a",
+                    "domains": "eu-west-1a"
+                  },
+                  "message": "nat-a runs in: eu-west-1a."
+                }
+              ]
+            },
+            {
+              "component": "orders",
+              "availability": "managed",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "MANAGED_SERVICE",
+                  "params": {
+                    "component": "orders"
+                  },
+                  "message": "The provider runs orders across failure domains."
+                }
+              ]
+            }
+          ],
+          "findings": [
+            {
+              "code": "AVAILABILITY_SINGLE_POINT",
+              "severity": "warning",
+              "subjects": [
+                "bastion"
+              ],
+              "params": {
+                "component": "bastion",
+                "domain": "eu-west-1a",
+                "intents": "users-bastion"
+              },
+              "message": "bastion runs in a single failure domain (eu-west-1a), and intents depend on it: users-bastion."
+            },
+            {
+              "code": "AVAILABILITY_SINGLE_POINT",
+              "severity": "warning",
+              "subjects": [
+                "db"
+              ],
+              "params": {
+                "component": "db",
+                "domain": "eu-west-1a",
+                "intents": "app-db"
+              },
+              "message": "db runs in a single failure domain (eu-west-1a), and intents depend on it: app-db."
+            },
+            {
+              "code": "AVAILABILITY_SINGLE_POINT",
+              "severity": "warning",
+              "subjects": [
+                "nat-a"
+              ],
+              "params": {
+                "component": "nat-a",
+                "domain": "eu-west-1a",
+                "intents": "app-orders"
+              },
+              "message": "nat-a runs in a single failure domain (eu-west-1a), and intents depend on it: app-orders."
+            },
+            {
+              "code": "AVAILABILITY_CROSS_DOMAIN",
+              "severity": "warning",
+              "subjects": [
+                "private-b"
+              ],
+              "params": {
+                "zone": "private-b",
+                "domain": "eu-west-1b",
+                "gateway": "nat-a",
+                "gatewayDomain": "eu-west-1a"
+              },
+              "message": "private-b (eu-west-1b) reaches the internet through nat-a in eu-west-1a; if eu-west-1a fails, private-b loses its outbound connections."
+            }
+          ]
+        }
+      ]
+    },
+    "detailed": {
+      "library": {
+        "name": "solution-validator",
+        "version": "<version>"
+      },
+      "vocabulary": 4,
+      "packs": [
+        {
+          "id": "aws",
+          "version": "0.5.0"
+        },
+        {
+          "id": "core",
+          "version": "0.2.0"
+        }
+      ],
+      "options": {
+        "level": "detailed",
+        "analyses": [
+          "model-validity",
+          "connection-validity",
+          "access",
+          "address-plan",
+          "availability"
+        ],
+        "assumptions": "strict"
+      },
+      "analyses": [
+        {
+          "id": "model-validity",
+          "valid": true,
+          "findings": []
+        },
+        {
+          "id": "connection-validity",
+          "intents": [
+            {
+              "intent": "alb-app",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.alb",
+                        "toType": "aws.autoscaling-group",
+                        "purpose": "invoke on port http",
+                        "rule": 0
+                      },
+                      "message": "aws.autoscaling-group accepts invoke on port http from aws.alb (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "app-db",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.autoscaling-group",
+                        "toType": "aws.rds",
+                        "purpose": "read on port postgresql",
+                        "rule": 0
+                      },
+                      "message": "aws.rds accepts read on port postgresql from aws.autoscaling-group (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "app-orders",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.autoscaling-group",
+                        "toType": "aws.dynamodb",
+                        "purpose": "read",
+                        "rule": 0
+                      },
+                      "message": "aws.dynamodb accepts read from aws.autoscaling-group (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "users-alb",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "aws.alb",
+                        "purpose": "port https",
+                        "rule": 0
+                      },
+                      "message": "aws.alb accepts port https from core.internet (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "users-bastion",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "aws.ec2",
+                        "purpose": "port ssh",
+                        "rule": 0
+                      },
+                      "message": "aws.ec2 accepts port ssh from core.internet (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "summary": {
+            "pass": 5,
+            "fail": 0,
+            "undecidable": 0
+          },
+          "findings": []
+        },
+        {
+          "id": "access",
+          "intents": [
+            {
+              "intent": "alb-app",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.alb",
+                        "toType": "aws.autoscaling-group",
+                        "purpose": "invoke on port http",
+                        "rule": 0
+                      },
+                      "message": "aws.autoscaling-group accepts invoke on port http from aws.alb (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "forwarding",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ROUTE_FOUND",
+                      "params": {
+                        "from": "alb",
+                        "to": "app"
+                      },
+                      "message": "alb has a route to app."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "SAME_NETWORK",
+                      "params": {
+                        "from": "alb",
+                        "to": "app",
+                        "network": "vpc"
+                      },
+                      "message": "alb and app are in the same network, vpc."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "sg",
+                        "direction": "outbound",
+                        "peer": "app",
+                        "rule": 1
+                      },
+                      "message": "sg allows outbound traffic with app (rule 1)."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "sg",
+                        "direction": "inbound",
+                        "peer": "alb",
+                        "rule": 0
+                      },
+                      "message": "sg allows inbound traffic with alb (rule 0)."
+                    },
+                    {
+                      "code": "SAME_NETWORK",
+                      "params": {
+                        "from": "alb",
+                        "to": "app",
+                        "network": "vpc"
+                      },
+                      "message": "alb and app are in the same network, vpc."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "sg",
+                        "direction": "outbound",
+                        "peer": "app",
+                        "rule": 1
+                      },
+                      "message": "sg allows outbound traffic with app (rule 1)."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "sg",
+                        "direction": "inbound",
+                        "peer": "alb",
+                        "rule": 0
+                      },
+                      "message": "sg allows inbound traffic with alb (rule 0)."
+                    },
+                    {
+                      "code": "SAME_NETWORK",
+                      "params": {
+                        "from": "alb",
+                        "to": "app",
+                        "network": "vpc"
+                      },
+                      "message": "alb and app are in the same network, vpc."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "sg",
+                        "direction": "outbound",
+                        "peer": "app",
+                        "rule": 1
+                      },
+                      "message": "sg allows outbound traffic with app (rule 1)."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "sg",
+                        "direction": "inbound",
+                        "peer": "alb",
+                        "rule": 0
+                      },
+                      "message": "sg allows inbound traffic with alb (rule 0)."
+                    },
+                    {
+                      "code": "SAME_NETWORK",
+                      "params": {
+                        "from": "alb",
+                        "to": "app",
+                        "network": "vpc"
+                      },
+                      "message": "alb and app are in the same network, vpc."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "sg",
+                        "direction": "outbound",
+                        "peer": "app",
+                        "rule": 1
+                      },
+                      "message": "sg allows outbound traffic with app (rule 1)."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "sg",
+                        "direction": "inbound",
+                        "peer": "alb",
+                        "rule": 0
+                      },
+                      "message": "sg allows inbound traffic with alb (rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "app-db",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.autoscaling-group",
+                        "toType": "aws.rds",
+                        "purpose": "read on port postgresql",
+                        "rule": 0
+                      },
+                      "message": "aws.rds accepts read on port postgresql from aws.autoscaling-group (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "SAME_NETWORK",
+                      "params": {
+                        "from": "app",
+                        "to": "db",
+                        "network": "vpc"
+                      },
+                      "message": "app and db are in the same network, vpc."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "sg",
+                        "direction": "outbound",
+                        "peer": "db",
+                        "rule": 1
+                      },
+                      "message": "sg allows outbound traffic with db (rule 1)."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "sg",
+                        "direction": "inbound",
+                        "peer": "app",
+                        "rule": 0
+                      },
+                      "message": "sg allows inbound traffic with app (rule 0)."
+                    },
+                    {
+                      "code": "SAME_NETWORK",
+                      "params": {
+                        "from": "app",
+                        "to": "db",
+                        "network": "vpc"
+                      },
+                      "message": "app and db are in the same network, vpc."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "sg",
+                        "direction": "outbound",
+                        "peer": "db",
+                        "rule": 1
+                      },
+                      "message": "sg allows outbound traffic with db (rule 1)."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "sg",
+                        "direction": "inbound",
+                        "peer": "app",
+                        "rule": 0
+                      },
+                      "message": "sg allows inbound traffic with app (rule 0)."
+                    },
+                    {
+                      "code": "SAME_NETWORK",
+                      "params": {
+                        "from": "app",
+                        "to": "db",
+                        "network": "vpc"
+                      },
+                      "message": "app and db are in the same network, vpc."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "sg",
+                        "direction": "outbound",
+                        "peer": "db",
+                        "rule": 1
+                      },
+                      "message": "sg allows outbound traffic with db (rule 1)."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "sg",
+                        "direction": "inbound",
+                        "peer": "app",
+                        "rule": 0
+                      },
+                      "message": "sg allows inbound traffic with app (rule 0)."
+                    },
+                    {
+                      "code": "SAME_NETWORK",
+                      "params": {
+                        "from": "app",
+                        "to": "db",
+                        "network": "vpc"
+                      },
+                      "message": "app and db are in the same network, vpc."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "sg",
+                        "direction": "outbound",
+                        "peer": "db",
+                        "rule": 1
+                      },
+                      "message": "sg allows outbound traffic with db (rule 1)."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "sg",
+                        "direction": "inbound",
+                        "peer": "app",
+                        "rule": 0
+                      },
+                      "message": "sg allows inbound traffic with app (rule 0)."
+                    },
+                    {
+                      "code": "PORT_OPEN",
+                      "params": {
+                        "to": "db",
+                        "port": "postgresql"
+                      },
+                      "message": "db listens on port postgresql."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "app-orders",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.autoscaling-group",
+                        "toType": "aws.dynamodb",
+                        "purpose": "read",
+                        "rule": 0
+                      },
+                      "message": "aws.dynamodb accepts read from aws.autoscaling-group (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "NAT_ROUTE",
+                      "params": {
+                        "zone": "private-a",
+                        "gateway": "nat-a"
+                      },
+                      "message": "private-a reaches the internet through nat-a, for outbound connections only."
+                    },
+                    {
+                      "code": "INTERNET_ROUTE",
+                      "params": {
+                        "zone": "public-a",
+                        "gateway": "igw"
+                      },
+                      "message": "public-a reaches the internet through igw."
+                    },
+                    {
+                      "code": "ENDPOINT_PUBLIC",
+                      "params": {
+                        "from": "app",
+                        "to": "orders"
+                      },
+                      "message": "orders has a public endpoint."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "sg",
+                        "direction": "outbound",
+                        "peer": "orders",
+                        "rule": 1
+                      },
+                      "message": "sg allows outbound traffic with orders (rule 1)."
+                    },
+                    {
+                      "code": "NAT_ROUTE",
+                      "params": {
+                        "zone": "private-b",
+                        "gateway": "nat-a"
+                      },
+                      "message": "private-b reaches the internet through nat-a, for outbound connections only."
+                    },
+                    {
+                      "code": "INTERNET_ROUTE",
+                      "params": {
+                        "zone": "public-a",
+                        "gateway": "igw"
+                      },
+                      "message": "public-a reaches the internet through igw."
+                    },
+                    {
+                      "code": "ENDPOINT_PUBLIC",
+                      "params": {
+                        "from": "app",
+                        "to": "orders"
+                      },
+                      "message": "orders has a public endpoint."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "sg",
+                        "direction": "outbound",
+                        "peer": "orders",
+                        "rule": 1
+                      },
+                      "message": "sg allows outbound traffic with orders (rule 1)."
+                    }
+                  ]
+                },
+                {
+                  "check": "authorization",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "GRANT_FOUND",
+                      "params": {
+                        "from": "app",
+                        "to": "orders",
+                        "access": "read",
+                        "action": "read"
+                      },
+                      "message": "app has read access to orders, which allows read."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "users-alb",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "aws.alb",
+                        "purpose": "port https",
+                        "rule": 0
+                      },
+                      "message": "aws.alb accepts port https from core.internet (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "INTERNET_ROUTE",
+                      "params": {
+                        "zone": "public-a",
+                        "gateway": "igw"
+                      },
+                      "message": "public-a reaches the internet through igw."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "sg",
+                        "direction": "inbound",
+                        "peer": "users",
+                        "rule": 0
+                      },
+                      "message": "sg allows inbound traffic with users (rule 0)."
+                    },
+                    {
+                      "code": "INTERNET_ROUTE",
+                      "params": {
+                        "zone": "public-b",
+                        "gateway": "igw"
+                      },
+                      "message": "public-b reaches the internet through igw."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "sg",
+                        "direction": "inbound",
+                        "peer": "users",
+                        "rule": 0
+                      },
+                      "message": "sg allows inbound traffic with users (rule 0)."
+                    },
+                    {
+                      "code": "PORT_OPEN",
+                      "params": {
+                        "to": "alb",
+                        "port": "https"
+                      },
+                      "message": "alb listens on port https."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "users-bastion",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "aws.ec2",
+                        "purpose": "port ssh",
+                        "rule": 0
+                      },
+                      "message": "aws.ec2 accepts port ssh from core.internet (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "INTERNET_ROUTE",
+                      "params": {
+                        "zone": "public-a",
+                        "gateway": "igw"
+                      },
+                      "message": "public-a reaches the internet through igw."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "sg",
+                        "direction": "inbound",
+                        "peer": "users",
+                        "rule": 0
+                      },
+                      "message": "sg allows inbound traffic with users (rule 0)."
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "summary": {
+            "pass": 5,
+            "fail": 0,
+            "undecidable": 0
+          },
+          "exposure": [
+            {
+              "component": "alb",
+              "exposure": "exposed",
+              "ports": [
+                "http",
+                "https"
+              ],
+              "evidence": [
+                {
+                  "code": "ENDPOINT_PUBLIC",
+                  "params": {
+                    "from": "the internet",
+                    "to": "alb"
+                  },
+                  "message": "alb has a public endpoint."
+                },
+                {
+                  "code": "INTERNET_ROUTE",
+                  "params": {
+                    "zone": "public-a",
+                    "gateway": "igw"
+                  },
+                  "message": "public-a reaches the internet through igw."
+                },
+                {
+                  "code": "FILTER_ALLOWS",
+                  "params": {
+                    "filter": "sg",
+                    "direction": "inbound",
+                    "peer": "the internet",
+                    "rule": 0
+                  },
+                  "message": "sg allows inbound traffic with the internet (rule 0)."
+                },
+                {
+                  "code": "INTERNET_ROUTE",
+                  "params": {
+                    "zone": "public-b",
+                    "gateway": "igw"
+                  },
+                  "message": "public-b reaches the internet through igw."
+                },
+                {
+                  "code": "FILTER_ALLOWS",
+                  "params": {
+                    "filter": "sg",
+                    "direction": "inbound",
+                    "peer": "the internet",
+                    "rule": 0
+                  },
+                  "message": "sg allows inbound traffic with the internet (rule 0)."
+                },
+                {
+                  "code": "INTERNET_ROUTE",
+                  "params": {
+                    "zone": "public-a",
+                    "gateway": "igw"
+                  },
+                  "message": "public-a reaches the internet through igw."
+                },
+                {
+                  "code": "FILTER_ALLOWS",
+                  "params": {
+                    "filter": "sg",
+                    "direction": "inbound",
+                    "peer": "the internet",
+                    "rule": 0
+                  },
+                  "message": "sg allows inbound traffic with the internet (rule 0)."
+                },
+                {
+                  "code": "INTERNET_ROUTE",
+                  "params": {
+                    "zone": "public-b",
+                    "gateway": "igw"
+                  },
+                  "message": "public-b reaches the internet through igw."
+                },
+                {
+                  "code": "FILTER_ALLOWS",
+                  "params": {
+                    "filter": "sg",
+                    "direction": "inbound",
+                    "peer": "the internet",
+                    "rule": 0
+                  },
+                  "message": "sg allows inbound traffic with the internet (rule 0)."
+                },
+                {
+                  "code": "ANONYMOUS_ALLOWED",
+                  "params": {
+                    "component": "alb"
+                  },
+                  "message": "alb does not control access."
+                }
+              ]
+            },
+            {
+              "component": "app",
+              "exposure": "not-exposed",
+              "evidence": [
+                {
+                  "code": "ENDPOINT_NOT_PUBLIC",
+                  "params": {
+                    "component": "app"
+                  },
+                  "message": "app has no public endpoint."
+                }
+              ]
+            },
+            {
+              "component": "bastion",
+              "exposure": "exposed",
+              "ports": [
+                "http",
+                "https",
+                "ssh",
+                "mysql",
+                "postgresql"
+              ],
+              "evidence": [
+                {
+                  "code": "ENDPOINT_PUBLIC",
+                  "params": {
+                    "from": "the internet",
+                    "to": "bastion"
+                  },
+                  "message": "bastion has a public endpoint."
+                },
+                {
+                  "code": "INTERNET_ROUTE",
+                  "params": {
+                    "zone": "public-a",
+                    "gateway": "igw"
+                  },
+                  "message": "public-a reaches the internet through igw."
+                },
+                {
+                  "code": "FILTER_ALLOWS",
+                  "params": {
+                    "filter": "sg",
+                    "direction": "inbound",
+                    "peer": "the internet",
+                    "rule": 0
+                  },
+                  "message": "sg allows inbound traffic with the internet (rule 0)."
+                },
+                {
+                  "code": "INTERNET_ROUTE",
+                  "params": {
+                    "zone": "public-a",
+                    "gateway": "igw"
+                  },
+                  "message": "public-a reaches the internet through igw."
+                },
+                {
+                  "code": "FILTER_ALLOWS",
+                  "params": {
+                    "filter": "sg",
+                    "direction": "inbound",
+                    "peer": "the internet",
+                    "rule": 0
+                  },
+                  "message": "sg allows inbound traffic with the internet (rule 0)."
+                },
+                {
+                  "code": "INTERNET_ROUTE",
+                  "params": {
+                    "zone": "public-a",
+                    "gateway": "igw"
+                  },
+                  "message": "public-a reaches the internet through igw."
+                },
+                {
+                  "code": "FILTER_ALLOWS",
+                  "params": {
+                    "filter": "sg",
+                    "direction": "inbound",
+                    "peer": "the internet",
+                    "rule": 0
+                  },
+                  "message": "sg allows inbound traffic with the internet (rule 0)."
+                },
+                {
+                  "code": "INTERNET_ROUTE",
+                  "params": {
+                    "zone": "public-a",
+                    "gateway": "igw"
+                  },
+                  "message": "public-a reaches the internet through igw."
+                },
+                {
+                  "code": "FILTER_ALLOWS",
+                  "params": {
+                    "filter": "sg",
+                    "direction": "inbound",
+                    "peer": "the internet",
+                    "rule": 0
+                  },
+                  "message": "sg allows inbound traffic with the internet (rule 0)."
+                },
+                {
+                  "code": "INTERNET_ROUTE",
+                  "params": {
+                    "zone": "public-a",
+                    "gateway": "igw"
+                  },
+                  "message": "public-a reaches the internet through igw."
+                },
+                {
+                  "code": "FILTER_ALLOWS",
+                  "params": {
+                    "filter": "sg",
+                    "direction": "inbound",
+                    "peer": "the internet",
+                    "rule": 0
+                  },
+                  "message": "sg allows inbound traffic with the internet (rule 0)."
+                },
+                {
+                  "code": "ANONYMOUS_ALLOWED",
+                  "params": {
+                    "component": "bastion"
+                  },
+                  "message": "bastion does not control access."
+                }
+              ]
+            },
+            {
+              "component": "db",
+              "exposure": "not-exposed",
+              "evidence": [
+                {
+                  "code": "ENDPOINT_NOT_PUBLIC",
+                  "params": {
+                    "component": "db"
+                  },
+                  "message": "db has no public endpoint."
+                }
+              ]
+            },
+            {
+              "component": "orders",
+              "exposure": "not-exposed",
+              "evidence": [
+                {
+                  "code": "ENDPOINT_PUBLIC",
+                  "params": {
+                    "from": "the internet",
+                    "to": "orders"
+                  },
+                  "message": "orders has a public endpoint."
+                },
+                {
+                  "code": "PUBLIC_ACCESS_OFF",
+                  "params": {
+                    "component": "orders"
+                  },
+                  "message": "orders does not allow public access."
+                }
+              ]
+            }
+          ],
+          "assumptions": [],
+          "findings": [
+            {
+              "code": "EXPOSED_TO_INTERNET",
+              "severity": "info",
+              "subjects": [
+                "alb"
+              ],
+              "params": {
+                "component": "alb"
+              },
+              "message": "alb is directly accessible from the internet."
+            },
+            {
+              "code": "EXPOSED_TO_INTERNET",
+              "severity": "info",
+              "subjects": [
+                "bastion"
+              ],
+              "params": {
+                "component": "bastion"
+              },
+              "message": "bastion is directly accessible from the internet."
+            }
+          ]
+        },
+        {
+          "id": "address-plan",
+          "zones": [
+            {
+              "zone": "private-a",
+              "parent": "vpc"
+            },
+            {
+              "zone": "private-b",
+              "parent": "vpc"
+            },
+            {
+              "zone": "public-a",
+              "parent": "vpc"
+            },
+            {
+              "zone": "public-b",
+              "parent": "vpc"
+            },
+            {
+              "zone": "vpc"
+            }
+          ],
+          "findings": [
+            {
+              "code": "ADDRESS_SPACE_MISSING",
+              "severity": "warning",
+              "subjects": [
+                "private-a"
+              ],
+              "params": {
+                "zone": "private-a"
+              },
+              "message": "Zone private-a has no address space, so its address plan cannot be checked."
+            },
+            {
+              "code": "ADDRESS_SPACE_MISSING",
+              "severity": "warning",
+              "subjects": [
+                "private-b"
+              ],
+              "params": {
+                "zone": "private-b"
+              },
+              "message": "Zone private-b has no address space, so its address plan cannot be checked."
+            },
+            {
+              "code": "ADDRESS_SPACE_MISSING",
+              "severity": "warning",
+              "subjects": [
+                "public-a"
+              ],
+              "params": {
+                "zone": "public-a"
+              },
+              "message": "Zone public-a has no address space, so its address plan cannot be checked."
+            },
+            {
+              "code": "ADDRESS_SPACE_MISSING",
+              "severity": "warning",
+              "subjects": [
+                "public-b"
+              ],
+              "params": {
+                "zone": "public-b"
+              },
+              "message": "Zone public-b has no address space, so its address plan cannot be checked."
+            },
+            {
+              "code": "ADDRESS_SPACE_MISSING",
+              "severity": "warning",
+              "subjects": [
+                "vpc"
+              ],
+              "params": {
+                "zone": "vpc"
+              },
+              "message": "Zone vpc has no address space, so its address plan cannot be checked."
+            }
+          ]
+        },
+        {
+          "id": "availability",
+          "components": [
+            {
+              "component": "alb",
+              "availability": "redundant",
+              "domains": [
+                "eu-west-1a",
+                "eu-west-1b"
+              ],
+              "evidence": [
+                {
+                  "code": "FAILURE_DOMAINS",
+                  "params": {
+                    "component": "alb",
+                    "domains": "eu-west-1a, eu-west-1b"
+                  },
+                  "message": "alb runs in: eu-west-1a, eu-west-1b."
+                }
+              ]
+            },
+            {
+              "component": "app",
+              "availability": "redundant",
+              "domains": [
+                "eu-west-1a",
+                "eu-west-1b"
+              ],
+              "evidence": [
+                {
+                  "code": "FAILURE_DOMAINS",
+                  "params": {
+                    "component": "app",
+                    "domains": "eu-west-1a, eu-west-1b"
+                  },
+                  "message": "app runs in: eu-west-1a, eu-west-1b."
+                }
+              ]
+            },
+            {
+              "component": "bastion",
+              "availability": "single",
+              "domains": [
+                "eu-west-1a"
+              ],
+              "evidence": [
+                {
+                  "code": "SINGLE_INSTANCE",
+                  "params": {
+                    "component": "bastion"
+                  },
+                  "message": "bastion runs one instance, in one of the zones it is placed in."
+                },
+                {
+                  "code": "FAILURE_DOMAINS",
+                  "params": {
+                    "component": "bastion",
+                    "domains": "eu-west-1a"
+                  },
+                  "message": "bastion runs in: eu-west-1a."
+                }
+              ]
+            },
+            {
+              "component": "db",
+              "availability": "single",
+              "domains": [
+                "eu-west-1a"
+              ],
+              "evidence": [
+                {
+                  "code": "SINGLE_INSTANCE",
+                  "params": {
+                    "component": "db"
+                  },
+                  "message": "db runs one instance, in one of the zones it is placed in."
+                },
+                {
+                  "code": "FAILURE_DOMAINS",
+                  "params": {
+                    "component": "db",
+                    "domains": "eu-west-1a"
+                  },
+                  "message": "db runs in: eu-west-1a."
+                }
+              ]
+            },
+            {
+              "component": "igw",
+              "availability": "managed",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "MANAGED_SERVICE",
+                  "params": {
+                    "component": "igw"
+                  },
+                  "message": "The provider runs igw across failure domains."
+                }
+              ]
+            },
+            {
+              "component": "nat-a",
+              "availability": "single",
+              "domains": [
+                "eu-west-1a"
+              ],
+              "evidence": [
+                {
+                  "code": "FAILURE_DOMAINS",
+                  "params": {
+                    "component": "nat-a",
+                    "domains": "eu-west-1a"
+                  },
+                  "message": "nat-a runs in: eu-west-1a."
+                }
+              ]
+            },
+            {
+              "component": "orders",
+              "availability": "managed",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "MANAGED_SERVICE",
+                  "params": {
+                    "component": "orders"
+                  },
+                  "message": "The provider runs orders across failure domains."
+                }
+              ]
+            }
+          ],
+          "findings": [
+            {
+              "code": "AVAILABILITY_SINGLE_POINT",
+              "severity": "warning",
+              "subjects": [
+                "bastion"
+              ],
+              "params": {
+                "component": "bastion",
+                "domain": "eu-west-1a",
+                "intents": "users-bastion"
+              },
+              "message": "bastion runs in a single failure domain (eu-west-1a), and intents depend on it: users-bastion."
+            },
+            {
+              "code": "AVAILABILITY_SINGLE_POINT",
+              "severity": "warning",
+              "subjects": [
+                "db"
+              ],
+              "params": {
+                "component": "db",
+                "domain": "eu-west-1a",
+                "intents": "app-db"
+              },
+              "message": "db runs in a single failure domain (eu-west-1a), and intents depend on it: app-db."
+            },
+            {
+              "code": "AVAILABILITY_SINGLE_POINT",
+              "severity": "warning",
+              "subjects": [
+                "nat-a"
+              ],
+              "params": {
+                "component": "nat-a",
+                "domain": "eu-west-1a",
+                "intents": "app-orders"
+              },
+              "message": "nat-a runs in a single failure domain (eu-west-1a), and intents depend on it: app-orders."
+            },
+            {
+              "code": "AVAILABILITY_CROSS_DOMAIN",
+              "severity": "warning",
+              "subjects": [
+                "private-b"
+              ],
+              "params": {
+                "zone": "private-b",
+                "domain": "eu-west-1b",
+                "gateway": "nat-a",
+                "gatewayDomain": "eu-west-1a"
+              },
+              "message": "private-b (eu-west-1b) reaches the internet through nat-a in eu-west-1a; if eu-west-1a fails, private-b loses its outbound connections."
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

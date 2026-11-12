@@ -94,6 +94,15 @@ Checks the address plan: zones' IPv4 address spaces, their nesting and overlaps,
 | `ROUTE_DESTINATION_INVALID` | error | Route {index} of {router} has the destination {destination}, which is neither internet nor an IPv4 range. | Route destinations are internet or IPv4 ranges in CIDR notation. |
 | `ROUTE_SHADOWED` | warning | Route {destination} of {router} lies within {space}, the address space of {network}; the local route takes that traffic. | A route inside the network's own address space never applies. |
 
+## Analysis: availability
+
+Failure domains per component, single points of failure on the paths of passing intents, and zones tied to another failure domain.
+
+| Code | Severity | Message template | Meaning |
+|---|---|---|---|
+| `AVAILABILITY_SINGLE_POINT` | warning | {component} runs in a single failure domain ({domain}), and intents depend on it: {intents}. | A component that passing intents depend on would fail with its failure domain. |
+| `AVAILABILITY_CROSS_DOMAIN` | warning | {zone} ({domain}) reaches the internet through {gateway} in {gatewayDomain}; if {gatewayDomain} fails, {zone} loses its outbound connections. | An outbound-only gateway in another failure domain ties the zone to that domain. |
+
 ## Tasks and requirements
 
 Reported by `parseTask` for invalid tasks and by `checkRequirements` for provided components and requirement verdicts.
@@ -168,6 +177,14 @@ Evidence explains an intent's verdict: each check lists the evidence it used. Ev
 | `ENDPOINT_NOT_PUBLIC` | {component} has no public endpoint. | Its endpoint is private or it has none, so it cannot be reached from outside. |
 | `PUBLIC_ACCESS_ON` | {component} allows public {actions}. | Anonymous callers may perform these actions. |
 | `PUBLIC_ACCESS_OFF` | {component} does not allow public access. | Anonymous callers may not use the component. |
+| `MANAGED_SERVICE` | The provider runs {component} across failure domains. | The type is a managed, multi-domain service. |
+| `NOT_PLACED` | {component} is not placed in any zone, so its failure domains are not known. | Only placed components have failure domains. |
+| `FAILURE_DOMAIN_UNKNOWN` | {zone}, where {component} is placed, has no failure domain. | Neither the zone nor a zone it is placed in declares a failure domain. |
+| `SINGLE_INSTANCE` | {component} runs one instance, in one of the zones it is placed in. | The type's redundancy spread is off, for example a database without a standby. |
+| `FAILURE_DOMAINS` | {component} runs in: {domains}. | The failure domains the component spans. |
+| `REDUNDANT` | {component} survives the loss of a failure domain ({availability}). | The component is managed by the provider or runs in two or more failure domains. |
+| `NOT_REDUNDANT` | {component} runs in a single failure domain. | The component would fail with its failure domain. |
+| `REDUNDANCY_UNKNOWN` | The failure domains of {component} are not known. | The availability analysis could not decide. |
 | `SELECTOR_EMPTY` | No component matches {selector}. | The selector matches nothing in the solution. |
 | `ANALYSIS_MISSING` | The analysis result has no {analysis} report. | The requirement needs an analysis that was not run. |
 | `PATH_FOUND` | Reachable: {path}. | A chain of intents with a pass verdict leads from a source to a target. |

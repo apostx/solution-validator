@@ -1,10 +1,10 @@
 {
   "$schema": "../schemas/pack.schema.json",
   "id": "aws",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "label": "Amazon Web Services",
   "description": "Serverless (API Gateway, Lambda, DynamoDB, S3), web (CloudFront, Application Load Balancer, EC2, Auto Scaling, RDS) and networking (VPC, subnets, gateways, VPC endpoints, route tables, security groups, network ACLs).",
-  "vocabulary": 3,
+  "vocabulary": 4,
   "requires": {
     "core": "^0.2.0"
   },
@@ -26,6 +26,9 @@
             "property": "routes"
           },
           "authorizes": true
+        },
+        "redundancy": {
+          "managed": true
         }
       },
       "accepts": [
@@ -85,6 +88,9 @@
           "levels": {
             "invoke": ["invoke"]
           }
+        },
+        "redundancy": {
+          "managed": true
         }
       },
       "accepts": [
@@ -153,6 +159,9 @@
             "write": ["write"],
             "read-write": ["read", "write"]
           }
+        },
+        "redundancy": {
+          "managed": true
         }
       },
       "accepts": [
@@ -184,6 +193,9 @@
             "property": "publicAccess"
           },
           "publicActions": ["read"]
+        },
+        "redundancy": {
+          "managed": true
         }
       },
       "accepts": [
@@ -247,6 +259,9 @@
         "zone": {
           "addressSpace": {
             "property": "cidrBlock"
+          },
+          "failureDomain": {
+            "property": "availabilityZone"
           }
         }
       },
@@ -257,6 +272,12 @@
           "title": "CIDR block",
           "description": "The subnet's IPv4 address range within its VPC, for example 10.0.1.0/24. Used by the detailed analysis level.",
           "pattern": "^([0-9]{1,3}\\.){3}[0-9]{1,3}/[0-9]{1,2}$"
+        },
+        "availabilityZone": {
+          "type": "string",
+          "title": "Availability zone",
+          "description": "For example eu-west-1a. Used by the availability analysis.",
+          "minLength": 1
         }
       }
     },
@@ -271,6 +292,9 @@
           "connects": {
             "property": "attachedTo"
           }
+        },
+        "redundancy": {
+          "managed": true
         }
       },
       "accepts": [],
@@ -291,7 +315,7 @@
     {
       "id": "aws.nat-gateway",
       "label": "NAT gateway",
-      "description": "Lets private subnets open connections to the internet, but not the other way round. Place it in a public subnet.",
+      "description": "Lets private subnets open connections to the internet, but not the other way round. Place it in a public subnet. A NAT gateway lives in one availability zone; use one per zone for resilience.",
       "category": "network",
       "traits": {
         "gateway": {
@@ -592,6 +616,9 @@
             "property": "origins"
           },
           "authorizes": true
+        },
+        "redundancy": {
+          "managed": true
         }
       },
       "accepts": [
@@ -627,7 +654,7 @@
     {
       "id": "aws.alb",
       "label": "Application Load Balancer",
-      "description": "Distributes HTTP(S) requests to targets such as Auto Scaling groups, EC2 instances or Lambda functions. Place it in subnets and attach security groups to it.",
+      "description": "Distributes HTTP(S) requests to targets such as Auto Scaling groups, EC2 instances or Lambda functions. Place it in subnets and attach security groups to it. It runs in every subnet it is placed in; use subnets in two or more availability zones.",
       "category": "edge",
       "traits": {
         "endpoint": {
@@ -695,6 +722,9 @@
           "grants": {
             "property": "permissions"
           }
+        },
+        "redundancy": {
+          "spread": false
         }
       },
       "accepts": [
@@ -752,6 +782,11 @@
             "property": "endpoint"
           },
           "ports": ["postgresql", "mysql"]
+        },
+        "redundancy": {
+          "spread": {
+            "property": "multiAz"
+          }
         }
       },
       "accepts": [
@@ -776,6 +811,12 @@
           "title": "Engine",
           "enum": ["postgresql", "mysql"],
           "description": "Informational; both engines' ports are accepted."
+        },
+        "multiAz": {
+          "type": "boolean",
+          "title": "Multi-AZ",
+          "description": "A standby in another availability zone of the DB subnet group.",
+          "default": false
         }
       }
     },
@@ -793,6 +834,9 @@
           "services": {
             "property": "services"
           }
+        },
+        "redundancy": {
+          "managed": true
         }
       },
       "accepts": [],

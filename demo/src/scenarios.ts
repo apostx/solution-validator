@@ -2,6 +2,7 @@ import type { Pack, Solution, Task } from "solution-validator";
 import awsPack from "solution-validator/packs/aws";
 import corePack from "solution-validator/packs/core";
 import connectionMistakes from "./scenarios/connection-mistakes.json";
+import highAvailability from "./scenarios/high-availability.json";
 import serverlessOrders from "./scenarios/serverless-orders.json";
 import webAndWorkers from "./scenarios/web-and-workers.json";
 import webTier from "./scenarios/web-tier.json";
@@ -27,4 +28,5 @@ export const SCENARIOS: Scenario[] = [
   connectionMistakes as Scenario,
   webAndWorkers as Scenario,
   webTier as Scenario,
+  highAvailability as Scenario,
 ];

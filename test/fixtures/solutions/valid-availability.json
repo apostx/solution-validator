@@ -1,0 +1,185 @@
+{
+  "$schema": "../../../schemas/solution.schema.json",
+  "schemaVersion": 1,
+  "packs": ["core", "aws"],
+  "components": [
+    {
+      "id": "users",
+      "type": "core.internet"
+    },
+    {
+      "id": "vpc",
+      "type": "aws.vpc"
+    },
+    {
+      "id": "public-a",
+      "type": "aws.subnet",
+      "placement": ["vpc"],
+      "properties": {
+        "availabilityZone": "eu-west-1a"
+      }
+    },
+    {
+      "id": "public-b",
+      "type": "aws.subnet",
+      "placement": ["vpc"],
+      "properties": {
+        "availabilityZone": "eu-west-1b"
+      }
+    },
+    {
+      "id": "private-a",
+      "type": "aws.subnet",
+      "placement": ["vpc"],
+      "properties": {
+        "availabilityZone": "eu-west-1a"
+      }
+    },
+    {
+      "id": "private-b",
+      "type": "aws.subnet",
+      "placement": ["vpc"],
+      "properties": {
+        "availabilityZone": "eu-west-1b"
+      }
+    },
+    {
+      "id": "igw",
+      "type": "aws.internet-gateway",
+      "properties": {
+        "attachedTo": ["vpc"]
+      }
+    },
+    {
+      "id": "nat-a",
+      "type": "aws.nat-gateway",
+      "placement": ["public-a"]
+    },
+    {
+      "id": "public-rt",
+      "type": "aws.route-table",
+      "properties": {
+        "routes": [
+          {
+            "destination": "internet",
+            "gateway": "igw"
+          }
+        ],
+        "associations": ["public-a", "public-b"]
+      }
+    },
+    {
+      "id": "private-rt",
+      "type": "aws.route-table",
+      "properties": {
+        "routes": [
+          {
+            "destination": "internet",
+            "gateway": "nat-a"
+          }
+        ],
+        "associations": ["private-a", "private-b"]
+      }
+    },
+    {
+      "id": "alb",
+      "type": "aws.alb",
+      "placement": ["public-a", "public-b"],
+      "properties": {
+        "scheme": "public",
+        "targets": [
+          {
+            "target": "app"
+          }
+        ]
+      }
+    },
+    {
+      "id": "app",
+      "type": "aws.autoscaling-group",
+      "placement": ["private-a", "private-b"],
+      "properties": {
+        "endpoint": "private",
+        "permissions": [
+          {
+            "resource": "orders",
+            "access": "read"
+          }
+        ]
+      }
+    },
+    {
+      "id": "db",
+      "type": "aws.rds",
+      "placement": ["private-a", "private-b"],
+      "properties": {
+        "endpoint": "private",
+        "multiAz": false
+      }
+    },
+    {
+      "id": "bastion",
+      "type": "aws.ec2",
+      "placement": ["public-a"],
+      "properties": {
+        "endpoint": "public",
+        "permissions": []
+      }
+    },
+    {
+      "id": "orders",
+      "type": "aws.dynamodb"
+    },
+    {
+      "id": "sg",
+      "type": "aws.security-group",
+      "properties": {
+        "rules": [
+          {
+            "direction": "inbound",
+            "peer": "any"
+          },
+          {
+            "direction": "outbound",
+            "peer": "any"
+          }
+        ],
+        "attachedTo": ["alb", "app", "db", "bastion"]
+      }
+    }
+  ],
+  "intents": [
+    {
+      "id": "users-alb",
+      "from": "users",
+      "to": "alb",
+      "port": "https"
+    },
+    {
+      "id": "alb-app",
+      "from": "alb",
+      "to": "app",
+      "action": "invoke",
+      "port": "http"
+    },
+    {
+      "id": "app-db",
+      "from": "app",
+      "to": "db",
+      "action": "read",
+      "port": "postgresql"
+    },
+    {
+      "id": "app-orders",
+      "from": "app",
+      "to": "orders",
+      "action": "read"
+    },
+    {
+      "id": "users-bastion",
+      "from": "users",
+      "to": "bastion",
+      "port": "ssh"
+    }
+  ]
+}

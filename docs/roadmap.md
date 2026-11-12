@@ -1,6 +1,6 @@
 # Roadmap
 
-> **Status:** Approved (initial) · 2026-11-10 · **Current iteration: 8 — Availability analysis** (Iterations 7–10 approved in this order)
+> **Status:** Approved (initial) · 2026-11-10 · **Current iteration: 9 — Azure pack** (Iterations 7–10 approved in this order)
 >
 > Iterations 0–4 are approved. Only the current iteration is a commitment. The scope of later iterations may still change and is confirmed before each one starts. Open questions (Q1, Q2, …) are listed in [design.md](design.md#12-open-questions).
 
@@ -40,7 +40,7 @@ Trade-off: the vision's own example (network placement, Security Group and ACL r
 | 5 | Network traits | 0.5.0 | Q15, Q16, Q17 | Done |
 | 6 | Detailed level (IPv4) | 0.6.0 | Q18, Q19, Q20 | Done |
 | 7 | More AWS types | 0.7.0 | Q21 | Done |
-| 8 | Availability analysis | 0.8.0 | to be scoped | Approved |
+| 8 | Availability analysis | 0.8.0 | Q22 | Done |
 | 9 | Azure pack | 0.9.0 | to be scoped | Approved |
 | 10 | On-premises pack | 0.10.0 | to be scoped | Approved |
 
@@ -134,7 +134,9 @@ The product owner approved Iterations 7–10 in this order after Iteration 6.
 
 ### Iteration 8 — Availability analysis (0.8.0)
 
-Availability facts: which failure domains (for example availability zones) each component spans, and single points of failure on the paths that intents use. Scoped when it starts.
+- **Library:** trait vocabulary 4 adds `zone.failureDomain` and the `redundancy` trait (Q22). The `availability` analysis lists the failure domains each running component spans and warns about single points of failure on the paths of passing intents and about zones that depend on a gateway in another failure domain. Tasks get a `redundant` requirement, and `collect` returns each component's availability.
+- **Packs:** `aws` 0.5.0 binds a subnet's `availabilityZone`, marks regional services as managed, and adds RDS `multiAz`.
+- **Demo:** availability badges on the canvas and a high-availability scenario.
 
 ### Iteration 9 — Azure pack (0.9.0)
 

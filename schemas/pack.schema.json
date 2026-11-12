@@ -332,6 +332,26 @@
                         "additionalProperties": false
                       }
                     ]
+                  },
+                  "failureDomain": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "object",
+                        "required": [
+                          "property"
+                        ],
+                        "properties": {
+                          "property": {
+                            "type": "string",
+                            "pattern": "^[a-z][A-Za-z0-9]*$"
+                          }
+                        },
+                        "additionalProperties": false
+                      }
+                    ]
                   }
                 },
                 "additionalProperties": false
@@ -522,6 +542,35 @@
                       {
                         "type": "integer",
                         "minimum": 0
+                      },
+                      {
+                        "type": "object",
+                        "required": [
+                          "property"
+                        ],
+                        "properties": {
+                          "property": {
+                            "type": "string",
+                            "pattern": "^[a-z][A-Za-z0-9]*$"
+                          }
+                        },
+                        "additionalProperties": false
+                      }
+                    ]
+                  }
+                },
+                "additionalProperties": false
+              },
+              "redundancy": {
+                "type": "object",
+                "properties": {
+                  "managed": {
+                    "type": "boolean"
+                  },
+                  "spread": {
+                    "anyOf": [
+                      {
+                        "type": "boolean"
                       },
                       {
                         "type": "object",

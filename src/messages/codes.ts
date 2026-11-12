@@ -9,6 +9,7 @@ export type FindingSource =
   | "connection-validity"
   | "access"
   | "address-plan"
+  | "availability"
   | "requirements";
 
 export interface FindingCodeDefinition {
@@ -353,6 +354,22 @@ export const FINDING_CODES = {
     description: "A route inside the network's own address space never applies.",
   },
 
+  // Analysis: availability
+  AVAILABILITY_SINGLE_POINT: {
+    severity: "warning",
+    source: "availability",
+    template:
+      "{component} runs in a single failure domain ({domain}), and intents depend on it: {intents}.",
+    description: "A component that passing intents depend on would fail with its failure domain.",
+  },
+  AVAILABILITY_CROSS_DOMAIN: {
+    severity: "warning",
+    source: "availability",
+    template:
+      "{zone} ({domain}) reaches the internet through {gateway} in {gatewayDomain}; if {gatewayDomain} fails, {zone} loses its outbound connections.",
+    description: "An outbound-only gateway in another failure domain ties the zone to that domain.",
+  },
+
   // Tasks and requirement checks
   TASK_PACK_UNKNOWN: {
     severity: "error",
@@ -639,6 +656,38 @@ export const EVIDENCE_CODES = {
   PUBLIC_ACCESS_OFF: {
     template: "{component} does not allow public access.",
     description: "Anonymous callers may not use the component.",
+  },
+  MANAGED_SERVICE: {
+    template: "The provider runs {component} across failure domains.",
+    description: "The type is a managed, multi-domain service.",
+  },
+  NOT_PLACED: {
+    template: "{component} is not placed in any zone, so its failure domains are not known.",
+    description: "Only placed components have failure domains.",
+  },
+  FAILURE_DOMAIN_UNKNOWN: {
+    template: "{zone}, where {component} is placed, has no failure domain.",
+    description: "Neither the zone nor a zone it is placed in declares a failure domain.",
+  },
+  SINGLE_INSTANCE: {
+    template: "{component} runs one instance, in one of the zones it is placed in.",
+    description: "The type's redundancy spread is off, for example a database without a standby.",
+  },
+  FAILURE_DOMAINS: {
+    template: "{component} runs in: {domains}.",
+    description: "The failure domains the component spans.",
+  },
+  REDUNDANT: {
+    template: "{component} survives the loss of a failure domain ({availability}).",
+    description: "The component is managed by the provider or runs in two or more failure domains.",
+  },
+  NOT_REDUNDANT: {
+    template: "{component} runs in a single failure domain.",
+    description: "The component would fail with its failure domain.",
+  },
+  REDUNDANCY_UNKNOWN: {
+    template: "The failure domains of {component} are not known.",
+    description: "The availability analysis could not decide.",
   },
   SELECTOR_EMPTY: {
     template: "No component matches {selector}.",

@@ -100,7 +100,7 @@ This document describes the implemented JSON formats. The reasoning behind them 
 - **`properties`** use a subset of JSON Schema: `string` (with `enum`, `minLength`, `maxLength`, `pattern`), `number`, `integer`, `boolean`, arrays of those or of objects, and objects whose fields are scalars or arrays of scalars. Objects are closed. `default` documents the value the `pack-defaults` assumption policy uses. `"x-component-ref": true` marks a string as a component id; references are checked.
 - **`required`** lists properties every component of the type must set. Most properties are optional: a missing property limits what can be decided but does not make the model invalid.
 
-### Trait parameters (vocabulary 3)
+### Trait parameters (vocabulary 4)
 
 | Trait | Parameters |
 |---|---|
@@ -108,13 +108,14 @@ This document describes the implemented JSON formats. The reasoning behind them 
 | `forwarder` | `routes`: binding to the routes array; `targetField` (default `target`); `authorizes`: a route also authorizes the forwarder on its target |
 | `principal` | `grants`: binding to the grants array; `resourceField` (default `resource`); `accessField` (default `access`) |
 | `access-controlled` | `levels`: access level → actions it allows; `public`: anonymous access (bindable boolean); `publicActions`: actions allowed when public |
-| `zone` | `addressSpace` (bindable string, detailed level) |
+| `zone` | `addressSpace` (bindable string, detailed level); `failureDomain` (bindable string): the failure domain the zone is in, such as an availability zone |
 | `gateway` | `direction`: `both` or `outbound-only` (bindable); `connects`: binding to the zones it is attached to (without it, the gateway belongs to the network of the zone it is placed in); `services`: binding to the provider services it reaches privately |
 | `router` | `routes`: binding to routes `{ destination, gateway }`, where the destination is `internet`, an IPv4 range, or the id of a service; `zones`: binding to the zones it serves |
 | `traffic-filter` | `stateful`; `attachTo`: `component`, `zone` and/or `self`; `rules`: binding to the rules (below); `targets`: binding to what it is attached to; `default`: `{ inbound, outbound }` of `allow` or `deny` (default: deny) |
 | `group` | `members`: binding to component references; `size` (bindable integer, informational) |
+| `redundancy` | `managed`: the provider spreads the component across failure domains; `spread` (bindable boolean, default `true`): `false` means one instance runs in only one of the zones it is placed in |
 
-Vocabulary 2 added `endpoint.via`, `router.zones` and `traffic-filter.targets`, removed `group.zones` (placement says where a group runs), and gave the network traits their behavior. Vocabulary 3 added `gateway.services`. Packs declare the version they need, for example `"vocabulary": 3`.
+Vocabulary 2 added `endpoint.via`, `router.zones` and `traffic-filter.targets`, removed `group.zones` (placement says where a group runs), and gave the network traits their behavior. Vocabulary 3 added `gateway.services`. Vocabulary 4 added `zone.failureDomain` and the `redundancy` trait for the [availability analysis](#availability). Packs declare the version they need, for example `"vocabulary": 4`.
 
 **Traffic filter rules** are objects, checked in order; the first rule that matches the traffic's direction, peer and ports decides, and the `default` policy decides when none matches:
 
@@ -157,6 +158,7 @@ Findings and evidence codes are described in [finding-codes.md](finding-codes.md
 | `connection-validity` | `intents` (one verdict per intent, sorted by id), `summary` (count per verdict), `findings` |
 | `access` | `intents` (with every check that applies), `summary`, `exposure` (one fact per component with an endpoint, sorted by id), `assumptions` (pack defaults used), `findings` |
 | `address-plan` | `zones` (address space and size per zone, sorted by id), `findings`; detailed level only |
+| `availability` | `components` (one fact per running component, sorted by id), `findings`; see [Availability](#availability) |
 
 An intent verdict has the shape below. A verdict is never a boolean: `pass` is proven from the data, `fail` is disproven, and `undecidable` means the data, the packs or the supported analyses are not enough. A check's evidence says why.
 
@@ -230,6 +232,30 @@ The `address-plan` report lists every zone with its `space` and `size`, and thes
 - `NETWORK_OVERLAP`: networks that overlap and so cannot be connected;
 - `ROUTE_DESTINATION_INVALID` and `ROUTE_SHADOWED`: a route inside the network's own range, which the local route overrides.
 
+## Availability
+
+The `availability` analysis runs at both levels. A failure domain is a part of the infrastructure that can fail on its own, such as an availability zone or a data center; zone types name theirs with `zone.failureDomain`, and a zone whose type declares none is in the failure domain of the zone it is placed in. Under `strict`, an unset `failureDomain` property makes the components in that zone `undecidable`.
+
+It lists a fact for every running component: one with an `endpoint`, a `gateway` or a `group`, except `external` components.
+
+| `availability` | Meaning |
+|---|---|
+| `managed` | The type's `redundancy.managed` says the provider spreads it across failure domains (for example S3 or DynamoDB). |
+| `redundant` | Its placements, or its group's members, run in two or more failure domains. |
+| `single` | They all run in one failure domain, or `redundancy.spread` is `false` (one instance, for example an EC2 instance or a single-AZ database). |
+| `undecidable` | It is not placed, a zone it runs in has no failure domain, or a setting it depends on is unset under `strict`. |
+
+```json
+{ "component": "app", "availability": "redundant", "domains": ["eu-west-1a", "eu-west-1b"], "evidence": [ … ] }
+```
+
+Findings (warnings):
+
+- `AVAILABILITY_SINGLE_POINT`: a `single` component that intents with a `pass` verdict depend on: their ends, and the gateways the access check routed them through.
+- `AVAILABILITY_CROSS_DOMAIN`: a zone in one failure domain that reaches the internet through an outbound-only gateway placed in another, so it loses that access when the other domain fails.
+
+The analysis states what the model supports and nothing more: it does not model failover, health checks or capacity.
+
 ## Task
 
 ```json
@@ -256,6 +282,7 @@ The `address-plan` report lists every zone with its `space` and `size`, and thes
 | `reachable` | A matching target can be reached from a matching source through a chain of intents whose `access` verdict is `pass`. `action` and `port`, if given, apply to the last intent of the chain. |
 | `not-reachable` | No matching target is directly accessible from a matching source, whether or not an intent exists. Direct access means the forwarding, connectivity and authorization checks pass for a hypothetical intent, under the assumption policy of the analysis. Without `action`, every action the target controls access for is tried. |
 | `uses` | At least `min` (default 1) components match `select`. |
+| `redundant` | Every component that matches `select` is `managed` or `redundant` in the `availability` report. It fails when nothing matches or one is `single`, and is `undecidable` when one is `undecidable` or the result has no `availability` report. |
 | `meta` | Returned unchanged with each result, so consumers can weight requirements. |
 
 `parseTask(input, registry)` validates the task and its references and never throws for invalid input. `checkRequirements(model, analysis, task)` returns:
@@ -272,7 +299,7 @@ A `reachable` requirement fails when no chain exists, and is `undecidable` when 
 
 `collect(model, analysis?)` returns every component and intent, sorted by id, for consumers that compute their own scores or metrics:
 
-- components: `id`, `type`, `category`, `traits`, `meta` (the type's `meta` merged with the component's, the component winning), `incoming` and `outgoing` intent counts, and `exposure` when an access analysis is given;
+- components: `id`, `type`, `category`, `traits`, `meta` (the type's `meta` merged with the component's, the component winning), `incoming` and `outgoing` intent counts, `exposure` when an access analysis is given, and `availability` when an availability analysis is given;
 - intents: `id`, `from`, `to`, `action`, `port`, `meta`, and the verdict of the most complete intent analysis given;
 - `totals`: component and intent counts, counts by type and by category, and intent counts by verdict when an analysis is given.
 

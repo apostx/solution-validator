@@ -71,7 +71,9 @@ export type PortSpec =
   | { kind: "range"; range: PortRange }
   | { kind: "unknown" };
 
-type Resolved<T> = { known: true; value: T; evidence: Evidence[] } | { known: false; step: Step };
+export type Resolved<T> =
+  | { known: true; value: T; evidence: Evidence[] }
+  | { known: false; step: Step };
 
 interface FilterInfo {
   component: Component;
@@ -139,6 +141,30 @@ export class Network {
     }
     const placements = this.placements(component);
     return { known: true, value: placements.length > 0 ? placements : [undefined], evidence: [] };
+  }
+
+  /** The failure domain of the innermost zone of a position that declares one. */
+  failureDomainOf(position: string): Resolved<{ zone: string; domain: string } | undefined> {
+    for (const zone of this.chain(position)) {
+      const component = this.#component(zone);
+      const type = component && this.#type(component);
+      const parameter = type?.traits.zone?.failureDomain;
+      if (!component || !type || parameter === undefined) continue;
+      const value = this.#resolve(component, type, parameter);
+      if (!value.known) return value;
+      if (typeof value.value !== "string") continue;
+      return { known: true, value: { zone, domain: value.value }, evidence: value.evidence };
+    }
+    return { known: true, value: undefined, evidence: [] };
+  }
+
+  /** Resolves a component's trait parameter: a value, or a binding to one of its properties. */
+  resolveParameter(
+    component: Component,
+    type: ComponentType,
+    parameter: unknown,
+  ): Resolved<unknown> {
+    return this.#resolve(component, type, parameter);
   }
 
   /** The address space of the innermost zone of a position that has one (detailed level). */

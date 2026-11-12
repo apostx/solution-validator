@@ -36,6 +36,12 @@ const SECTIONS: { source: FindingSource; title: string; intro: string }[] = [
       "Checks the address plan: zones' IPv4 address spaces, their nesting and overlaps, and route destinations.",
   },
   {
+    source: "availability",
+    title: "Analysis: availability",
+    intro:
+      "Failure domains per component, single points of failure on the paths of passing intents, and zones tied to another failure domain.",
+  },
+  {
     source: "requirements",
     title: "Tasks and requirements",
     intro:

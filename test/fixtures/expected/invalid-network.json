@@ -9,11 +9,11 @@
         "name": "solution-validator",
         "version": "<version>"
       },
-      "vocabulary": 3,
+      "vocabulary": 4,
       "packs": [
         {
           "id": "aws",
-          "version": "0.4.0"
+          "version": "0.5.0"
         },
         {
           "id": "core",
@@ -25,7 +25,8 @@
         "analyses": [
           "model-validity",
           "connection-validity",
-          "access"
+          "access",
+          "availability"
         ],
         "assumptions": "strict"
       },
@@ -156,6 +157,40 @@
           ],
           "assumptions": [],
           "findings": []
+        },
+        {
+          "id": "availability",
+          "components": [
+            {
+              "component": "fn",
+              "availability": "managed",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "MANAGED_SERVICE",
+                  "params": {
+                    "component": "fn"
+                  },
+                  "message": "The provider runs fn across failure domains."
+                }
+              ]
+            },
+            {
+              "component": "igw",
+              "availability": "managed",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "MANAGED_SERVICE",
+                  "params": {
+                    "component": "igw"
+                  },
+                  "message": "The provider runs igw across failure domains."
+                }
+              ]
+            }
+          ],
+          "findings": []
         }
       ]
     },
@@ -164,11 +199,11 @@
         "name": "solution-validator",
         "version": "<version>"
       },
-      "vocabulary": 3,
+      "vocabulary": 4,
       "packs": [
         {
           "id": "aws",
-          "version": "0.4.0"
+          "version": "0.5.0"
         },
         {
           "id": "core",
@@ -180,7 +215,8 @@
         "analyses": [
           "model-validity",
           "connection-validity",
-          "access"
+          "access",
+          "availability"
         ],
         "assumptions": "pack-defaults"
       },
@@ -311,6 +347,40 @@
           ],
           "assumptions": [],
           "findings": []
+        },
+        {
+          "id": "availability",
+          "components": [
+            {
+              "component": "fn",
+              "availability": "managed",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "MANAGED_SERVICE",
+                  "params": {
+                    "component": "fn"
+                  },
+                  "message": "The provider runs fn across failure domains."
+                }
+              ]
+            },
+            {
+              "component": "igw",
+              "availability": "managed",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "MANAGED_SERVICE",
+                  "params": {
+                    "component": "igw"
+                  },
+                  "message": "The provider runs igw across failure domains."
+                }
+              ]
+            }
+          ],
+          "findings": []
         }
       ]
     },
@@ -319,11 +389,11 @@
         "name": "solution-validator",
         "version": "<version>"
       },
-      "vocabulary": 3,
+      "vocabulary": 4,
       "packs": [
         {
           "id": "aws",
-          "version": "0.4.0"
+          "version": "0.5.0"
         },
         {
           "id": "core",
@@ -336,7 +406,8 @@
           "model-validity",
           "connection-validity",
           "access",
-          "address-plan"
+          "address-plan",
+          "availability"
         ],
         "assumptions": "strict"
       },
@@ -503,6 +574,40 @@
               "message": "Zone vpc has no address space, so its address plan cannot be checked."
             }
           ]
+        },
+        {
+          "id": "availability",
+          "components": [
+            {
+              "component": "fn",
+              "availability": "managed",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "MANAGED_SERVICE",
+                  "params": {
+                    "component": "fn"
+                  },
+                  "message": "The provider runs fn across failure domains."
+                }
+              ]
+            },
+            {
+              "component": "igw",
+              "availability": "managed",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "MANAGED_SERVICE",
+                  "params": {
+                    "component": "igw"
+                  },
+                  "message": "The provider runs igw across failure domains."
+                }
+              ]
+            }
+          ],
+          "findings": []
         }
       ]
     }

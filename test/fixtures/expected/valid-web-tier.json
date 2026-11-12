@@ -9,11 +9,11 @@
         "name": "solution-validator",
         "version": "<version>"
       },
-      "vocabulary": 3,
+      "vocabulary": 4,
       "packs": [
         {
           "id": "aws",
-          "version": "0.4.0"
+          "version": "0.5.0"
         },
         {
           "id": "core",
@@ -25,7 +25,8 @@
         "analyses": [
           "model-validity",
           "connection-validity",
-          "access"
+          "access",
+          "availability"
         ],
         "assumptions": "strict"
       },
@@ -1060,6 +1061,155 @@
               "message": "Intent worker-reports: reports cannot be reached from worker."
             }
           ]
+        },
+        {
+          "id": "availability",
+          "components": [
+            {
+              "component": "alb",
+              "availability": "undecidable",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "PROPERTY_UNSET",
+                  "params": {
+                    "component": "public",
+                    "property": "availabilityZone"
+                  },
+                  "message": "public does not set availabilityZone."
+                }
+              ]
+            },
+            {
+              "component": "app",
+              "availability": "undecidable",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "PROPERTY_UNSET",
+                  "params": {
+                    "component": "private",
+                    "property": "availabilityZone"
+                  },
+                  "message": "private does not set availabilityZone."
+                }
+              ]
+            },
+            {
+              "component": "assets",
+              "availability": "managed",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "MANAGED_SERVICE",
+                  "params": {
+                    "component": "assets"
+                  },
+                  "message": "The provider runs assets across failure domains."
+                }
+              ]
+            },
+            {
+              "component": "cdn",
+              "availability": "managed",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "MANAGED_SERVICE",
+                  "params": {
+                    "component": "cdn"
+                  },
+                  "message": "The provider runs cdn across failure domains."
+                }
+              ]
+            },
+            {
+              "component": "db",
+              "availability": "undecidable",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "PROPERTY_UNSET",
+                  "params": {
+                    "component": "db",
+                    "property": "multiAz"
+                  },
+                  "message": "db does not set multiAz."
+                }
+              ]
+            },
+            {
+              "component": "ddb-endpoint",
+              "availability": "managed",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "MANAGED_SERVICE",
+                  "params": {
+                    "component": "ddb-endpoint"
+                  },
+                  "message": "The provider runs ddb-endpoint across failure domains."
+                }
+              ]
+            },
+            {
+              "component": "igw",
+              "availability": "managed",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "MANAGED_SERVICE",
+                  "params": {
+                    "component": "igw"
+                  },
+                  "message": "The provider runs igw across failure domains."
+                }
+              ]
+            },
+            {
+              "component": "orders",
+              "availability": "managed",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "MANAGED_SERVICE",
+                  "params": {
+                    "component": "orders"
+                  },
+                  "message": "The provider runs orders across failure domains."
+                }
+              ]
+            },
+            {
+              "component": "reports",
+              "availability": "managed",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "MANAGED_SERVICE",
+                  "params": {
+                    "component": "reports"
+                  },
+                  "message": "The provider runs reports across failure domains."
+                }
+              ]
+            },
+            {
+              "component": "worker",
+              "availability": "managed",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "MANAGED_SERVICE",
+                  "params": {
+                    "component": "worker"
+                  },
+                  "message": "The provider runs worker across failure domains."
+                }
+              ]
+            }
+          ],
+          "findings": []
         }
       ]
     },
@@ -1068,11 +1218,11 @@
         "name": "solution-validator",
         "version": "<version>"
       },
-      "vocabulary": 3,
+      "vocabulary": 4,
       "packs": [
         {
           "id": "aws",
-          "version": "0.4.0"
+          "version": "0.5.0"
         },
         {
           "id": "core",
@@ -1084,7 +1234,8 @@
         "analyses": [
           "model-validity",
           "connection-validity",
-          "access"
+          "access",
+          "availability"
         ],
         "assumptions": "pack-defaults"
       },
@@ -2119,6 +2270,164 @@
               "message": "Intent worker-reports: reports cannot be reached from worker."
             }
           ]
+        },
+        {
+          "id": "availability",
+          "components": [
+            {
+              "component": "alb",
+              "availability": "undecidable",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "PROPERTY_UNSET",
+                  "params": {
+                    "component": "public",
+                    "property": "availabilityZone"
+                  },
+                  "message": "public does not set availabilityZone."
+                }
+              ]
+            },
+            {
+              "component": "app",
+              "availability": "undecidable",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "PROPERTY_UNSET",
+                  "params": {
+                    "component": "private",
+                    "property": "availabilityZone"
+                  },
+                  "message": "private does not set availabilityZone."
+                }
+              ]
+            },
+            {
+              "component": "assets",
+              "availability": "managed",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "MANAGED_SERVICE",
+                  "params": {
+                    "component": "assets"
+                  },
+                  "message": "The provider runs assets across failure domains."
+                }
+              ]
+            },
+            {
+              "component": "cdn",
+              "availability": "managed",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "MANAGED_SERVICE",
+                  "params": {
+                    "component": "cdn"
+                  },
+                  "message": "The provider runs cdn across failure domains."
+                }
+              ]
+            },
+            {
+              "component": "db",
+              "availability": "undecidable",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "PROPERTY_ASSUMED",
+                  "params": {
+                    "component": "db",
+                    "property": "multiAz",
+                    "value": "false"
+                  },
+                  "message": "db does not set multiAz; the pack default false is assumed."
+                },
+                {
+                  "code": "PROPERTY_UNSET",
+                  "params": {
+                    "component": "private",
+                    "property": "availabilityZone"
+                  },
+                  "message": "private does not set availabilityZone."
+                }
+              ]
+            },
+            {
+              "component": "ddb-endpoint",
+              "availability": "managed",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "MANAGED_SERVICE",
+                  "params": {
+                    "component": "ddb-endpoint"
+                  },
+                  "message": "The provider runs ddb-endpoint across failure domains."
+                }
+              ]
+            },
+            {
+              "component": "igw",
+              "availability": "managed",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "MANAGED_SERVICE",
+                  "params": {
+                    "component": "igw"
+                  },
+                  "message": "The provider runs igw across failure domains."
+                }
+              ]
+            },
+            {
+              "component": "orders",
+              "availability": "managed",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "MANAGED_SERVICE",
+                  "params": {
+                    "component": "orders"
+                  },
+                  "message": "The provider runs orders across failure domains."
+                }
+              ]
+            },
+            {
+              "component": "reports",
+              "availability": "managed",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "MANAGED_SERVICE",
+                  "params": {
+                    "component": "reports"
+                  },
+                  "message": "The provider runs reports across failure domains."
+                }
+              ]
+            },
+            {
+              "component": "worker",
+              "availability": "managed",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "MANAGED_SERVICE",
+                  "params": {
+                    "component": "worker"
+                  },
+                  "message": "The provider runs worker across failure domains."
+                }
+              ]
+            }
+          ],
+          "findings": []
         }
       ]
     },
@@ -2127,11 +2436,11 @@
         "name": "solution-validator",
         "version": "<version>"
       },
-      "vocabulary": 3,
+      "vocabulary": 4,
       "packs": [
         {
           "id": "aws",
-          "version": "0.4.0"
+          "version": "0.5.0"
         },
         {
           "id": "core",
@@ -2144,7 +2453,8 @@
           "model-validity",
           "connection-validity",
           "access",
-          "address-plan"
+          "address-plan",
+          "availability"
         ],
         "assumptions": "strict"
       },
@@ -3199,6 +3509,155 @@
               "zone": "vpc",
               "space": "10.0.0.0/16",
               "size": 65536
+            }
+          ],
+          "findings": []
+        },
+        {
+          "id": "availability",
+          "components": [
+            {
+              "component": "alb",
+              "availability": "undecidable",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "PROPERTY_UNSET",
+                  "params": {
+                    "component": "public",
+                    "property": "availabilityZone"
+                  },
+                  "message": "public does not set availabilityZone."
+                }
+              ]
+            },
+            {
+              "component": "app",
+              "availability": "undecidable",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "PROPERTY_UNSET",
+                  "params": {
+                    "component": "private",
+                    "property": "availabilityZone"
+                  },
+                  "message": "private does not set availabilityZone."
+                }
+              ]
+            },
+            {
+              "component": "assets",
+              "availability": "managed",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "MANAGED_SERVICE",
+                  "params": {
+                    "component": "assets"
+                  },
+                  "message": "The provider runs assets across failure domains."
+                }
+              ]
+            },
+            {
+              "component": "cdn",
+              "availability": "managed",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "MANAGED_SERVICE",
+                  "params": {
+                    "component": "cdn"
+                  },
+                  "message": "The provider runs cdn across failure domains."
+                }
+              ]
+            },
+            {
+              "component": "db",
+              "availability": "undecidable",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "PROPERTY_UNSET",
+                  "params": {
+                    "component": "db",
+                    "property": "multiAz"
+                  },
+                  "message": "db does not set multiAz."
+                }
+              ]
+            },
+            {
+              "component": "ddb-endpoint",
+              "availability": "managed",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "MANAGED_SERVICE",
+                  "params": {
+                    "component": "ddb-endpoint"
+                  },
+                  "message": "The provider runs ddb-endpoint across failure domains."
+                }
+              ]
+            },
+            {
+              "component": "igw",
+              "availability": "managed",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "MANAGED_SERVICE",
+                  "params": {
+                    "component": "igw"
+                  },
+                  "message": "The provider runs igw across failure domains."
+                }
+              ]
+            },
+            {
+              "component": "orders",
+              "availability": "managed",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "MANAGED_SERVICE",
+                  "params": {
+                    "component": "orders"
+                  },
+                  "message": "The provider runs orders across failure domains."
+                }
+              ]
+            },
+            {
+              "component": "reports",
+              "availability": "managed",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "MANAGED_SERVICE",
+                  "params": {
+                    "component": "reports"
+                  },
+                  "message": "The provider runs reports across failure domains."
+                }
+              ]
+            },
+            {
+              "component": "worker",
+              "availability": "managed",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "MANAGED_SERVICE",
+                  "params": {
+                    "component": "worker"
+                  },
+                  "message": "The provider runs worker across failure domains."
+                }
+              ]
             }
           ],
           "findings": []
