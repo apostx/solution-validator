@@ -10,7 +10,15 @@ import {
 } from "../parameters";
 import { type CheckResult, combineVerdicts, createEvidence, type Evidence } from "../verdict";
 import type { ResolvedIntent } from "./intent-context";
-import { combineSteps, Network, type Party, type PortSpec, type Step, step } from "./network";
+import {
+  anySteps,
+  combineSteps,
+  Network,
+  type Party,
+  type PortSpec,
+  type Step,
+  step,
+} from "./network";
 import { samePort } from "./ports";
 
 /** A check's result, with what the access analysis needs to report findings. */
@@ -134,7 +142,7 @@ export function checkConnectivity(
       const ports = portSpec(intent.port, endpoint.ports);
       for (const source of dedupe(sources.value)) {
         for (const target of dedupe(targetParties)) {
-          parts.push(path(network, source, target, visibility.value as string, ports));
+          parts.push(byFamily(network, source, target, visibility.value as string, ports));
         }
       }
       parts.unshift(step("pass", [...sources.evidence, ...targets.evidence]));
@@ -177,6 +185,40 @@ function dedupe(parties: readonly Party[]): Party[] {
     seen.add(key);
     return true;
   });
+}
+
+/**
+ * Traffic may use any address family both parties have (IPv6 only at the detailed level);
+ * one family that works is enough, as clients fall back to the other.
+ */
+function byFamily(
+  network: Network,
+  source: Party,
+  target: Party,
+  visibility: string,
+  ports: PortSpec,
+): Step {
+  const theirs = network.familiesOf(target);
+  // Between two parties outside every zone, nothing in the model depends on the family.
+  const outside = source.position === undefined && target.position === undefined;
+  const families = outside
+    ? [4 as const]
+    : network.familiesOf(source).filter((family) => theirs.includes(family));
+  if (families.length <= 1) {
+    return path(network.withFamily(families[0] ?? 4), source, target, visibility, ports);
+  }
+  return anySteps(
+    families.map((family) => {
+      const result = path(network.withFamily(family), source, target, visibility, ports);
+      return {
+        ...result,
+        evidence: [
+          createEvidence("ADDRESS_FAMILY", { family: `IPv${family}` }),
+          ...result.evidence,
+        ],
+      };
+    }),
+  );
 }
 
 /** Whether traffic gets from one party to the other, through routes, gateways and filters. */
@@ -423,10 +465,15 @@ export function exposureOf(
       const steps = positions.map((position) => {
         const party: Party = { component, ids: [component.id], position };
         if (position === undefined) return step("pass", []);
-        return combineSteps([
-          network.internet(position, "inbound", outsider, ports, 0, party),
-          network.filtersOnSide(party, outsider, "inbound", ports),
-        ]);
+        return anySteps(
+          network.familiesOf(party).map((family) => {
+            const view = network.withFamily(family);
+            return combineSteps([
+              view.internet(position, "inbound", outsider, ports, 0, party),
+              view.filtersOnSide(party, outsider, "inbound", ports),
+            ]);
+          }),
+        );
       });
       const result = combineSteps(steps);
       if (result.verdict === "pass") {

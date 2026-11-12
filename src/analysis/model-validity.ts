@@ -5,7 +5,7 @@ import type { Component } from "../core/solution-schema";
 import { PEER_KEYWORDS } from "../core/traits";
 import { createFinding, type Finding } from "../messages/finding";
 import { compareStrings } from "../util/compare";
-import { isCidr } from "../util/ipv4";
+import { isCidr } from "../util/ip";
 
 /**
  * Checks what the solution schema alone cannot: packs, unique ids, known types, property values
