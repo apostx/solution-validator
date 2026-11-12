@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.12.0](https://github.com/apostx/solution-validator/compare/v0.11.0...v0.12.0) (2026-11-12)
+
+
+### Features
+
+* terraform export (iteration 12) ([#24](https://github.com/apostx/solution-validator/issues/24)) ([e734463](https://github.com/apostx/solution-validator/commit/e734463c1f3711c1e79117ba01655055c5d26241))
+
 ## [0.11.0](https://github.com/apostx/solution-validator/compare/v0.10.0...v0.11.0) (2026-11-12)
 
 
