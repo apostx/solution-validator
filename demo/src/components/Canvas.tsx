@@ -155,6 +155,7 @@ export function Canvas({
             category: type?.category ?? "unknown",
             severity: evaluation.severityBySubject.get(component.id),
             exposure: evaluation.exposure.get(component.id)?.exposure,
+            availability: evaluation.availability.get(component.id),
             attachments: attachments.get(component.id) ?? [],
           },
         };

@@ -1,0 +1,357 @@
+{
+  "id": "high-availability",
+  "title": "High availability across two availability zones",
+  "description": "A web app spread over two availability zones. The load balancer and the app servers run in both, and DynamoDB is managed by AWS, but the database is not Multi-AZ, the bastion host is a single EC2 instance, and both private subnets reach the internet through one NAT gateway in eu-west-1a. Turn on multiAz for the database, remove the bastion, or add a second NAT gateway with its own route table for private-b, and watch the badges, the warnings and the requirements change.",
+  "packs": ["core", "aws"],
+  "solution": {
+    "schemaVersion": 1,
+    "packs": ["core", "aws"],
+    "components": [
+      {
+        "id": "users",
+        "type": "core.internet",
+        "meta": {
+          "position": {
+            "x": -280,
+            "y": 330
+          }
+        }
+      },
+      {
+        "id": "vpc",
+        "type": "aws.vpc",
+        "meta": {
+          "position": {
+            "x": 0,
+            "y": 0
+          },
+          "size": {
+            "width": 980,
+            "height": 720
+          }
+        }
+      },
+      {
+        "id": "public-a",
+        "type": "aws.subnet",
+        "placement": ["vpc"],
+        "properties": {
+          "availabilityZone": "eu-west-1a"
+        },
+        "meta": {
+          "position": {
+            "x": 30,
+            "y": 60
+          },
+          "size": {
+            "width": 440,
+            "height": 280
+          }
+        }
+      },
+      {
+        "id": "public-b",
+        "type": "aws.subnet",
+        "placement": ["vpc"],
+        "properties": {
+          "availabilityZone": "eu-west-1b"
+        },
+        "meta": {
+          "position": {
+            "x": 510,
+            "y": 60
+          },
+          "size": {
+            "width": 440,
+            "height": 280
+          }
+        }
+      },
+      {
+        "id": "private-a",
+        "type": "aws.subnet",
+        "placement": ["vpc"],
+        "properties": {
+          "availabilityZone": "eu-west-1a"
+        },
+        "meta": {
+          "position": {
+            "x": 30,
+            "y": 380
+          },
+          "size": {
+            "width": 440,
+            "height": 300
+          }
+        }
+      },
+      {
+        "id": "private-b",
+        "type": "aws.subnet",
+        "placement": ["vpc"],
+        "properties": {
+          "availabilityZone": "eu-west-1b"
+        },
+        "meta": {
+          "position": {
+            "x": 510,
+            "y": 380
+          },
+          "size": {
+            "width": 440,
+            "height": 300
+          }
+        }
+      },
+      {
+        "id": "igw",
+        "type": "aws.internet-gateway",
+        "properties": {
+          "attachedTo": ["vpc"]
+        },
+        "meta": {
+          "position": {
+            "x": -280,
+            "y": 60
+          }
+        }
+      },
+      {
+        "id": "nat-a",
+        "type": "aws.nat-gateway",
+        "placement": ["public-a"],
+        "meta": {
+          "position": {
+            "x": 60,
+            "y": 240
+          }
+        }
+      },
+      {
+        "id": "public-rt",
+        "type": "aws.route-table",
+        "properties": {
+          "routes": [
+            {
+              "destination": "internet",
+              "gateway": "igw"
+            }
+          ],
+          "associations": ["public-a", "public-b"]
+        },
+        "meta": {
+          "position": {
+            "x": 40,
+            "y": 780
+          }
+        }
+      },
+      {
+        "id": "private-rt",
+        "type": "aws.route-table",
+        "properties": {
+          "routes": [
+            {
+              "destination": "internet",
+              "gateway": "nat-a"
+            }
+          ],
+          "associations": ["private-a", "private-b"]
+        },
+        "meta": {
+          "position": {
+            "x": 240,
+            "y": 780
+          }
+        }
+      },
+      {
+        "id": "alb",
+        "type": "aws.alb",
+        "placement": ["public-a", "public-b"],
+        "properties": {
+          "scheme": "public",
+          "targets": [
+            {
+              "target": "app"
+            }
+          ]
+        },
+        "meta": {
+          "position": {
+            "x": 270,
+            "y": 180
+          }
+        }
+      },
+      {
+        "id": "app",
+        "type": "aws.autoscaling-group",
+        "placement": ["private-a", "private-b"],
+        "properties": {
+          "endpoint": "private",
+          "permissions": [
+            {
+              "resource": "orders",
+              "access": "read"
+            }
+          ]
+        },
+        "meta": {
+          "position": {
+            "x": 80,
+            "y": 460
+          }
+        }
+      },
+      {
+        "id": "db",
+        "type": "aws.rds",
+        "placement": ["private-a", "private-b"],
+        "properties": {
+          "endpoint": "private",
+          "multiAz": false
+        },
+        "meta": {
+          "position": {
+            "x": 280,
+            "y": 560
+          }
+        }
+      },
+      {
+        "id": "bastion",
+        "type": "aws.ec2",
+        "placement": ["public-a"],
+        "properties": {
+          "endpoint": "public",
+          "permissions": []
+        },
+        "meta": {
+          "position": {
+            "x": 60,
+            "y": 120
+          }
+        }
+      },
+      {
+        "id": "orders",
+        "type": "aws.dynamodb",
+        "meta": {
+          "position": {
+            "x": 1060,
+            "y": 460
+          }
+        }
+      },
+      {
+        "id": "sg",
+        "type": "aws.security-group",
+        "properties": {
+          "rules": [
+            {
+              "direction": "inbound",
+              "peer": "any"
+            },
+            {
+              "direction": "outbound",
+              "peer": "any"
+            }
+          ],
+          "attachedTo": ["alb", "app", "db", "bastion"]
+        },
+        "meta": {
+          "position": {
+            "x": 440,
+            "y": 780
+          }
+        }
+      }
+    ],
+    "intents": [
+      {
+        "id": "users-alb",
+        "from": "users",
+        "to": "alb",
+        "port": "https"
+      },
+      {
+        "id": "alb-app",
+        "from": "alb",
+        "to": "app",
+        "action": "invoke",
+        "port": "http"
+      },
+      {
+        "id": "app-db",
+        "from": "app",
+        "to": "db",
+        "action": "read",
+        "port": "postgresql"
+      },
+      {
+        "id": "app-orders",
+        "from": "app",
+        "to": "orders",
+        "action": "read"
+      },
+      {
+        "id": "users-bastion",
+        "from": "users",
+        "to": "bastion",
+        "port": "ssh"
+      }
+    ]
+  },
+  "task": {
+    "schemaVersion": 1,
+    "id": "high-availability",
+    "title": "Highly available web app",
+    "packs": ["core", "aws"],
+    "provided": [
+      {
+        "id": "users",
+        "type": "core.internet",
+        "locked": true
+      }
+    ],
+    "requirements": [
+      {
+        "id": "r1",
+        "type": "reachable",
+        "description": "Users on the internet can read data through the web tier.",
+        "from": {
+          "id": "users"
+        },
+        "to": {
+          "category": "data-store"
+        },
+        "action": "read"
+      },
+      {
+        "id": "r2",
+        "type": "redundant",
+        "description": "The entry points survive the loss of one failure domain.",
+        "select": {
+          "category": "edge"
+        }
+      },
+      {
+        "id": "r3",
+        "type": "redundant",
+        "description": "Every compute component survives the loss of one failure domain.",
+        "select": {
+          "category": "compute"
+        }
+      },
+      {
+        "id": "r4",
+        "type": "redundant",
+        "description": "Every data store survives the loss of one failure domain.",
+        "select": {
+          "category": "data-store"
+        }
+      }
+    ]
+  }
+}

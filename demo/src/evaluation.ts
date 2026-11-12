@@ -3,6 +3,7 @@ import {
   type AnalysisResult,
   type Assumption,
   type AssumptionPolicy,
+  type AvailabilityFact,
   analyze,
   checkRequirements,
   collect,
@@ -32,6 +33,8 @@ export interface Evaluation {
   intentVerdicts: Map<string, IntentVerdict>;
   /** Whether each component is directly accessible from the internet. */
   exposure: Map<string, ExposureFact>;
+  /** The failure domains each running component spans. */
+  availability: Map<string, AvailabilityFact>;
   /** Pack defaults the `pack-defaults` policy applied. */
   assumptions: Assumption[];
   /** Requirement verdicts, when the scenario has a task. */
@@ -56,6 +59,7 @@ export function evaluate(
       severityBySubject: new Map(),
       intentVerdicts: new Map(),
       exposure: new Map(),
+      availability: new Map(),
       assumptions: [],
     };
   }
@@ -85,6 +89,10 @@ export function evaluate(
   const exposure = new Map<string, ExposureFact>();
   for (const fact of access?.id === "access" ? access.exposure : [])
     exposure.set(fact.component, fact);
+  const resilience = result.analyses.find((report) => report.id === "availability");
+  const availability = new Map<string, AvailabilityFact>();
+  for (const fact of resilience?.id === "availability" ? resilience.components : [])
+    availability.set(fact.component, fact);
   return {
     model: parsed.model,
     result,
@@ -92,6 +100,7 @@ export function evaluate(
     severityBySubject,
     intentVerdicts,
     exposure,
+    availability,
     assumptions: access?.id === "access" ? [...access.assumptions] : [],
     ...(task ? { requirements: checkRequirements(parsed.model, result, task) } : {}),
     facts: collect(parsed.model, result),

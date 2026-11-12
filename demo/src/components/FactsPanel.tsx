@@ -27,6 +27,7 @@ export function FactsPanel({ facts }: { facts: Facts | undefined }) {
             <th>Type</th>
             <th>In / out</th>
             <th>Exposure</th>
+            <th>Availability</th>
             <th>Meta</th>
           </tr>
         </thead>
@@ -43,6 +44,7 @@ export function FactsPanel({ facts }: { facts: Facts | undefined }) {
                 {component.incoming} / {component.outgoing}
               </td>
               <td>{component.exposure ?? "—"}</td>
+              <td>{component.availability ?? "—"}</td>
               <td>
                 <code>{JSON.stringify(withoutPosition(component.meta))}</code>
               </td>
