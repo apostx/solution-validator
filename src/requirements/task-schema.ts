@@ -87,10 +87,25 @@ export const UsesRequirement = Type.Object(
 );
 export type UsesRequirement = Type.Static<typeof UsesRequirement>;
 
+/**
+ * Every matching component survives the loss of one failure domain: the provider manages it, or
+ * it runs in two or more failure domains. Needs the availability analysis.
+ */
+export const RedundantRequirement = Type.Object(
+  {
+    ...requirementBase,
+    type: Type.Literal("redundant"),
+    select: Selector,
+  },
+  closed,
+);
+export type RedundantRequirement = Type.Static<typeof RedundantRequirement>;
+
 export const Requirement = Type.Union([
   ReachableRequirement,
   NotReachableRequirement,
   UsesRequirement,
+  RedundantRequirement,
 ]);
 export type Requirement = Type.Static<typeof Requirement>;
 

@@ -15,6 +15,7 @@ export {
   type AnalysisReport,
   type AnalysisResult,
   type AnalyzeOptions,
+  type AvailabilityReport,
   analyze,
   type ConnectionValidityReport,
   LIBRARY_NAME,
@@ -22,6 +23,7 @@ export {
   type ModelValidityReport,
   type VerdictSummary,
 } from "./analysis/analyze";
+export type { AvailabilityFact } from "./analysis/availability";
 export type { ExposureFact } from "./analysis/checks/access-checks";
 export type { Assumption, AssumptionPolicy } from "./analysis/parameters";
 export type {
@@ -89,6 +91,7 @@ export {
   NotReachableRequirement,
   ProvidedComponent,
   ReachableRequirement,
+  RedundantRequirement,
   Requirement,
   Selector,
   TASK_SCHEMA_VERSION,

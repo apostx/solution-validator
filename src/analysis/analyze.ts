@@ -3,6 +3,7 @@ import { type Finding, hasErrors, sortFindings } from "../messages/finding";
 import { VERSION } from "../version";
 import { checkAccess } from "./access";
 import { type AddressFact, checkAddressPlan } from "./address-plan";
+import { type AvailabilityFact, checkAvailability } from "./availability";
 import type { ExposureFact } from "./checks/access-checks";
 import { checkConnectionValidity } from "./connection-validity";
 import { checkModelValidity } from "./model-validity";
@@ -18,7 +19,12 @@ export const LIBRARY_NAME = "solution-validator";
  */
 export type AnalysisLevel = "logical" | "detailed";
 
-export type AnalysisId = "model-validity" | "connection-validity" | "access" | "address-plan";
+export type AnalysisId =
+  | "model-validity"
+  | "connection-validity"
+  | "access"
+  | "address-plan"
+  | "availability";
 
 export interface AnalyzeOptions {
   /** Default: `logical`. */
@@ -69,11 +75,19 @@ export interface AddressPlanReport {
   readonly findings: readonly Finding[];
 }
 
+export interface AvailabilityReport {
+  readonly id: "availability";
+  /** Every runtime component with the failure domains it spans, sorted by component id. */
+  readonly components: readonly AvailabilityFact[];
+  readonly findings: readonly Finding[];
+}
+
 export type AnalysisReport =
   | ModelValidityReport
   | ConnectionValidityReport
   | AccessReport
-  | AddressPlanReport;
+  | AddressPlanReport
+  | AvailabilityReport;
 
 export interface AnalysisResult {
   /** The library that produced the result, so that results can be reproduced. */
@@ -145,6 +159,14 @@ const ANALYSES: readonly AnalysisDefinition[] = [
     run: (model, policy) => {
       const { zones, findings } = checkAddressPlan(model, policy);
       return { id: "address-plan", zones, findings: sortFindings(findings) };
+    },
+  },
+  {
+    id: "availability",
+    levels: ["logical", "detailed"],
+    run: (model, policy, level) => {
+      const { components, findings } = checkAvailability(model, policy, level);
+      return { id: "availability", components, findings: sortFindings(findings) };
     },
   },
 ];

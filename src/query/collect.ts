@@ -1,4 +1,5 @@
 import type { AnalysisResult } from "../analysis/analyze";
+import type { AvailabilityFact } from "../analysis/availability";
 import type { ExposureFact } from "../analysis/checks/access-checks";
 import type { Verdict } from "../analysis/verdict";
 import type { Meta } from "../core/ids";
@@ -20,6 +21,8 @@ export interface CollectedComponent {
   outgoing: number;
   /** Whether it is directly accessible from the internet, when an access analysis is given. */
   exposure?: ExposureFact["exposure"];
+  /** How it survives the loss of a failure domain, when an availability analysis is given. */
+  availability?: AvailabilityFact["availability"];
 }
 
 export interface CollectedIntent {
@@ -57,7 +60,12 @@ export interface Facts {
 export function collect(model: SolutionModel, analysis?: AnalysisResult): Facts {
   const intentVerdicts = new Map<string, Verdict>();
   const exposure = new Map<string, ExposureFact["exposure"]>();
+  const availability = new Map<string, AvailabilityFact["availability"]>();
   for (const report of analysis?.analyses ?? []) {
+    if (report.id === "availability") {
+      for (const fact of report.components) availability.set(fact.component, fact.availability);
+      continue;
+    }
     if (report.id === "model-validity" || report.id === "address-plan") continue;
     // Later reports are more complete, so they win.
     const seen = new Set<string>();
@@ -75,6 +83,7 @@ export function collect(model: SolutionModel, analysis?: AnalysisResult): Facts 
     .map((component): CollectedComponent => {
       const type = model.getType(component);
       const fact = exposure.get(component.id);
+      const resilience = availability.get(component.id);
       return {
         id: component.id,
         type: component.type,
@@ -84,6 +93,7 @@ export function collect(model: SolutionModel, analysis?: AnalysisResult): Facts 
         incoming: model.intents.filter((intent) => intent.to === component.id).length,
         outgoing: model.intents.filter((intent) => intent.from === component.id).length,
         ...(fact ? { exposure: fact } : {}),
+        ...(resilience ? { availability: resilience } : {}),
       };
     })
     .sort((a, b) => compareStrings(a.id, b.id));

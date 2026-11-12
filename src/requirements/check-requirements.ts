@@ -1,4 +1,5 @@
 import type { AnalysisResult, VerdictSummary } from "../analysis/analyze";
+import type { AvailabilityFact } from "../analysis/availability";
 import {
   type AccessContext,
   checkAuthorization,
@@ -24,6 +25,7 @@ import { compareStrings, sortedUnique } from "../util/compare";
 import type {
   NotReachableRequirement,
   ReachableRequirement,
+  RedundantRequirement,
   Requirement,
   Selector,
   Task,
@@ -90,8 +92,13 @@ export function checkRequirements(
   }
 
   const access = analysis.analyses.find((report) => report.id === "access");
+  const availabilityReport = analysis.analyses.find((report) => report.id === "availability");
   const context: RequirementContext = {
     model,
+    availability:
+      availabilityReport?.id === "availability"
+        ? new Map(availabilityReport.components.map((fact) => [fact.component, fact]))
+        : undefined,
     intentVerdicts: access?.id === "access" ? indexVerdicts(access.intents) : undefined,
     access: {
       model,
@@ -137,6 +144,8 @@ export function checkRequirements(
 
 interface RequirementContext {
   model: SolutionModel;
+  /** Availability per component, when the result has an availability report. */
+  availability: Map<string, AvailabilityFact> | undefined;
   intentVerdicts: Map<string, Verdict> | undefined;
   access: AccessContext;
 }
@@ -154,6 +163,8 @@ function checkRequirement(context: RequirementContext, requirement: Requirement)
       return checkNotReachable(context, requirement);
     case "uses":
       return checkUses(context, requirement);
+    case "redundant":
+      return checkRedundant(context, requirement);
   }
 }
 
@@ -414,4 +425,40 @@ function checkUses(context: RequirementContext, requirement: UsesRequirement): O
       }),
     ],
   };
+}
+
+function checkRedundant(context: RequirementContext, requirement: RedundantRequirement): Outcome {
+  const matches = selectComponents(context.model, requirement.select);
+  if (matches.length === 0) {
+    return {
+      verdict: "fail",
+      evidence: [
+        createEvidence("SELECTOR_EMPTY", { selector: describeSelector(requirement.select) }),
+      ],
+    };
+  }
+  if (!context.availability) {
+    return {
+      verdict: "undecidable",
+      evidence: [createEvidence("ANALYSIS_MISSING", { analysis: "availability" })],
+    };
+  }
+  const evidence: Evidence[] = [];
+  const verdicts: Verdict[] = [];
+  for (const component of matches) {
+    const fact = context.availability.get(component.id);
+    if (fact?.availability === "managed" || fact?.availability === "redundant") {
+      verdicts.push("pass");
+      evidence.push(
+        createEvidence("REDUNDANT", { component: component.id, availability: fact.availability }),
+      );
+    } else if (fact?.availability === "single") {
+      verdicts.push("fail");
+      evidence.push(createEvidence("NOT_REDUNDANT", { component: component.id }));
+    } else {
+      verdicts.push("undecidable");
+      evidence.push(createEvidence("REDUNDANCY_UNKNOWN", { component: component.id }));
+    }
+  }
+  return { verdict: combineVerdicts(verdicts), evidence };
 }

@@ -12,8 +12,9 @@ import { LevelName, Name, PropertyName } from "./ids";
  *   (placement says where a group runs). Version 1 packs used no network trait behavior.
  * - 3: `gateway.services`: gateways that give private access to provider services, used by
  *   routes whose destination is such a service.
+ * - 4: `zone.failureDomain` and the `redundancy` trait, for the availability analysis.
  */
-export const TRAIT_VOCABULARY_VERSION = 3;
+export const TRAIT_VOCABULARY_VERSION = 4;
 
 /** Binds a trait parameter to a property of the component, for example its endpoint type. */
 export const Binding = Type.Object({ property: PropertyName }, { additionalProperties: false });
@@ -92,6 +93,11 @@ export const TraitParameters = {
     {
       /** Address space, for the detailed level. */
       addressSpace: Type.Optional(bindable(Type.String())),
+      /**
+       * The failure domain the zone lies in, for example an availability zone. Zones placed in
+       * it inherit it unless they declare their own.
+       */
+      failureDomain: Type.Optional(bindable(Type.String())),
     },
     closed,
   ),
@@ -158,6 +164,23 @@ export const TraitParameters = {
     },
     closed,
   ),
+  /**
+   * How a component survives the loss of a failure domain. Without it, a component runs in
+   * every zone it is placed in.
+   */
+  redundancy: Type.Object(
+    {
+      /** The provider runs it across failure domains itself, for example a regional service. */
+      managed: Type.Optional(Type.Boolean()),
+      /**
+       * Whether instances run in every zone the component is placed in. `false`: one instance
+       * runs in one of them, as for a single virtual machine or a database without a standby.
+       * Default: `true`.
+       */
+      spread: Type.Optional(bindable(Type.Boolean())),
+    },
+    closed,
+  ),
   /** A set of equivalent instances. */
   group: Type.Object(
     {
@@ -190,6 +213,7 @@ export const Traits = Type.Object(
     router: Type.Optional(TraitParameters.router),
     "traffic-filter": Type.Optional(TraitParameters["traffic-filter"]),
     group: Type.Optional(TraitParameters.group),
+    redundancy: Type.Optional(TraitParameters.redundancy),
   },
   closed,
 );
@@ -249,7 +273,11 @@ export function bindingSlots(traits: Traits): BindingSlot[] {
   if (accessControlled) {
     add("access-controlled", "public", accessControlled.public, { kind: "boolean" });
   }
-  if (t.zone) add("zone", "addressSpace", t.zone.addressSpace, { kind: "string" });
+  if (t.zone) {
+    add("zone", "addressSpace", t.zone.addressSpace, { kind: "string" });
+    add("zone", "failureDomain", t.zone.failureDomain, { kind: "string" });
+  }
+  if (t.redundancy) add("redundancy", "spread", t.redundancy.spread, { kind: "boolean" });
   if (t.gateway) {
     add("gateway", "direction", t.gateway.direction, { kind: "enum", values: GATEWAY_DIRECTIONS });
     add("gateway", "connects", t.gateway.connects, { kind: "references" });

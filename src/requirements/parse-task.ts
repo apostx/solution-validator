@@ -78,7 +78,7 @@ function checkTask(task: Task, registry: Registry): Finding[] {
 
   task.requirements.forEach((requirement, index) => {
     const path = `/requirements/${index}`;
-    if (requirement.type === "uses") {
+    if (requirement.type === "uses" || requirement.type === "redundant") {
       checkSelector(requirement.id, `${path}/select`, requirement.select);
       return;
     }
