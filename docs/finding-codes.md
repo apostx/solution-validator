@@ -127,6 +127,9 @@ Reported by `parseTask` for invalid tasks and by `checkRequirements` for provide
 | `TASK_ID_DUPLICATE` | error | The id {id} is used by more than one provided component or requirement. | Provided component and requirement ids must be unique within a task. |
 | `TASK_REFERENCE_UNKNOWN` | error | {path} refers to an unknown {kind} {id}. | A provided component or a selector refers to a type, category, trait, action or port that the task's packs do not define. |
 | `TASK_SELECTOR_NOT_PROVIDED` | error | {path} selects {id}, which the task does not provide. | Requirements select by id only components the task provides, because the solver chooses every other id. |
+| `TASK_ROLE_UNKNOWN` | error | {path} selects the role {role}, which the task does not declare. | Role selectors name roles from the task's `roles`, so the solver knows which tags to use. |
+| `TASK_ROLE_DUPLICATE` | error | The task declares the role {role} more than once. | Role ids in a task's `roles` are unique. |
+| `TASK_ROLE_UNASSIGNED` | warning | No component has the role {role}, which the task declares. | The solver has not tagged any component with a role the task asks for; requirements that select it match nothing. |
 | `TASK_PROVIDED_MISSING` | error | The solution does not contain {component}, which the task provides. | A provided component was removed from the solution. |
 | `TASK_PROVIDED_CHANGED` | error | {component} has type {actual} in the solution, but the task provides type {expected}. | A provided component's type was changed in the solution. |
 | `REQUIREMENT_FAILED` | error | Requirement {requirement} is not met. | The requirement's verdict is fail; its evidence says why. |
@@ -210,6 +213,7 @@ Evidence explains an intent's verdict: each check lists the evidence it used. Ev
 | `NOT_REDUNDANT` | {component} runs in a single failure domain. | The component would fail with its failure domain. |
 | `REDUNDANCY_UNKNOWN` | The failure domains of {component} are not known. | The availability analysis could not decide. |
 | `SELECTOR_EMPTY` | No component matches {selector}. | The selector matches nothing in the solution. |
+| `ROLE_UNASSIGNED` | No component has the role {role} yet, so it cannot be decided. | A `not-reachable` requirement selects a role the solver has not assigned; it is not vacuously met. |
 | `ANALYSIS_MISSING` | The analysis result has no {analysis} report. | The requirement needs an analysis that was not run. |
 | `PATH_FOUND` | Reachable: {path}. | A chain of intents with a pass verdict leads from a source to a target. |
 | `PATH_UNDECIDABLE` | A chain exists, {path}, but these intents are undecidable: {intents}. | The only chains include intents whose verdict is undecidable. |

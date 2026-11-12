@@ -1,5 +1,5 @@
 import Type from "typebox";
-import { ElementId, Meta } from "../core/ids";
+import { ElementId, Meta, RoleName } from "../core/ids";
 
 const closed = { additionalProperties: false } as const;
 const Reference = Type.String({ minLength: 1 });
@@ -17,6 +17,8 @@ export const Selector = Type.Object(
     type: Type.Optional(Reference),
     category: Type.Optional(Reference),
     trait: Type.Optional(Reference),
+    /** A role the task declares; matches the components the solver tagged with it. */
+    role: Type.Optional(RoleName),
   },
   closed,
 );
@@ -109,6 +111,17 @@ export const Requirement = Type.Union([
 ]);
 export type Requirement = Type.Static<typeof Requirement>;
 
+/** A role a task asks the solver to assign, so that requirements can select the component. */
+export const RoleDefinition = Type.Object(
+  {
+    id: RoleName,
+    label: Type.Optional(Type.String()),
+    description: Type.Optional(Type.String()),
+  },
+  closed,
+);
+export type RoleDefinition = Type.Static<typeof RoleDefinition>;
+
 /** A task: the packs, the components every solution gets, and the requirements. */
 export const Task = Type.Object(
   {
@@ -119,6 +132,8 @@ export const Task = Type.Object(
     description: Type.Optional(Type.String()),
     packs: Type.Array(Type.String({ minLength: 1 })),
     provided: Type.Optional(Type.Array(ProvidedComponent)),
+    /** Roles the solver assigns to components with `roles`; selectors can name them. */
+    roles: Type.Optional(Type.Array(RoleDefinition)),
     requirements: Type.Array(Requirement),
     meta: Type.Optional(Meta),
   },

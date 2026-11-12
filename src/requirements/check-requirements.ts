@@ -91,6 +91,12 @@ export function checkRequirements(
     }
   }
 
+  for (const role of task.roles ?? []) {
+    if (!model.components.some((component) => component.roles?.includes(role.id))) {
+      findings.push(createFinding("TASK_ROLE_UNASSIGNED", [], { role: role.id }));
+    }
+  }
+
   const access = analysis.analyses.find((report) => report.id === "access");
   const availabilityReport = analysis.analyses.find((report) => report.id === "availability");
   const context: RequirementContext = {
@@ -189,6 +195,7 @@ export function selectComponents(model: SolutionModel, selector: Selector): Comp
     if (selector.trait !== undefined) {
       if (!isTraitId(selector.trait) || type?.traits[selector.trait] === undefined) continue;
     }
+    if (selector.role !== undefined && !component.roles?.includes(selector.role)) continue;
     matches.push(component);
   }
   return matches.sort((a, b) => compareStrings(a.id, b.id));
@@ -196,7 +203,7 @@ export function selectComponents(model: SolutionModel, selector: Selector): Comp
 
 /** Describes a selector in English, for evidence: `type aws.s3`, `category data-store`. */
 export function describeSelector(selector: Selector): string {
-  const parts = (["id", "type", "category", "trait"] as const).flatMap((key) =>
+  const parts = (["id", "type", "category", "trait", "role"] as const).flatMap((key) =>
     selector[key] === undefined ? [] : [`${key} ${selector[key]}`],
   );
   return parts.length > 0 ? parts.join(" and ") : "any component";
@@ -340,9 +347,15 @@ function checkNotReachable(
     };
   }
   if (targets.length === 0) {
+    // No component of a type or category means there is nothing to reach. A role that no
+    // component carries only means the solver has not tagged it yet.
+    const role = requirement.to.role;
     return {
-      verdict: "pass",
-      evidence: [createEvidence("SELECTOR_EMPTY", { selector: describeSelector(requirement.to) })],
+      verdict: role === undefined ? "pass" : "undecidable",
+      evidence: [
+        createEvidence("SELECTOR_EMPTY", { selector: describeSelector(requirement.to) }),
+        ...(role === undefined ? [] : [createEvidence("ROLE_UNASSIGNED", { role })]),
+      ],
     };
   }
 

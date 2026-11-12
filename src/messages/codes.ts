@@ -414,6 +414,26 @@ export const FINDING_CODES = {
     description:
       "Requirements select by id only components the task provides, because the solver chooses every other id.",
   },
+  TASK_ROLE_UNKNOWN: {
+    severity: "error",
+    source: "requirements",
+    template: "{path} selects the role {role}, which the task does not declare.",
+    description:
+      "Role selectors name roles from the task's `roles`, so the solver knows which tags to use.",
+  },
+  TASK_ROLE_DUPLICATE: {
+    severity: "error",
+    source: "requirements",
+    template: "The task declares the role {role} more than once.",
+    description: "Role ids in a task's `roles` are unique.",
+  },
+  TASK_ROLE_UNASSIGNED: {
+    severity: "warning",
+    source: "requirements",
+    template: "No component has the role {role}, which the task declares.",
+    description:
+      "The solver has not tagged any component with a role the task asks for; requirements that select it match nothing.",
+  },
   TASK_PROVIDED_MISSING: {
     severity: "error",
     source: "requirements",
@@ -792,6 +812,11 @@ export const EVIDENCE_CODES = {
   SELECTOR_EMPTY: {
     template: "No component matches {selector}.",
     description: "The selector matches nothing in the solution.",
+  },
+  ROLE_UNASSIGNED: {
+    template: "No component has the role {role} yet, so it cannot be decided.",
+    description:
+      "A `not-reachable` requirement selects a role the solver has not assigned; it is not vacuously met.",
   },
   ANALYSIS_MISSING: {
     template: "The analysis result has no {analysis} report.",

@@ -55,6 +55,14 @@
               "^.*$": {}
             }
           },
+          "roles": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+            },
+            "uniqueItems": true
+          },
           "meta": {
             "type": "object",
             "patternProperties": {
