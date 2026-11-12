@@ -156,6 +156,8 @@ Evidence explains an intent's verdict: each check lists the evidence it used. Ev
 | `INTERNET_ROUTE_MISSING` | {router}, the router of {zone}, has no route to the internet. | The zone's router has no route with the destination internet. |
 | `INTERNET_ROUTE` | {zone} reaches the internet through {gateway}. | The zone's internet route uses a gateway that allows both directions. |
 | `NAT_ROUTE` | {zone} reaches the internet through {gateway}, for outbound connections only. | The zone's internet route uses an outbound-only gateway. |
+| `DIRECT_INTERNET` | {component} reaches the internet through its public address in {zone}. | The zone's network routes internet traffic to and from public endpoints without gateway components (`zone.directInternet`). |
+| `NO_PUBLIC_ADDRESS` | {component} has no public endpoint, and {zone} has no internet route or outbound gateway for it. | In a network with direct internet access, a component without a public endpoint needs a route or an implicit gateway, such as a NAT gateway, to open connections to the internet. |
 | `GATEWAY_INVALID` | {gateway} is not a gateway. | A route points to a component without the gateway trait. |
 | `GATEWAY_NOT_ATTACHED` | {gateway} is not attached to the network {network}. | A route points to a gateway of another network. |
 | `GATEWAY_OUTBOUND_ONLY` | {gateway} only allows outbound connections, so {zone} cannot be reached from the internet. | Inbound traffic needs a gateway that allows both directions. |
@@ -167,6 +169,9 @@ Evidence explains an intent's verdict: each check lists the evidence it used. Ev
 | `FILTER_DEFAULT_ALLOWS` | No rule of {filter} matches {direction} traffic with {peer}; its default allows it. | No rule matches, and the filter's default policy allows. |
 | `FILTER_DEFAULT_DENIES` | No rule of {filter} matches {direction} traffic with {peer}; its default denies it. | No rule matches, and the filter's default policy denies. |
 | `FILTER_PORT_UNKNOWN` | Rule {rule} of {filter} limits ports, but the traffic's port is not known. | The intent states no port and the target's endpoint lists none. |
+| `FILTER_BASE_ALLOWS` | {filter} allows {direction} traffic with {peer} (base rule {rule} of its type). | No rule of the filter matches; the first matching base rule of its type allows the traffic. |
+| `FILTER_BASE_DENIES` | {filter} denies {direction} traffic with {peer} (base rule {rule} of its type). | No rule of the filter matches; the first matching base rule of its type denies the traffic. |
+| `FILTER_BASE_PORT_UNKNOWN` | Base rule {rule} of {filter} limits ports, but the traffic's port is not known. | The intent states no port and the target's endpoint lists none. |
 | `STATELESS_RETURN` | {filter} is stateless, so the return traffic needs a rule of its own. | Stateless filters check the replies as well, on any port. |
 | `CIDR_NEEDS_DETAILED` | A rule names the address range {cidr}; comparing it with {party} needs the detailed level. | Address ranges other than 0.0.0.0/0 are only matched at the detailed level. |
 | `PEER_ADDRESS_UNKNOWN` | The address of {party} is not known, so it cannot be compared with {cidr}. | The party is outside every zone, or its zones have no address space. |
@@ -177,7 +182,9 @@ Evidence explains an intent's verdict: each check lists the evidence it used. Ev
 | `ENDPOINT_NOT_PUBLIC` | {component} has no public endpoint. | Its endpoint is private or it has none, so it cannot be reached from outside. |
 | `PUBLIC_ACCESS_ON` | {component} allows public {actions}. | Anonymous callers may perform these actions. |
 | `PUBLIC_ACCESS_OFF` | {component} does not allow public access. | Anonymous callers may not use the component. |
-| `MANAGED_SERVICE` | The provider runs {component} across failure domains. | The type is a managed, multi-domain service. |
+| `MANAGED_SERVICE` | The provider runs {component} across failure domains. | The type, or the component's setting, makes it a managed, multi-domain service. |
+| `NOT_MANAGED` | The provider runs {component} in one failure domain. | The component's setting turns off the provider's redundancy, for example zone redundancy. |
+| `NO_FAILURE_DOMAIN` | {component} is not assigned to failure domains, so it runs in one. | The component's own list of failure domains is empty, as for a VM without an availability zone. |
 | `NOT_PLACED` | {component} is not placed in any zone, so its failure domains are not known. | Only placed components have failure domains. |
 | `FAILURE_DOMAIN_UNKNOWN` | {zone}, where {component} is placed, has no failure domain. | Neither the zone nor a zone it is placed in declares a failure domain. |
 | `SINGLE_INSTANCE` | {component} runs one instance, in one of the zones it is placed in. | The type's redundancy spread is off, for example a database without a standby. |

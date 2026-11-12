@@ -1,0 +1,2346 @@
+{
+  "parse": {
+    "ok": true,
+    "findings": []
+  },
+  "analysis": {
+    "strict": {
+      "library": {
+        "name": "solution-validator",
+        "version": "<version>"
+      },
+      "vocabulary": 5,
+      "packs": [
+        {
+          "id": "azure",
+          "version": "0.1.0"
+        },
+        {
+          "id": "core",
+          "version": "0.2.0"
+        }
+      ],
+      "options": {
+        "level": "logical",
+        "analyses": [
+          "model-validity",
+          "connection-validity",
+          "access",
+          "availability"
+        ],
+        "assumptions": "strict"
+      },
+      "analyses": [
+        {
+          "id": "model-validity",
+          "valid": true,
+          "findings": []
+        },
+        {
+          "id": "connection-validity",
+          "intents": [
+            {
+              "intent": "i1",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "azure.api-management",
+                        "purpose": "port https",
+                        "rule": 0
+                      },
+                      "message": "azure.api-management accepts port https from core.internet (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "i2",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "azure.api-management",
+                        "toType": "azure.function-app",
+                        "purpose": "invoke",
+                        "rule": 0
+                      },
+                      "message": "azure.function-app accepts invoke from azure.api-management (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "i3",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "azure.function-app",
+                        "toType": "azure.cosmos-db",
+                        "purpose": "write",
+                        "rule": 0
+                      },
+                      "message": "azure.cosmos-db accepts write from azure.function-app (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "i4",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "azure.function-app",
+                        "toType": "azure.blob-storage",
+                        "purpose": "write",
+                        "rule": 0
+                      },
+                      "message": "azure.blob-storage accepts write from azure.function-app (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "i5",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "azure.function-app",
+                        "purpose": "invoke on port https",
+                        "rule": 3
+                      },
+                      "message": "azure.function-app accepts invoke on port https from core.internet (accepts rule 3)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "i6",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "azure.function-app",
+                        "purpose": "invoke on port https",
+                        "rule": 3
+                      },
+                      "message": "azure.function-app accepts invoke on port https from core.internet (accepts rule 3)."
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "summary": {
+            "pass": 6,
+            "fail": 0,
+            "undecidable": 0
+          },
+          "findings": []
+        },
+        {
+          "id": "access",
+          "intents": [
+            {
+              "intent": "i1",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "azure.api-management",
+                        "purpose": "port https",
+                        "rule": 0
+                      },
+                      "message": "azure.api-management accepts port https from core.internet (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ENDPOINT_PUBLIC",
+                      "params": {
+                        "from": "users",
+                        "to": "api"
+                      },
+                      "message": "api has a public endpoint."
+                    },
+                    {
+                      "code": "PORT_OPEN",
+                      "params": {
+                        "to": "api",
+                        "port": "https"
+                      },
+                      "message": "api listens on port https."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "i2",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "azure.api-management",
+                        "toType": "azure.function-app",
+                        "purpose": "invoke",
+                        "rule": 0
+                      },
+                      "message": "azure.function-app accepts invoke from azure.api-management (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "forwarding",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ROUTE_FOUND",
+                      "params": {
+                        "from": "api",
+                        "to": "orders-fn"
+                      },
+                      "message": "api has a route to orders-fn."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ENDPOINT_PUBLIC",
+                      "params": {
+                        "from": "api",
+                        "to": "orders-fn"
+                      },
+                      "message": "orders-fn has a public endpoint."
+                    }
+                  ]
+                },
+                {
+                  "check": "authorization",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "FORWARDER_AUTHORIZED",
+                      "params": {
+                        "from": "api",
+                        "to": "orders-fn"
+                      },
+                      "message": "api's route to orders-fn also authorizes it."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "i3",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "azure.function-app",
+                        "toType": "azure.cosmos-db",
+                        "purpose": "write",
+                        "rule": 0
+                      },
+                      "message": "azure.cosmos-db accepts write from azure.function-app (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ENDPOINT_PUBLIC",
+                      "params": {
+                        "from": "orders-fn",
+                        "to": "orders-db"
+                      },
+                      "message": "orders-db has a public endpoint."
+                    }
+                  ]
+                },
+                {
+                  "check": "authorization",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "GRANT_FOUND",
+                      "params": {
+                        "from": "orders-fn",
+                        "to": "orders-db",
+                        "access": "read-write",
+                        "action": "write"
+                      },
+                      "message": "orders-fn has read-write access to orders-db, which allows write."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "i4",
+              "verdict": "fail",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "azure.function-app",
+                        "toType": "azure.blob-storage",
+                        "purpose": "write",
+                        "rule": 0
+                      },
+                      "message": "azure.blob-storage accepts write from azure.function-app (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ENDPOINT_PUBLIC",
+                      "params": {
+                        "from": "orders-fn",
+                        "to": "uploads"
+                      },
+                      "message": "uploads has a public endpoint."
+                    }
+                  ]
+                },
+                {
+                  "check": "authorization",
+                  "verdict": "fail",
+                  "evidence": [
+                    {
+                      "code": "GRANT_MISSING",
+                      "params": {
+                        "from": "orders-fn",
+                        "to": "uploads",
+                        "action": "write"
+                      },
+                      "message": "orders-fn has no grant on uploads that allows write."
+                    },
+                    {
+                      "code": "PUBLIC_DENIED",
+                      "params": {
+                        "to": "uploads",
+                        "action": "write"
+                      },
+                      "message": "uploads does not allow public write."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "i5",
+              "verdict": "fail",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "azure.function-app",
+                        "purpose": "invoke on port https",
+                        "rule": 3
+                      },
+                      "message": "azure.function-app accepts invoke on port https from core.internet (accepts rule 3)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ENDPOINT_PUBLIC",
+                      "params": {
+                        "from": "users",
+                        "to": "orders-fn"
+                      },
+                      "message": "orders-fn has a public endpoint."
+                    },
+                    {
+                      "code": "PORT_OPEN",
+                      "params": {
+                        "to": "orders-fn",
+                        "port": "https"
+                      },
+                      "message": "orders-fn listens on port https."
+                    }
+                  ]
+                },
+                {
+                  "check": "authorization",
+                  "verdict": "fail",
+                  "evidence": [
+                    {
+                      "code": "NOT_PRINCIPAL",
+                      "params": {
+                        "from": "users"
+                      },
+                      "message": "users has no identity that can be granted access."
+                    },
+                    {
+                      "code": "PUBLIC_DENIED",
+                      "params": {
+                        "to": "orders-fn",
+                        "action": "invoke"
+                      },
+                      "message": "orders-fn does not allow public invoke."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "i6",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "azure.function-app",
+                        "purpose": "invoke on port https",
+                        "rule": 3
+                      },
+                      "message": "azure.function-app accepts invoke on port https from core.internet (accepts rule 3)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ENDPOINT_PUBLIC",
+                      "params": {
+                        "from": "users",
+                        "to": "public-fn"
+                      },
+                      "message": "public-fn has a public endpoint."
+                    },
+                    {
+                      "code": "PORT_OPEN",
+                      "params": {
+                        "to": "public-fn",
+                        "port": "https"
+                      },
+                      "message": "public-fn listens on port https."
+                    }
+                  ]
+                },
+                {
+                  "check": "authorization",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "PUBLIC_ALLOWED",
+                      "params": {
+                        "to": "public-fn",
+                        "action": "invoke"
+                      },
+                      "message": "public-fn allows public invoke."
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "summary": {
+            "pass": 4,
+            "fail": 2,
+            "undecidable": 0
+          },
+          "exposure": [
+            {
+              "component": "api",
+              "exposure": "exposed",
+              "evidence": [
+                {
+                  "code": "ENDPOINT_PUBLIC",
+                  "params": {
+                    "from": "the internet",
+                    "to": "api"
+                  },
+                  "message": "api has a public endpoint."
+                },
+                {
+                  "code": "ANONYMOUS_ALLOWED",
+                  "params": {
+                    "component": "api"
+                  },
+                  "message": "api does not control access."
+                }
+              ]
+            },
+            {
+              "component": "orders-db",
+              "exposure": "not-exposed",
+              "evidence": [
+                {
+                  "code": "ENDPOINT_PUBLIC",
+                  "params": {
+                    "from": "the internet",
+                    "to": "orders-db"
+                  },
+                  "message": "orders-db has a public endpoint."
+                },
+                {
+                  "code": "PUBLIC_ACCESS_OFF",
+                  "params": {
+                    "component": "orders-db"
+                  },
+                  "message": "orders-db does not allow public access."
+                }
+              ]
+            },
+            {
+              "component": "orders-fn",
+              "exposure": "not-exposed",
+              "evidence": [
+                {
+                  "code": "ENDPOINT_PUBLIC",
+                  "params": {
+                    "from": "the internet",
+                    "to": "orders-fn"
+                  },
+                  "message": "orders-fn has a public endpoint."
+                },
+                {
+                  "code": "PUBLIC_ACCESS_OFF",
+                  "params": {
+                    "component": "orders-fn"
+                  },
+                  "message": "orders-fn does not allow public access."
+                }
+              ]
+            },
+            {
+              "component": "public-fn",
+              "exposure": "exposed",
+              "actions": [
+                "invoke"
+              ],
+              "evidence": [
+                {
+                  "code": "ENDPOINT_PUBLIC",
+                  "params": {
+                    "from": "the internet",
+                    "to": "public-fn"
+                  },
+                  "message": "public-fn has a public endpoint."
+                },
+                {
+                  "code": "PUBLIC_ACCESS_ON",
+                  "params": {
+                    "component": "public-fn",
+                    "actions": "invoke"
+                  },
+                  "message": "public-fn allows public invoke."
+                }
+              ]
+            },
+            {
+              "component": "uploads",
+              "exposure": "not-exposed",
+              "evidence": [
+                {
+                  "code": "ENDPOINT_PUBLIC",
+                  "params": {
+                    "from": "the internet",
+                    "to": "uploads"
+                  },
+                  "message": "uploads has a public endpoint."
+                },
+                {
+                  "code": "PUBLIC_ACCESS_OFF",
+                  "params": {
+                    "component": "uploads"
+                  },
+                  "message": "uploads does not allow public access."
+                }
+              ]
+            }
+          ],
+          "assumptions": [],
+          "findings": [
+            {
+              "code": "EXPOSED_TO_INTERNET",
+              "severity": "info",
+              "subjects": [
+                "api"
+              ],
+              "params": {
+                "component": "api"
+              },
+              "message": "api is directly accessible from the internet."
+            },
+            {
+              "code": "ACCESS_PERMISSION_MISSING",
+              "severity": "error",
+              "subjects": [
+                "i4"
+              ],
+              "params": {
+                "intent": "i4",
+                "from": "orders-fn",
+                "to": "uploads",
+                "action": "write"
+              },
+              "message": "Intent i4: orders-fn has no permission to write uploads."
+            },
+            {
+              "code": "ACCESS_PERMISSION_MISSING",
+              "severity": "error",
+              "subjects": [
+                "i5"
+              ],
+              "params": {
+                "intent": "i5",
+                "from": "users",
+                "to": "orders-fn",
+                "action": "invoke"
+              },
+              "message": "Intent i5: users has no permission to invoke orders-fn."
+            },
+            {
+              "code": "EXPOSED_TO_INTERNET",
+              "severity": "info",
+              "subjects": [
+                "public-fn"
+              ],
+              "params": {
+                "component": "public-fn"
+              },
+              "message": "public-fn is directly accessible from the internet."
+            }
+          ]
+        },
+        {
+          "id": "availability",
+          "components": [
+            {
+              "component": "api",
+              "availability": "managed",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "MANAGED_SERVICE",
+                  "params": {
+                    "component": "api"
+                  },
+                  "message": "The provider runs api across failure domains."
+                }
+              ]
+            },
+            {
+              "component": "orders-db",
+              "availability": "managed",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "MANAGED_SERVICE",
+                  "params": {
+                    "component": "orders-db"
+                  },
+                  "message": "The provider runs orders-db across failure domains."
+                }
+              ]
+            },
+            {
+              "component": "orders-fn",
+              "availability": "managed",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "MANAGED_SERVICE",
+                  "params": {
+                    "component": "orders-fn"
+                  },
+                  "message": "The provider runs orders-fn across failure domains."
+                }
+              ]
+            },
+            {
+              "component": "public-fn",
+              "availability": "undecidable",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "PROPERTY_UNSET",
+                  "params": {
+                    "component": "public-fn",
+                    "property": "zoneRedundant"
+                  },
+                  "message": "public-fn does not set zoneRedundant."
+                }
+              ]
+            },
+            {
+              "component": "uploads",
+              "availability": "single",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "NOT_MANAGED",
+                  "params": {
+                    "component": "uploads"
+                  },
+                  "message": "The provider runs uploads in one failure domain."
+                }
+              ]
+            }
+          ],
+          "findings": []
+        }
+      ]
+    },
+    "pack-defaults": {
+      "library": {
+        "name": "solution-validator",
+        "version": "<version>"
+      },
+      "vocabulary": 5,
+      "packs": [
+        {
+          "id": "azure",
+          "version": "0.1.0"
+        },
+        {
+          "id": "core",
+          "version": "0.2.0"
+        }
+      ],
+      "options": {
+        "level": "logical",
+        "analyses": [
+          "model-validity",
+          "connection-validity",
+          "access",
+          "availability"
+        ],
+        "assumptions": "pack-defaults"
+      },
+      "analyses": [
+        {
+          "id": "model-validity",
+          "valid": true,
+          "findings": []
+        },
+        {
+          "id": "connection-validity",
+          "intents": [
+            {
+              "intent": "i1",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "azure.api-management",
+                        "purpose": "port https",
+                        "rule": 0
+                      },
+                      "message": "azure.api-management accepts port https from core.internet (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "i2",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "azure.api-management",
+                        "toType": "azure.function-app",
+                        "purpose": "invoke",
+                        "rule": 0
+                      },
+                      "message": "azure.function-app accepts invoke from azure.api-management (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "i3",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "azure.function-app",
+                        "toType": "azure.cosmos-db",
+                        "purpose": "write",
+                        "rule": 0
+                      },
+                      "message": "azure.cosmos-db accepts write from azure.function-app (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "i4",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "azure.function-app",
+                        "toType": "azure.blob-storage",
+                        "purpose": "write",
+                        "rule": 0
+                      },
+                      "message": "azure.blob-storage accepts write from azure.function-app (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "i5",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "azure.function-app",
+                        "purpose": "invoke on port https",
+                        "rule": 3
+                      },
+                      "message": "azure.function-app accepts invoke on port https from core.internet (accepts rule 3)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "i6",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "azure.function-app",
+                        "purpose": "invoke on port https",
+                        "rule": 3
+                      },
+                      "message": "azure.function-app accepts invoke on port https from core.internet (accepts rule 3)."
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "summary": {
+            "pass": 6,
+            "fail": 0,
+            "undecidable": 0
+          },
+          "findings": []
+        },
+        {
+          "id": "access",
+          "intents": [
+            {
+              "intent": "i1",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "azure.api-management",
+                        "purpose": "port https",
+                        "rule": 0
+                      },
+                      "message": "azure.api-management accepts port https from core.internet (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ENDPOINT_PUBLIC",
+                      "params": {
+                        "from": "users",
+                        "to": "api"
+                      },
+                      "message": "api has a public endpoint."
+                    },
+                    {
+                      "code": "PORT_OPEN",
+                      "params": {
+                        "to": "api",
+                        "port": "https"
+                      },
+                      "message": "api listens on port https."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "i2",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "azure.api-management",
+                        "toType": "azure.function-app",
+                        "purpose": "invoke",
+                        "rule": 0
+                      },
+                      "message": "azure.function-app accepts invoke from azure.api-management (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "forwarding",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ROUTE_FOUND",
+                      "params": {
+                        "from": "api",
+                        "to": "orders-fn"
+                      },
+                      "message": "api has a route to orders-fn."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ENDPOINT_PUBLIC",
+                      "params": {
+                        "from": "api",
+                        "to": "orders-fn"
+                      },
+                      "message": "orders-fn has a public endpoint."
+                    }
+                  ]
+                },
+                {
+                  "check": "authorization",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "FORWARDER_AUTHORIZED",
+                      "params": {
+                        "from": "api",
+                        "to": "orders-fn"
+                      },
+                      "message": "api's route to orders-fn also authorizes it."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "i3",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "azure.function-app",
+                        "toType": "azure.cosmos-db",
+                        "purpose": "write",
+                        "rule": 0
+                      },
+                      "message": "azure.cosmos-db accepts write from azure.function-app (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ENDPOINT_PUBLIC",
+                      "params": {
+                        "from": "orders-fn",
+                        "to": "orders-db"
+                      },
+                      "message": "orders-db has a public endpoint."
+                    }
+                  ]
+                },
+                {
+                  "check": "authorization",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "GRANT_FOUND",
+                      "params": {
+                        "from": "orders-fn",
+                        "to": "orders-db",
+                        "access": "read-write",
+                        "action": "write"
+                      },
+                      "message": "orders-fn has read-write access to orders-db, which allows write."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "i4",
+              "verdict": "fail",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "azure.function-app",
+                        "toType": "azure.blob-storage",
+                        "purpose": "write",
+                        "rule": 0
+                      },
+                      "message": "azure.blob-storage accepts write from azure.function-app (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ENDPOINT_PUBLIC",
+                      "params": {
+                        "from": "orders-fn",
+                        "to": "uploads"
+                      },
+                      "message": "uploads has a public endpoint."
+                    }
+                  ]
+                },
+                {
+                  "check": "authorization",
+                  "verdict": "fail",
+                  "evidence": [
+                    {
+                      "code": "GRANT_MISSING",
+                      "params": {
+                        "from": "orders-fn",
+                        "to": "uploads",
+                        "action": "write"
+                      },
+                      "message": "orders-fn has no grant on uploads that allows write."
+                    },
+                    {
+                      "code": "PUBLIC_DENIED",
+                      "params": {
+                        "to": "uploads",
+                        "action": "write"
+                      },
+                      "message": "uploads does not allow public write."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "i5",
+              "verdict": "fail",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "azure.function-app",
+                        "purpose": "invoke on port https",
+                        "rule": 3
+                      },
+                      "message": "azure.function-app accepts invoke on port https from core.internet (accepts rule 3)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ENDPOINT_PUBLIC",
+                      "params": {
+                        "from": "users",
+                        "to": "orders-fn"
+                      },
+                      "message": "orders-fn has a public endpoint."
+                    },
+                    {
+                      "code": "PORT_OPEN",
+                      "params": {
+                        "to": "orders-fn",
+                        "port": "https"
+                      },
+                      "message": "orders-fn listens on port https."
+                    }
+                  ]
+                },
+                {
+                  "check": "authorization",
+                  "verdict": "fail",
+                  "evidence": [
+                    {
+                      "code": "NOT_PRINCIPAL",
+                      "params": {
+                        "from": "users"
+                      },
+                      "message": "users has no identity that can be granted access."
+                    },
+                    {
+                      "code": "PUBLIC_DENIED",
+                      "params": {
+                        "to": "orders-fn",
+                        "action": "invoke"
+                      },
+                      "message": "orders-fn does not allow public invoke."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "i6",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "azure.function-app",
+                        "purpose": "invoke on port https",
+                        "rule": 3
+                      },
+                      "message": "azure.function-app accepts invoke on port https from core.internet (accepts rule 3)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ENDPOINT_PUBLIC",
+                      "params": {
+                        "from": "users",
+                        "to": "public-fn"
+                      },
+                      "message": "public-fn has a public endpoint."
+                    },
+                    {
+                      "code": "PORT_OPEN",
+                      "params": {
+                        "to": "public-fn",
+                        "port": "https"
+                      },
+                      "message": "public-fn listens on port https."
+                    }
+                  ]
+                },
+                {
+                  "check": "authorization",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "PUBLIC_ALLOWED",
+                      "params": {
+                        "to": "public-fn",
+                        "action": "invoke"
+                      },
+                      "message": "public-fn allows public invoke."
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "summary": {
+            "pass": 4,
+            "fail": 2,
+            "undecidable": 0
+          },
+          "exposure": [
+            {
+              "component": "api",
+              "exposure": "exposed",
+              "evidence": [
+                {
+                  "code": "ENDPOINT_PUBLIC",
+                  "params": {
+                    "from": "the internet",
+                    "to": "api"
+                  },
+                  "message": "api has a public endpoint."
+                },
+                {
+                  "code": "ANONYMOUS_ALLOWED",
+                  "params": {
+                    "component": "api"
+                  },
+                  "message": "api does not control access."
+                }
+              ]
+            },
+            {
+              "component": "orders-db",
+              "exposure": "not-exposed",
+              "evidence": [
+                {
+                  "code": "ENDPOINT_PUBLIC",
+                  "params": {
+                    "from": "the internet",
+                    "to": "orders-db"
+                  },
+                  "message": "orders-db has a public endpoint."
+                },
+                {
+                  "code": "PUBLIC_ACCESS_OFF",
+                  "params": {
+                    "component": "orders-db"
+                  },
+                  "message": "orders-db does not allow public access."
+                }
+              ]
+            },
+            {
+              "component": "orders-fn",
+              "exposure": "not-exposed",
+              "evidence": [
+                {
+                  "code": "ENDPOINT_PUBLIC",
+                  "params": {
+                    "from": "the internet",
+                    "to": "orders-fn"
+                  },
+                  "message": "orders-fn has a public endpoint."
+                },
+                {
+                  "code": "PUBLIC_ACCESS_OFF",
+                  "params": {
+                    "component": "orders-fn"
+                  },
+                  "message": "orders-fn does not allow public access."
+                }
+              ]
+            },
+            {
+              "component": "public-fn",
+              "exposure": "exposed",
+              "actions": [
+                "invoke"
+              ],
+              "evidence": [
+                {
+                  "code": "ENDPOINT_PUBLIC",
+                  "params": {
+                    "from": "the internet",
+                    "to": "public-fn"
+                  },
+                  "message": "public-fn has a public endpoint."
+                },
+                {
+                  "code": "PUBLIC_ACCESS_ON",
+                  "params": {
+                    "component": "public-fn",
+                    "actions": "invoke"
+                  },
+                  "message": "public-fn allows public invoke."
+                }
+              ]
+            },
+            {
+              "component": "uploads",
+              "exposure": "not-exposed",
+              "evidence": [
+                {
+                  "code": "ENDPOINT_PUBLIC",
+                  "params": {
+                    "from": "the internet",
+                    "to": "uploads"
+                  },
+                  "message": "uploads has a public endpoint."
+                },
+                {
+                  "code": "PUBLIC_ACCESS_OFF",
+                  "params": {
+                    "component": "uploads"
+                  },
+                  "message": "uploads does not allow public access."
+                }
+              ]
+            }
+          ],
+          "assumptions": [],
+          "findings": [
+            {
+              "code": "EXPOSED_TO_INTERNET",
+              "severity": "info",
+              "subjects": [
+                "api"
+              ],
+              "params": {
+                "component": "api"
+              },
+              "message": "api is directly accessible from the internet."
+            },
+            {
+              "code": "ACCESS_PERMISSION_MISSING",
+              "severity": "error",
+              "subjects": [
+                "i4"
+              ],
+              "params": {
+                "intent": "i4",
+                "from": "orders-fn",
+                "to": "uploads",
+                "action": "write"
+              },
+              "message": "Intent i4: orders-fn has no permission to write uploads."
+            },
+            {
+              "code": "ACCESS_PERMISSION_MISSING",
+              "severity": "error",
+              "subjects": [
+                "i5"
+              ],
+              "params": {
+                "intent": "i5",
+                "from": "users",
+                "to": "orders-fn",
+                "action": "invoke"
+              },
+              "message": "Intent i5: users has no permission to invoke orders-fn."
+            },
+            {
+              "code": "EXPOSED_TO_INTERNET",
+              "severity": "info",
+              "subjects": [
+                "public-fn"
+              ],
+              "params": {
+                "component": "public-fn"
+              },
+              "message": "public-fn is directly accessible from the internet."
+            }
+          ]
+        },
+        {
+          "id": "availability",
+          "components": [
+            {
+              "component": "api",
+              "availability": "managed",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "MANAGED_SERVICE",
+                  "params": {
+                    "component": "api"
+                  },
+                  "message": "The provider runs api across failure domains."
+                }
+              ]
+            },
+            {
+              "component": "orders-db",
+              "availability": "managed",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "MANAGED_SERVICE",
+                  "params": {
+                    "component": "orders-db"
+                  },
+                  "message": "The provider runs orders-db across failure domains."
+                }
+              ]
+            },
+            {
+              "component": "orders-fn",
+              "availability": "managed",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "MANAGED_SERVICE",
+                  "params": {
+                    "component": "orders-fn"
+                  },
+                  "message": "The provider runs orders-fn across failure domains."
+                }
+              ]
+            },
+            {
+              "component": "public-fn",
+              "availability": "single",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "PROPERTY_ASSUMED",
+                  "params": {
+                    "component": "public-fn",
+                    "property": "zoneRedundant",
+                    "value": "false"
+                  },
+                  "message": "public-fn does not set zoneRedundant; the pack default false is assumed."
+                },
+                {
+                  "code": "NOT_MANAGED",
+                  "params": {
+                    "component": "public-fn"
+                  },
+                  "message": "The provider runs public-fn in one failure domain."
+                }
+              ]
+            },
+            {
+              "component": "uploads",
+              "availability": "single",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "NOT_MANAGED",
+                  "params": {
+                    "component": "uploads"
+                  },
+                  "message": "The provider runs uploads in one failure domain."
+                }
+              ]
+            }
+          ],
+          "findings": [
+            {
+              "code": "AVAILABILITY_SINGLE_POINT",
+              "severity": "warning",
+              "subjects": [
+                "public-fn"
+              ],
+              "params": {
+                "component": "public-fn",
+                "domain": "one failure domain",
+                "intents": "i6"
+              },
+              "message": "public-fn runs in a single failure domain (one failure domain), and intents depend on it: i6."
+            }
+          ]
+        }
+      ]
+    },
+    "detailed": {
+      "library": {
+        "name": "solution-validator",
+        "version": "<version>"
+      },
+      "vocabulary": 5,
+      "packs": [
+        {
+          "id": "azure",
+          "version": "0.1.0"
+        },
+        {
+          "id": "core",
+          "version": "0.2.0"
+        }
+      ],
+      "options": {
+        "level": "detailed",
+        "analyses": [
+          "model-validity",
+          "connection-validity",
+          "access",
+          "address-plan",
+          "availability"
+        ],
+        "assumptions": "strict"
+      },
+      "analyses": [
+        {
+          "id": "model-validity",
+          "valid": true,
+          "findings": []
+        },
+        {
+          "id": "connection-validity",
+          "intents": [
+            {
+              "intent": "i1",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "azure.api-management",
+                        "purpose": "port https",
+                        "rule": 0
+                      },
+                      "message": "azure.api-management accepts port https from core.internet (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "i2",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "azure.api-management",
+                        "toType": "azure.function-app",
+                        "purpose": "invoke",
+                        "rule": 0
+                      },
+                      "message": "azure.function-app accepts invoke from azure.api-management (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "i3",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "azure.function-app",
+                        "toType": "azure.cosmos-db",
+                        "purpose": "write",
+                        "rule": 0
+                      },
+                      "message": "azure.cosmos-db accepts write from azure.function-app (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "i4",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "azure.function-app",
+                        "toType": "azure.blob-storage",
+                        "purpose": "write",
+                        "rule": 0
+                      },
+                      "message": "azure.blob-storage accepts write from azure.function-app (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "i5",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "azure.function-app",
+                        "purpose": "invoke on port https",
+                        "rule": 3
+                      },
+                      "message": "azure.function-app accepts invoke on port https from core.internet (accepts rule 3)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "i6",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "azure.function-app",
+                        "purpose": "invoke on port https",
+                        "rule": 3
+                      },
+                      "message": "azure.function-app accepts invoke on port https from core.internet (accepts rule 3)."
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "summary": {
+            "pass": 6,
+            "fail": 0,
+            "undecidable": 0
+          },
+          "findings": []
+        },
+        {
+          "id": "access",
+          "intents": [
+            {
+              "intent": "i1",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "azure.api-management",
+                        "purpose": "port https",
+                        "rule": 0
+                      },
+                      "message": "azure.api-management accepts port https from core.internet (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ENDPOINT_PUBLIC",
+                      "params": {
+                        "from": "users",
+                        "to": "api"
+                      },
+                      "message": "api has a public endpoint."
+                    },
+                    {
+                      "code": "PORT_OPEN",
+                      "params": {
+                        "to": "api",
+                        "port": "https"
+                      },
+                      "message": "api listens on port https."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "i2",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "azure.api-management",
+                        "toType": "azure.function-app",
+                        "purpose": "invoke",
+                        "rule": 0
+                      },
+                      "message": "azure.function-app accepts invoke from azure.api-management (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "forwarding",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ROUTE_FOUND",
+                      "params": {
+                        "from": "api",
+                        "to": "orders-fn"
+                      },
+                      "message": "api has a route to orders-fn."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ENDPOINT_PUBLIC",
+                      "params": {
+                        "from": "api",
+                        "to": "orders-fn"
+                      },
+                      "message": "orders-fn has a public endpoint."
+                    }
+                  ]
+                },
+                {
+                  "check": "authorization",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "FORWARDER_AUTHORIZED",
+                      "params": {
+                        "from": "api",
+                        "to": "orders-fn"
+                      },
+                      "message": "api's route to orders-fn also authorizes it."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "i3",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "azure.function-app",
+                        "toType": "azure.cosmos-db",
+                        "purpose": "write",
+                        "rule": 0
+                      },
+                      "message": "azure.cosmos-db accepts write from azure.function-app (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ENDPOINT_PUBLIC",
+                      "params": {
+                        "from": "orders-fn",
+                        "to": "orders-db"
+                      },
+                      "message": "orders-db has a public endpoint."
+                    }
+                  ]
+                },
+                {
+                  "check": "authorization",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "GRANT_FOUND",
+                      "params": {
+                        "from": "orders-fn",
+                        "to": "orders-db",
+                        "access": "read-write",
+                        "action": "write"
+                      },
+                      "message": "orders-fn has read-write access to orders-db, which allows write."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "i4",
+              "verdict": "fail",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "azure.function-app",
+                        "toType": "azure.blob-storage",
+                        "purpose": "write",
+                        "rule": 0
+                      },
+                      "message": "azure.blob-storage accepts write from azure.function-app (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ENDPOINT_PUBLIC",
+                      "params": {
+                        "from": "orders-fn",
+                        "to": "uploads"
+                      },
+                      "message": "uploads has a public endpoint."
+                    }
+                  ]
+                },
+                {
+                  "check": "authorization",
+                  "verdict": "fail",
+                  "evidence": [
+                    {
+                      "code": "GRANT_MISSING",
+                      "params": {
+                        "from": "orders-fn",
+                        "to": "uploads",
+                        "action": "write"
+                      },
+                      "message": "orders-fn has no grant on uploads that allows write."
+                    },
+                    {
+                      "code": "PUBLIC_DENIED",
+                      "params": {
+                        "to": "uploads",
+                        "action": "write"
+                      },
+                      "message": "uploads does not allow public write."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "i5",
+              "verdict": "fail",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "azure.function-app",
+                        "purpose": "invoke on port https",
+                        "rule": 3
+                      },
+                      "message": "azure.function-app accepts invoke on port https from core.internet (accepts rule 3)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ENDPOINT_PUBLIC",
+                      "params": {
+                        "from": "users",
+                        "to": "orders-fn"
+                      },
+                      "message": "orders-fn has a public endpoint."
+                    },
+                    {
+                      "code": "PORT_OPEN",
+                      "params": {
+                        "to": "orders-fn",
+                        "port": "https"
+                      },
+                      "message": "orders-fn listens on port https."
+                    }
+                  ]
+                },
+                {
+                  "check": "authorization",
+                  "verdict": "fail",
+                  "evidence": [
+                    {
+                      "code": "NOT_PRINCIPAL",
+                      "params": {
+                        "from": "users"
+                      },
+                      "message": "users has no identity that can be granted access."
+                    },
+                    {
+                      "code": "PUBLIC_DENIED",
+                      "params": {
+                        "to": "orders-fn",
+                        "action": "invoke"
+                      },
+                      "message": "orders-fn does not allow public invoke."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "i6",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "azure.function-app",
+                        "purpose": "invoke on port https",
+                        "rule": 3
+                      },
+                      "message": "azure.function-app accepts invoke on port https from core.internet (accepts rule 3)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ENDPOINT_PUBLIC",
+                      "params": {
+                        "from": "users",
+                        "to": "public-fn"
+                      },
+                      "message": "public-fn has a public endpoint."
+                    },
+                    {
+                      "code": "PORT_OPEN",
+                      "params": {
+                        "to": "public-fn",
+                        "port": "https"
+                      },
+                      "message": "public-fn listens on port https."
+                    }
+                  ]
+                },
+                {
+                  "check": "authorization",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "PUBLIC_ALLOWED",
+                      "params": {
+                        "to": "public-fn",
+                        "action": "invoke"
+                      },
+                      "message": "public-fn allows public invoke."
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "summary": {
+            "pass": 4,
+            "fail": 2,
+            "undecidable": 0
+          },
+          "exposure": [
+            {
+              "component": "api",
+              "exposure": "exposed",
+              "evidence": [
+                {
+                  "code": "ENDPOINT_PUBLIC",
+                  "params": {
+                    "from": "the internet",
+                    "to": "api"
+                  },
+                  "message": "api has a public endpoint."
+                },
+                {
+                  "code": "ANONYMOUS_ALLOWED",
+                  "params": {
+                    "component": "api"
+                  },
+                  "message": "api does not control access."
+                }
+              ]
+            },
+            {
+              "component": "orders-db",
+              "exposure": "not-exposed",
+              "evidence": [
+                {
+                  "code": "ENDPOINT_PUBLIC",
+                  "params": {
+                    "from": "the internet",
+                    "to": "orders-db"
+                  },
+                  "message": "orders-db has a public endpoint."
+                },
+                {
+                  "code": "PUBLIC_ACCESS_OFF",
+                  "params": {
+                    "component": "orders-db"
+                  },
+                  "message": "orders-db does not allow public access."
+                }
+              ]
+            },
+            {
+              "component": "orders-fn",
+              "exposure": "not-exposed",
+              "evidence": [
+                {
+                  "code": "ENDPOINT_PUBLIC",
+                  "params": {
+                    "from": "the internet",
+                    "to": "orders-fn"
+                  },
+                  "message": "orders-fn has a public endpoint."
+                },
+                {
+                  "code": "PUBLIC_ACCESS_OFF",
+                  "params": {
+                    "component": "orders-fn"
+                  },
+                  "message": "orders-fn does not allow public access."
+                }
+              ]
+            },
+            {
+              "component": "public-fn",
+              "exposure": "exposed",
+              "actions": [
+                "invoke"
+              ],
+              "evidence": [
+                {
+                  "code": "ENDPOINT_PUBLIC",
+                  "params": {
+                    "from": "the internet",
+                    "to": "public-fn"
+                  },
+                  "message": "public-fn has a public endpoint."
+                },
+                {
+                  "code": "PUBLIC_ACCESS_ON",
+                  "params": {
+                    "component": "public-fn",
+                    "actions": "invoke"
+                  },
+                  "message": "public-fn allows public invoke."
+                }
+              ]
+            },
+            {
+              "component": "uploads",
+              "exposure": "not-exposed",
+              "evidence": [
+                {
+                  "code": "ENDPOINT_PUBLIC",
+                  "params": {
+                    "from": "the internet",
+                    "to": "uploads"
+                  },
+                  "message": "uploads has a public endpoint."
+                },
+                {
+                  "code": "PUBLIC_ACCESS_OFF",
+                  "params": {
+                    "component": "uploads"
+                  },
+                  "message": "uploads does not allow public access."
+                }
+              ]
+            }
+          ],
+          "assumptions": [],
+          "findings": [
+            {
+              "code": "EXPOSED_TO_INTERNET",
+              "severity": "info",
+              "subjects": [
+                "api"
+              ],
+              "params": {
+                "component": "api"
+              },
+              "message": "api is directly accessible from the internet."
+            },
+            {
+              "code": "ACCESS_PERMISSION_MISSING",
+              "severity": "error",
+              "subjects": [
+                "i4"
+              ],
+              "params": {
+                "intent": "i4",
+                "from": "orders-fn",
+                "to": "uploads",
+                "action": "write"
+              },
+              "message": "Intent i4: orders-fn has no permission to write uploads."
+            },
+            {
+              "code": "ACCESS_PERMISSION_MISSING",
+              "severity": "error",
+              "subjects": [
+                "i5"
+              ],
+              "params": {
+                "intent": "i5",
+                "from": "users",
+                "to": "orders-fn",
+                "action": "invoke"
+              },
+              "message": "Intent i5: users has no permission to invoke orders-fn."
+            },
+            {
+              "code": "EXPOSED_TO_INTERNET",
+              "severity": "info",
+              "subjects": [
+                "public-fn"
+              ],
+              "params": {
+                "component": "public-fn"
+              },
+              "message": "public-fn is directly accessible from the internet."
+            }
+          ]
+        },
+        {
+          "id": "address-plan",
+          "zones": [],
+          "findings": []
+        },
+        {
+          "id": "availability",
+          "components": [
+            {
+              "component": "api",
+              "availability": "managed",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "MANAGED_SERVICE",
+                  "params": {
+                    "component": "api"
+                  },
+                  "message": "The provider runs api across failure domains."
+                }
+              ]
+            },
+            {
+              "component": "orders-db",
+              "availability": "managed",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "MANAGED_SERVICE",
+                  "params": {
+                    "component": "orders-db"
+                  },
+                  "message": "The provider runs orders-db across failure domains."
+                }
+              ]
+            },
+            {
+              "component": "orders-fn",
+              "availability": "managed",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "MANAGED_SERVICE",
+                  "params": {
+                    "component": "orders-fn"
+                  },
+                  "message": "The provider runs orders-fn across failure domains."
+                }
+              ]
+            },
+            {
+              "component": "public-fn",
+              "availability": "undecidable",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "PROPERTY_UNSET",
+                  "params": {
+                    "component": "public-fn",
+                    "property": "zoneRedundant"
+                  },
+                  "message": "public-fn does not set zoneRedundant."
+                }
+              ]
+            },
+            {
+              "component": "uploads",
+              "availability": "single",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "NOT_MANAGED",
+                  "params": {
+                    "component": "uploads"
+                  },
+                  "message": "The provider runs uploads in one failure domain."
+                }
+              ]
+            }
+          ],
+          "findings": []
+        }
+      ]
+    }
+  }
+}

@@ -1,6 +1,6 @@
 # Roadmap
 
-> **Status:** Approved (initial) · 2026-11-10 · **Current iteration: 9 — Azure pack** (Iterations 7–10 approved in this order)
+> **Status:** Approved (initial) · 2026-11-10 · **Current iteration: 10 — On-premises pack** (Iterations 7–10 approved in this order)
 >
 > Iterations 0–4 are approved. Only the current iteration is a commitment. The scope of later iterations may still change and is confirmed before each one starts. Open questions (Q1, Q2, …) are listed in [design.md](design.md#12-open-questions).
 
@@ -41,7 +41,7 @@ Trade-off: the vision's own example (network placement, Security Group and ACL r
 | 6 | Detailed level (IPv4) | 0.6.0 | Q18, Q19, Q20 | Done |
 | 7 | More AWS types | 0.7.0 | Q21 | Done |
 | 8 | Availability analysis | 0.8.0 | Q22 | Done |
-| 9 | Azure pack | 0.9.0 | to be scoped | Approved |
+| 9 | Azure pack | 0.9.0 | Q23 | Done |
 | 10 | On-premises pack | 0.10.0 | to be scoped | Approved |
 
 ### Iteration 0 — Foundations
@@ -140,7 +140,10 @@ The product owner approved Iterations 7–10 in this order after Iteration 6.
 
 ### Iteration 9 — Azure pack (0.9.0)
 
-A second provider pack (Functions, API Management, Cosmos DB, Blob Storage, VNet, subnets, NSG, NAT gateway and more) built on the same traits, proving that tasks selecting by category work across providers. Scoped when it starts.
+- **Packs:** `azure` 0.1.0 covers Functions, API Management, Cosmos DB, Blob Storage, virtual networks, subnets, network security groups, NAT gateways, virtual machines, scale sets and Application Gateway.
+- **Library:** trait vocabulary 5 adds `zone.directInternet`, `gateway.implicit`, `traffic-filter.baseRules`, the `network` rule peer, a bindable `redundancy.managed` and `redundancy.domains` (Q23). AWS results do not change.
+- **Tests:** one provider-neutral task is checked against an AWS and an Azure solution.
+- **Demo:** two Azure scenarios with provider-neutral tasks.
 
 ### Iteration 10 — On-premises pack (0.10.0)
 

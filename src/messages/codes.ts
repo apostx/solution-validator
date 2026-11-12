@@ -568,6 +568,17 @@ export const EVIDENCE_CODES = {
     template: "{zone} reaches the internet through {gateway}, for outbound connections only.",
     description: "The zone's internet route uses an outbound-only gateway.",
   },
+  DIRECT_INTERNET: {
+    template: "{component} reaches the internet through its public address in {zone}.",
+    description:
+      "The zone's network routes internet traffic to and from public endpoints without gateway components (`zone.directInternet`).",
+  },
+  NO_PUBLIC_ADDRESS: {
+    template:
+      "{component} has no public endpoint, and {zone} has no internet route or outbound gateway for it.",
+    description:
+      "In a network with direct internet access, a component without a public endpoint needs a route or an implicit gateway, such as a NAT gateway, to open connections to the internet.",
+  },
   GATEWAY_INVALID: {
     template: "{gateway} is not a gateway.",
     description: "A route points to a component without the gateway trait.",
@@ -615,6 +626,20 @@ export const EVIDENCE_CODES = {
     template: "Rule {rule} of {filter} limits ports, but the traffic's port is not known.",
     description: "The intent states no port and the target's endpoint lists none.",
   },
+  FILTER_BASE_ALLOWS: {
+    template: "{filter} allows {direction} traffic with {peer} (base rule {rule} of its type).",
+    description:
+      "No rule of the filter matches; the first matching base rule of its type allows the traffic.",
+  },
+  FILTER_BASE_DENIES: {
+    template: "{filter} denies {direction} traffic with {peer} (base rule {rule} of its type).",
+    description:
+      "No rule of the filter matches; the first matching base rule of its type denies the traffic.",
+  },
+  FILTER_BASE_PORT_UNKNOWN: {
+    template: "Base rule {rule} of {filter} limits ports, but the traffic's port is not known.",
+    description: "The intent states no port and the target's endpoint lists none.",
+  },
   STATELESS_RETURN: {
     template: "{filter} is stateless, so the return traffic needs a rule of its own.",
     description: "Stateless filters check the replies as well, on any port.",
@@ -659,7 +684,17 @@ export const EVIDENCE_CODES = {
   },
   MANAGED_SERVICE: {
     template: "The provider runs {component} across failure domains.",
-    description: "The type is a managed, multi-domain service.",
+    description: "The type, or the component's setting, makes it a managed, multi-domain service.",
+  },
+  NOT_MANAGED: {
+    template: "The provider runs {component} in one failure domain.",
+    description:
+      "The component's setting turns off the provider's redundancy, for example zone redundancy.",
+  },
+  NO_FAILURE_DOMAIN: {
+    template: "{component} is not assigned to failure domains, so it runs in one.",
+    description:
+      "The component's own list of failure domains is empty, as for a VM without an availability zone.",
   },
   NOT_PLACED: {
     template: "{component} is not placed in any zone, so its failure domains are not known.",

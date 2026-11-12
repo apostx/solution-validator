@@ -1,0 +1,2864 @@
+{
+  "parse": {
+    "ok": true,
+    "findings": []
+  },
+  "analysis": {
+    "strict": {
+      "library": {
+        "name": "solution-validator",
+        "version": "<version>"
+      },
+      "vocabulary": 5,
+      "packs": [
+        {
+          "id": "azure",
+          "version": "0.1.0"
+        },
+        {
+          "id": "core",
+          "version": "0.2.0"
+        }
+      ],
+      "options": {
+        "level": "logical",
+        "analyses": [
+          "model-validity",
+          "connection-validity",
+          "access",
+          "availability"
+        ],
+        "assumptions": "strict"
+      },
+      "analyses": [
+        {
+          "id": "model-validity",
+          "valid": true,
+          "findings": []
+        },
+        {
+          "id": "connection-validity",
+          "intents": [
+            {
+              "intent": "appgw-web",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "azure.application-gateway",
+                        "toType": "azure.vm-scale-set",
+                        "purpose": "invoke on port http",
+                        "rule": 0
+                      },
+                      "message": "azure.vm-scale-set accepts invoke on port http from azure.application-gateway (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "batch-orders",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "azure.vm",
+                        "toType": "azure.cosmos-db",
+                        "purpose": "read",
+                        "rule": 0
+                      },
+                      "message": "azure.cosmos-db accepts read from azure.vm (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "jump-web",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "azure.vm",
+                        "toType": "azure.vm-scale-set",
+                        "purpose": "port ssh",
+                        "rule": 1
+                      },
+                      "message": "azure.vm-scale-set accepts port ssh from azure.vm (accepts rule 1)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "users-appgw",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "azure.application-gateway",
+                        "purpose": "port https",
+                        "rule": 0
+                      },
+                      "message": "azure.application-gateway accepts port https from core.internet (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "users-jump",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "azure.vm",
+                        "purpose": "port ssh",
+                        "rule": 0
+                      },
+                      "message": "azure.vm accepts port ssh from core.internet (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "users-web",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "azure.vm-scale-set",
+                        "purpose": "port http",
+                        "rule": 0
+                      },
+                      "message": "azure.vm-scale-set accepts port http from core.internet (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "web-orders",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "azure.vm-scale-set",
+                        "toType": "azure.cosmos-db",
+                        "purpose": "read",
+                        "rule": 0
+                      },
+                      "message": "azure.cosmos-db accepts read from azure.vm-scale-set (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "summary": {
+            "pass": 7,
+            "fail": 0,
+            "undecidable": 0
+          },
+          "findings": []
+        },
+        {
+          "id": "access",
+          "intents": [
+            {
+              "intent": "appgw-web",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "azure.application-gateway",
+                        "toType": "azure.vm-scale-set",
+                        "purpose": "invoke on port http",
+                        "rule": 0
+                      },
+                      "message": "azure.vm-scale-set accepts invoke on port http from azure.application-gateway (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "forwarding",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ROUTE_FOUND",
+                      "params": {
+                        "from": "appgw",
+                        "to": "web"
+                      },
+                      "message": "appgw has a route to web."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "SAME_NETWORK",
+                      "params": {
+                        "from": "appgw",
+                        "to": "web",
+                        "network": "vnet"
+                      },
+                      "message": "appgw and web are in the same network, vnet."
+                    },
+                    {
+                      "code": "FILTER_BASE_ALLOWS",
+                      "params": {
+                        "filter": "gw-nsg",
+                        "direction": "outbound",
+                        "peer": "web",
+                        "rule": 1
+                      },
+                      "message": "gw-nsg allows outbound traffic with web (base rule 1 of its type)."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "web-nsg",
+                        "direction": "inbound",
+                        "peer": "appgw",
+                        "rule": 0
+                      },
+                      "message": "web-nsg allows inbound traffic with appgw (rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "batch-orders",
+              "verdict": "fail",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "azure.vm",
+                        "toType": "azure.cosmos-db",
+                        "purpose": "read",
+                        "rule": 0
+                      },
+                      "message": "azure.cosmos-db accepts read from azure.vm (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "fail",
+                  "evidence": [
+                    {
+                      "code": "NO_PUBLIC_ADDRESS",
+                      "params": {
+                        "component": "batch",
+                        "zone": "ops-subnet"
+                      },
+                      "message": "batch has no public endpoint, and ops-subnet has no internet route or outbound gateway for it."
+                    },
+                    {
+                      "code": "ENDPOINT_PUBLIC",
+                      "params": {
+                        "from": "batch",
+                        "to": "orders"
+                      },
+                      "message": "orders has a public endpoint."
+                    },
+                    {
+                      "code": "FILTER_BASE_ALLOWS",
+                      "params": {
+                        "filter": "ops-nsg",
+                        "direction": "outbound",
+                        "peer": "orders",
+                        "rule": 2
+                      },
+                      "message": "ops-nsg allows outbound traffic with orders (base rule 2 of its type)."
+                    }
+                  ]
+                },
+                {
+                  "check": "authorization",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "GRANT_FOUND",
+                      "params": {
+                        "from": "batch",
+                        "to": "orders",
+                        "access": "read",
+                        "action": "read"
+                      },
+                      "message": "batch has read access to orders, which allows read."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "jump-web",
+              "verdict": "fail",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "azure.vm",
+                        "toType": "azure.vm-scale-set",
+                        "purpose": "port ssh",
+                        "rule": 1
+                      },
+                      "message": "azure.vm-scale-set accepts port ssh from azure.vm (accepts rule 1)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "fail",
+                  "evidence": [
+                    {
+                      "code": "SAME_NETWORK",
+                      "params": {
+                        "from": "jump",
+                        "to": "web",
+                        "network": "vnet"
+                      },
+                      "message": "jump and web are in the same network, vnet."
+                    },
+                    {
+                      "code": "FILTER_BASE_ALLOWS",
+                      "params": {
+                        "filter": "ops-nsg",
+                        "direction": "outbound",
+                        "peer": "web",
+                        "rule": 1
+                      },
+                      "message": "ops-nsg allows outbound traffic with web (base rule 1 of its type)."
+                    },
+                    {
+                      "code": "FILTER_DENIES",
+                      "params": {
+                        "filter": "web-nsg",
+                        "direction": "inbound",
+                        "peer": "jump",
+                        "rule": 1
+                      },
+                      "message": "web-nsg denies inbound traffic with jump (rule 1)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "users-appgw",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "azure.application-gateway",
+                        "purpose": "port https",
+                        "rule": 0
+                      },
+                      "message": "azure.application-gateway accepts port https from core.internet (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "DIRECT_INTERNET",
+                      "params": {
+                        "component": "appgw",
+                        "zone": "gw-subnet"
+                      },
+                      "message": "appgw reaches the internet through its public address in gw-subnet."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "gw-nsg",
+                        "direction": "inbound",
+                        "peer": "users",
+                        "rule": 0
+                      },
+                      "message": "gw-nsg allows inbound traffic with users (rule 0)."
+                    },
+                    {
+                      "code": "PORT_OPEN",
+                      "params": {
+                        "to": "appgw",
+                        "port": "https"
+                      },
+                      "message": "appgw listens on port https."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "users-jump",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "azure.vm",
+                        "purpose": "port ssh",
+                        "rule": 0
+                      },
+                      "message": "azure.vm accepts port ssh from core.internet (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "DIRECT_INTERNET",
+                      "params": {
+                        "component": "jump",
+                        "zone": "ops-subnet"
+                      },
+                      "message": "jump reaches the internet through its public address in ops-subnet."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "ops-nsg",
+                        "direction": "inbound",
+                        "peer": "users",
+                        "rule": 0
+                      },
+                      "message": "ops-nsg allows inbound traffic with users (rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "users-web",
+              "verdict": "fail",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "azure.vm-scale-set",
+                        "purpose": "port http",
+                        "rule": 0
+                      },
+                      "message": "azure.vm-scale-set accepts port http from core.internet (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "fail",
+                  "evidence": [
+                    {
+                      "code": "ENDPOINT_PRIVATE",
+                      "params": {
+                        "from": "users",
+                        "to": "web"
+                      },
+                      "message": "web has a private endpoint, and users is not inside its network."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "web-orders",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "azure.vm-scale-set",
+                        "toType": "azure.cosmos-db",
+                        "purpose": "read",
+                        "rule": 0
+                      },
+                      "message": "azure.cosmos-db accepts read from azure.vm-scale-set (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "NAT_ROUTE",
+                      "params": {
+                        "zone": "app-subnet",
+                        "gateway": "nat"
+                      },
+                      "message": "app-subnet reaches the internet through nat, for outbound connections only."
+                    },
+                    {
+                      "code": "ENDPOINT_PUBLIC",
+                      "params": {
+                        "from": "web",
+                        "to": "orders"
+                      },
+                      "message": "orders has a public endpoint."
+                    },
+                    {
+                      "code": "FILTER_BASE_ALLOWS",
+                      "params": {
+                        "filter": "web-nsg",
+                        "direction": "outbound",
+                        "peer": "orders",
+                        "rule": 2
+                      },
+                      "message": "web-nsg allows outbound traffic with orders (base rule 2 of its type)."
+                    }
+                  ]
+                },
+                {
+                  "check": "authorization",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "GRANT_FOUND",
+                      "params": {
+                        "from": "web",
+                        "to": "orders",
+                        "access": "read",
+                        "action": "read"
+                      },
+                      "message": "web has read access to orders, which allows read."
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "summary": {
+            "pass": 4,
+            "fail": 3,
+            "undecidable": 0
+          },
+          "exposure": [
+            {
+              "component": "appgw",
+              "exposure": "exposed",
+              "ports": [
+                "https"
+              ],
+              "evidence": [
+                {
+                  "code": "ENDPOINT_PUBLIC",
+                  "params": {
+                    "from": "the internet",
+                    "to": "appgw"
+                  },
+                  "message": "appgw has a public endpoint."
+                },
+                {
+                  "code": "DIRECT_INTERNET",
+                  "params": {
+                    "component": "appgw",
+                    "zone": "gw-subnet"
+                  },
+                  "message": "appgw reaches the internet through its public address in gw-subnet."
+                },
+                {
+                  "code": "FILTER_ALLOWS",
+                  "params": {
+                    "filter": "gw-nsg",
+                    "direction": "inbound",
+                    "peer": "the internet",
+                    "rule": 0
+                  },
+                  "message": "gw-nsg allows inbound traffic with the internet (rule 0)."
+                },
+                {
+                  "code": "ANONYMOUS_ALLOWED",
+                  "params": {
+                    "component": "appgw"
+                  },
+                  "message": "appgw does not control access."
+                }
+              ]
+            },
+            {
+              "component": "batch",
+              "exposure": "not-exposed",
+              "evidence": [
+                {
+                  "code": "ENDPOINT_NOT_PUBLIC",
+                  "params": {
+                    "component": "batch"
+                  },
+                  "message": "batch has no public endpoint."
+                }
+              ]
+            },
+            {
+              "component": "jump",
+              "exposure": "exposed",
+              "ports": [
+                "ssh"
+              ],
+              "evidence": [
+                {
+                  "code": "ENDPOINT_PUBLIC",
+                  "params": {
+                    "from": "the internet",
+                    "to": "jump"
+                  },
+                  "message": "jump has a public endpoint."
+                },
+                {
+                  "code": "DIRECT_INTERNET",
+                  "params": {
+                    "component": "jump",
+                    "zone": "ops-subnet"
+                  },
+                  "message": "jump reaches the internet through its public address in ops-subnet."
+                },
+                {
+                  "code": "FILTER_ALLOWS",
+                  "params": {
+                    "filter": "ops-nsg",
+                    "direction": "inbound",
+                    "peer": "the internet",
+                    "rule": 0
+                  },
+                  "message": "ops-nsg allows inbound traffic with the internet (rule 0)."
+                },
+                {
+                  "code": "ANONYMOUS_ALLOWED",
+                  "params": {
+                    "component": "jump"
+                  },
+                  "message": "jump does not control access."
+                }
+              ]
+            },
+            {
+              "component": "orders",
+              "exposure": "not-exposed",
+              "evidence": [
+                {
+                  "code": "ENDPOINT_PUBLIC",
+                  "params": {
+                    "from": "the internet",
+                    "to": "orders"
+                  },
+                  "message": "orders has a public endpoint."
+                },
+                {
+                  "code": "PUBLIC_ACCESS_OFF",
+                  "params": {
+                    "component": "orders"
+                  },
+                  "message": "orders does not allow public access."
+                }
+              ]
+            },
+            {
+              "component": "web",
+              "exposure": "not-exposed",
+              "evidence": [
+                {
+                  "code": "ENDPOINT_NOT_PUBLIC",
+                  "params": {
+                    "component": "web"
+                  },
+                  "message": "web has no public endpoint."
+                }
+              ]
+            }
+          ],
+          "assumptions": [],
+          "findings": [
+            {
+              "code": "EXPOSED_TO_INTERNET",
+              "severity": "info",
+              "subjects": [
+                "appgw"
+              ],
+              "params": {
+                "component": "appgw"
+              },
+              "message": "appgw is directly accessible from the internet."
+            },
+            {
+              "code": "ACCESS_NOT_REACHABLE",
+              "severity": "error",
+              "subjects": [
+                "batch-orders"
+              ],
+              "params": {
+                "intent": "batch-orders",
+                "from": "batch",
+                "to": "orders"
+              },
+              "message": "Intent batch-orders: orders cannot be reached from batch."
+            },
+            {
+              "code": "EXPOSED_TO_INTERNET",
+              "severity": "info",
+              "subjects": [
+                "jump"
+              ],
+              "params": {
+                "component": "jump"
+              },
+              "message": "jump is directly accessible from the internet."
+            },
+            {
+              "code": "ACCESS_NOT_REACHABLE",
+              "severity": "error",
+              "subjects": [
+                "jump-web"
+              ],
+              "params": {
+                "intent": "jump-web",
+                "from": "jump",
+                "to": "web"
+              },
+              "message": "Intent jump-web: web cannot be reached from jump."
+            },
+            {
+              "code": "ACCESS_NOT_REACHABLE",
+              "severity": "error",
+              "subjects": [
+                "users-web"
+              ],
+              "params": {
+                "intent": "users-web",
+                "from": "users",
+                "to": "web"
+              },
+              "message": "Intent users-web: web cannot be reached from users."
+            }
+          ]
+        },
+        {
+          "id": "availability",
+          "components": [
+            {
+              "component": "appgw",
+              "availability": "redundant",
+              "domains": [
+                "1",
+                "2"
+              ],
+              "evidence": [
+                {
+                  "code": "FAILURE_DOMAINS",
+                  "params": {
+                    "component": "appgw",
+                    "domains": "1, 2"
+                  },
+                  "message": "appgw runs in: 1, 2."
+                }
+              ]
+            },
+            {
+              "component": "batch",
+              "availability": "single",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "NO_FAILURE_DOMAIN",
+                  "params": {
+                    "component": "batch"
+                  },
+                  "message": "batch is not assigned to failure domains, so it runs in one."
+                }
+              ]
+            },
+            {
+              "component": "jump",
+              "availability": "single",
+              "domains": [
+                "1"
+              ],
+              "evidence": [
+                {
+                  "code": "FAILURE_DOMAINS",
+                  "params": {
+                    "component": "jump",
+                    "domains": "1"
+                  },
+                  "message": "jump runs in: 1."
+                }
+              ]
+            },
+            {
+              "component": "nat",
+              "availability": "single",
+              "domains": [
+                "1"
+              ],
+              "evidence": [
+                {
+                  "code": "FAILURE_DOMAINS",
+                  "params": {
+                    "component": "nat",
+                    "domains": "1"
+                  },
+                  "message": "nat runs in: 1."
+                }
+              ]
+            },
+            {
+              "component": "orders",
+              "availability": "managed",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "MANAGED_SERVICE",
+                  "params": {
+                    "component": "orders"
+                  },
+                  "message": "The provider runs orders across failure domains."
+                }
+              ]
+            },
+            {
+              "component": "web",
+              "availability": "redundant",
+              "domains": [
+                "1",
+                "2",
+                "3"
+              ],
+              "evidence": [
+                {
+                  "code": "FAILURE_DOMAINS",
+                  "params": {
+                    "component": "web",
+                    "domains": "1, 2, 3"
+                  },
+                  "message": "web runs in: 1, 2, 3."
+                }
+              ]
+            }
+          ],
+          "findings": [
+            {
+              "code": "AVAILABILITY_SINGLE_POINT",
+              "severity": "warning",
+              "subjects": [
+                "jump"
+              ],
+              "params": {
+                "component": "jump",
+                "domain": "1",
+                "intents": "users-jump"
+              },
+              "message": "jump runs in a single failure domain (1), and intents depend on it: users-jump."
+            },
+            {
+              "code": "AVAILABILITY_SINGLE_POINT",
+              "severity": "warning",
+              "subjects": [
+                "nat"
+              ],
+              "params": {
+                "component": "nat",
+                "domain": "1",
+                "intents": "web-orders"
+              },
+              "message": "nat runs in a single failure domain (1), and intents depend on it: web-orders."
+            }
+          ]
+        }
+      ]
+    },
+    "pack-defaults": {
+      "library": {
+        "name": "solution-validator",
+        "version": "<version>"
+      },
+      "vocabulary": 5,
+      "packs": [
+        {
+          "id": "azure",
+          "version": "0.1.0"
+        },
+        {
+          "id": "core",
+          "version": "0.2.0"
+        }
+      ],
+      "options": {
+        "level": "logical",
+        "analyses": [
+          "model-validity",
+          "connection-validity",
+          "access",
+          "availability"
+        ],
+        "assumptions": "pack-defaults"
+      },
+      "analyses": [
+        {
+          "id": "model-validity",
+          "valid": true,
+          "findings": []
+        },
+        {
+          "id": "connection-validity",
+          "intents": [
+            {
+              "intent": "appgw-web",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "azure.application-gateway",
+                        "toType": "azure.vm-scale-set",
+                        "purpose": "invoke on port http",
+                        "rule": 0
+                      },
+                      "message": "azure.vm-scale-set accepts invoke on port http from azure.application-gateway (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "batch-orders",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "azure.vm",
+                        "toType": "azure.cosmos-db",
+                        "purpose": "read",
+                        "rule": 0
+                      },
+                      "message": "azure.cosmos-db accepts read from azure.vm (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "jump-web",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "azure.vm",
+                        "toType": "azure.vm-scale-set",
+                        "purpose": "port ssh",
+                        "rule": 1
+                      },
+                      "message": "azure.vm-scale-set accepts port ssh from azure.vm (accepts rule 1)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "users-appgw",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "azure.application-gateway",
+                        "purpose": "port https",
+                        "rule": 0
+                      },
+                      "message": "azure.application-gateway accepts port https from core.internet (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "users-jump",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "azure.vm",
+                        "purpose": "port ssh",
+                        "rule": 0
+                      },
+                      "message": "azure.vm accepts port ssh from core.internet (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "users-web",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "azure.vm-scale-set",
+                        "purpose": "port http",
+                        "rule": 0
+                      },
+                      "message": "azure.vm-scale-set accepts port http from core.internet (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "web-orders",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "azure.vm-scale-set",
+                        "toType": "azure.cosmos-db",
+                        "purpose": "read",
+                        "rule": 0
+                      },
+                      "message": "azure.cosmos-db accepts read from azure.vm-scale-set (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "summary": {
+            "pass": 7,
+            "fail": 0,
+            "undecidable": 0
+          },
+          "findings": []
+        },
+        {
+          "id": "access",
+          "intents": [
+            {
+              "intent": "appgw-web",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "azure.application-gateway",
+                        "toType": "azure.vm-scale-set",
+                        "purpose": "invoke on port http",
+                        "rule": 0
+                      },
+                      "message": "azure.vm-scale-set accepts invoke on port http from azure.application-gateway (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "forwarding",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ROUTE_FOUND",
+                      "params": {
+                        "from": "appgw",
+                        "to": "web"
+                      },
+                      "message": "appgw has a route to web."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "SAME_NETWORK",
+                      "params": {
+                        "from": "appgw",
+                        "to": "web",
+                        "network": "vnet"
+                      },
+                      "message": "appgw and web are in the same network, vnet."
+                    },
+                    {
+                      "code": "FILTER_BASE_ALLOWS",
+                      "params": {
+                        "filter": "gw-nsg",
+                        "direction": "outbound",
+                        "peer": "web",
+                        "rule": 1
+                      },
+                      "message": "gw-nsg allows outbound traffic with web (base rule 1 of its type)."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "web-nsg",
+                        "direction": "inbound",
+                        "peer": "appgw",
+                        "rule": 0
+                      },
+                      "message": "web-nsg allows inbound traffic with appgw (rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "batch-orders",
+              "verdict": "fail",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "azure.vm",
+                        "toType": "azure.cosmos-db",
+                        "purpose": "read",
+                        "rule": 0
+                      },
+                      "message": "azure.cosmos-db accepts read from azure.vm (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "fail",
+                  "evidence": [
+                    {
+                      "code": "NO_PUBLIC_ADDRESS",
+                      "params": {
+                        "component": "batch",
+                        "zone": "ops-subnet"
+                      },
+                      "message": "batch has no public endpoint, and ops-subnet has no internet route or outbound gateway for it."
+                    },
+                    {
+                      "code": "ENDPOINT_PUBLIC",
+                      "params": {
+                        "from": "batch",
+                        "to": "orders"
+                      },
+                      "message": "orders has a public endpoint."
+                    },
+                    {
+                      "code": "FILTER_BASE_ALLOWS",
+                      "params": {
+                        "filter": "ops-nsg",
+                        "direction": "outbound",
+                        "peer": "orders",
+                        "rule": 2
+                      },
+                      "message": "ops-nsg allows outbound traffic with orders (base rule 2 of its type)."
+                    }
+                  ]
+                },
+                {
+                  "check": "authorization",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "GRANT_FOUND",
+                      "params": {
+                        "from": "batch",
+                        "to": "orders",
+                        "access": "read",
+                        "action": "read"
+                      },
+                      "message": "batch has read access to orders, which allows read."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "jump-web",
+              "verdict": "fail",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "azure.vm",
+                        "toType": "azure.vm-scale-set",
+                        "purpose": "port ssh",
+                        "rule": 1
+                      },
+                      "message": "azure.vm-scale-set accepts port ssh from azure.vm (accepts rule 1)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "fail",
+                  "evidence": [
+                    {
+                      "code": "SAME_NETWORK",
+                      "params": {
+                        "from": "jump",
+                        "to": "web",
+                        "network": "vnet"
+                      },
+                      "message": "jump and web are in the same network, vnet."
+                    },
+                    {
+                      "code": "FILTER_BASE_ALLOWS",
+                      "params": {
+                        "filter": "ops-nsg",
+                        "direction": "outbound",
+                        "peer": "web",
+                        "rule": 1
+                      },
+                      "message": "ops-nsg allows outbound traffic with web (base rule 1 of its type)."
+                    },
+                    {
+                      "code": "FILTER_DENIES",
+                      "params": {
+                        "filter": "web-nsg",
+                        "direction": "inbound",
+                        "peer": "jump",
+                        "rule": 1
+                      },
+                      "message": "web-nsg denies inbound traffic with jump (rule 1)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "users-appgw",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "azure.application-gateway",
+                        "purpose": "port https",
+                        "rule": 0
+                      },
+                      "message": "azure.application-gateway accepts port https from core.internet (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "DIRECT_INTERNET",
+                      "params": {
+                        "component": "appgw",
+                        "zone": "gw-subnet"
+                      },
+                      "message": "appgw reaches the internet through its public address in gw-subnet."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "gw-nsg",
+                        "direction": "inbound",
+                        "peer": "users",
+                        "rule": 0
+                      },
+                      "message": "gw-nsg allows inbound traffic with users (rule 0)."
+                    },
+                    {
+                      "code": "PORT_OPEN",
+                      "params": {
+                        "to": "appgw",
+                        "port": "https"
+                      },
+                      "message": "appgw listens on port https."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "users-jump",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "azure.vm",
+                        "purpose": "port ssh",
+                        "rule": 0
+                      },
+                      "message": "azure.vm accepts port ssh from core.internet (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "DIRECT_INTERNET",
+                      "params": {
+                        "component": "jump",
+                        "zone": "ops-subnet"
+                      },
+                      "message": "jump reaches the internet through its public address in ops-subnet."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "ops-nsg",
+                        "direction": "inbound",
+                        "peer": "users",
+                        "rule": 0
+                      },
+                      "message": "ops-nsg allows inbound traffic with users (rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "users-web",
+              "verdict": "fail",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "azure.vm-scale-set",
+                        "purpose": "port http",
+                        "rule": 0
+                      },
+                      "message": "azure.vm-scale-set accepts port http from core.internet (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "fail",
+                  "evidence": [
+                    {
+                      "code": "ENDPOINT_PRIVATE",
+                      "params": {
+                        "from": "users",
+                        "to": "web"
+                      },
+                      "message": "web has a private endpoint, and users is not inside its network."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "web-orders",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "azure.vm-scale-set",
+                        "toType": "azure.cosmos-db",
+                        "purpose": "read",
+                        "rule": 0
+                      },
+                      "message": "azure.cosmos-db accepts read from azure.vm-scale-set (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "NAT_ROUTE",
+                      "params": {
+                        "zone": "app-subnet",
+                        "gateway": "nat"
+                      },
+                      "message": "app-subnet reaches the internet through nat, for outbound connections only."
+                    },
+                    {
+                      "code": "ENDPOINT_PUBLIC",
+                      "params": {
+                        "from": "web",
+                        "to": "orders"
+                      },
+                      "message": "orders has a public endpoint."
+                    },
+                    {
+                      "code": "FILTER_BASE_ALLOWS",
+                      "params": {
+                        "filter": "web-nsg",
+                        "direction": "outbound",
+                        "peer": "orders",
+                        "rule": 2
+                      },
+                      "message": "web-nsg allows outbound traffic with orders (base rule 2 of its type)."
+                    }
+                  ]
+                },
+                {
+                  "check": "authorization",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "GRANT_FOUND",
+                      "params": {
+                        "from": "web",
+                        "to": "orders",
+                        "access": "read",
+                        "action": "read"
+                      },
+                      "message": "web has read access to orders, which allows read."
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "summary": {
+            "pass": 4,
+            "fail": 3,
+            "undecidable": 0
+          },
+          "exposure": [
+            {
+              "component": "appgw",
+              "exposure": "exposed",
+              "ports": [
+                "https"
+              ],
+              "evidence": [
+                {
+                  "code": "ENDPOINT_PUBLIC",
+                  "params": {
+                    "from": "the internet",
+                    "to": "appgw"
+                  },
+                  "message": "appgw has a public endpoint."
+                },
+                {
+                  "code": "DIRECT_INTERNET",
+                  "params": {
+                    "component": "appgw",
+                    "zone": "gw-subnet"
+                  },
+                  "message": "appgw reaches the internet through its public address in gw-subnet."
+                },
+                {
+                  "code": "FILTER_ALLOWS",
+                  "params": {
+                    "filter": "gw-nsg",
+                    "direction": "inbound",
+                    "peer": "the internet",
+                    "rule": 0
+                  },
+                  "message": "gw-nsg allows inbound traffic with the internet (rule 0)."
+                },
+                {
+                  "code": "ANONYMOUS_ALLOWED",
+                  "params": {
+                    "component": "appgw"
+                  },
+                  "message": "appgw does not control access."
+                }
+              ]
+            },
+            {
+              "component": "batch",
+              "exposure": "not-exposed",
+              "evidence": [
+                {
+                  "code": "ENDPOINT_NOT_PUBLIC",
+                  "params": {
+                    "component": "batch"
+                  },
+                  "message": "batch has no public endpoint."
+                }
+              ]
+            },
+            {
+              "component": "jump",
+              "exposure": "exposed",
+              "ports": [
+                "ssh"
+              ],
+              "evidence": [
+                {
+                  "code": "ENDPOINT_PUBLIC",
+                  "params": {
+                    "from": "the internet",
+                    "to": "jump"
+                  },
+                  "message": "jump has a public endpoint."
+                },
+                {
+                  "code": "DIRECT_INTERNET",
+                  "params": {
+                    "component": "jump",
+                    "zone": "ops-subnet"
+                  },
+                  "message": "jump reaches the internet through its public address in ops-subnet."
+                },
+                {
+                  "code": "FILTER_ALLOWS",
+                  "params": {
+                    "filter": "ops-nsg",
+                    "direction": "inbound",
+                    "peer": "the internet",
+                    "rule": 0
+                  },
+                  "message": "ops-nsg allows inbound traffic with the internet (rule 0)."
+                },
+                {
+                  "code": "ANONYMOUS_ALLOWED",
+                  "params": {
+                    "component": "jump"
+                  },
+                  "message": "jump does not control access."
+                }
+              ]
+            },
+            {
+              "component": "orders",
+              "exposure": "not-exposed",
+              "evidence": [
+                {
+                  "code": "ENDPOINT_PUBLIC",
+                  "params": {
+                    "from": "the internet",
+                    "to": "orders"
+                  },
+                  "message": "orders has a public endpoint."
+                },
+                {
+                  "code": "PUBLIC_ACCESS_OFF",
+                  "params": {
+                    "component": "orders"
+                  },
+                  "message": "orders does not allow public access."
+                }
+              ]
+            },
+            {
+              "component": "web",
+              "exposure": "not-exposed",
+              "evidence": [
+                {
+                  "code": "ENDPOINT_NOT_PUBLIC",
+                  "params": {
+                    "component": "web"
+                  },
+                  "message": "web has no public endpoint."
+                }
+              ]
+            }
+          ],
+          "assumptions": [],
+          "findings": [
+            {
+              "code": "EXPOSED_TO_INTERNET",
+              "severity": "info",
+              "subjects": [
+                "appgw"
+              ],
+              "params": {
+                "component": "appgw"
+              },
+              "message": "appgw is directly accessible from the internet."
+            },
+            {
+              "code": "ACCESS_NOT_REACHABLE",
+              "severity": "error",
+              "subjects": [
+                "batch-orders"
+              ],
+              "params": {
+                "intent": "batch-orders",
+                "from": "batch",
+                "to": "orders"
+              },
+              "message": "Intent batch-orders: orders cannot be reached from batch."
+            },
+            {
+              "code": "EXPOSED_TO_INTERNET",
+              "severity": "info",
+              "subjects": [
+                "jump"
+              ],
+              "params": {
+                "component": "jump"
+              },
+              "message": "jump is directly accessible from the internet."
+            },
+            {
+              "code": "ACCESS_NOT_REACHABLE",
+              "severity": "error",
+              "subjects": [
+                "jump-web"
+              ],
+              "params": {
+                "intent": "jump-web",
+                "from": "jump",
+                "to": "web"
+              },
+              "message": "Intent jump-web: web cannot be reached from jump."
+            },
+            {
+              "code": "ACCESS_NOT_REACHABLE",
+              "severity": "error",
+              "subjects": [
+                "users-web"
+              ],
+              "params": {
+                "intent": "users-web",
+                "from": "users",
+                "to": "web"
+              },
+              "message": "Intent users-web: web cannot be reached from users."
+            }
+          ]
+        },
+        {
+          "id": "availability",
+          "components": [
+            {
+              "component": "appgw",
+              "availability": "redundant",
+              "domains": [
+                "1",
+                "2"
+              ],
+              "evidence": [
+                {
+                  "code": "FAILURE_DOMAINS",
+                  "params": {
+                    "component": "appgw",
+                    "domains": "1, 2"
+                  },
+                  "message": "appgw runs in: 1, 2."
+                }
+              ]
+            },
+            {
+              "component": "batch",
+              "availability": "single",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "NO_FAILURE_DOMAIN",
+                  "params": {
+                    "component": "batch"
+                  },
+                  "message": "batch is not assigned to failure domains, so it runs in one."
+                }
+              ]
+            },
+            {
+              "component": "jump",
+              "availability": "single",
+              "domains": [
+                "1"
+              ],
+              "evidence": [
+                {
+                  "code": "FAILURE_DOMAINS",
+                  "params": {
+                    "component": "jump",
+                    "domains": "1"
+                  },
+                  "message": "jump runs in: 1."
+                }
+              ]
+            },
+            {
+              "component": "nat",
+              "availability": "single",
+              "domains": [
+                "1"
+              ],
+              "evidence": [
+                {
+                  "code": "FAILURE_DOMAINS",
+                  "params": {
+                    "component": "nat",
+                    "domains": "1"
+                  },
+                  "message": "nat runs in: 1."
+                }
+              ]
+            },
+            {
+              "component": "orders",
+              "availability": "managed",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "MANAGED_SERVICE",
+                  "params": {
+                    "component": "orders"
+                  },
+                  "message": "The provider runs orders across failure domains."
+                }
+              ]
+            },
+            {
+              "component": "web",
+              "availability": "redundant",
+              "domains": [
+                "1",
+                "2",
+                "3"
+              ],
+              "evidence": [
+                {
+                  "code": "FAILURE_DOMAINS",
+                  "params": {
+                    "component": "web",
+                    "domains": "1, 2, 3"
+                  },
+                  "message": "web runs in: 1, 2, 3."
+                }
+              ]
+            }
+          ],
+          "findings": [
+            {
+              "code": "AVAILABILITY_SINGLE_POINT",
+              "severity": "warning",
+              "subjects": [
+                "jump"
+              ],
+              "params": {
+                "component": "jump",
+                "domain": "1",
+                "intents": "users-jump"
+              },
+              "message": "jump runs in a single failure domain (1), and intents depend on it: users-jump."
+            },
+            {
+              "code": "AVAILABILITY_SINGLE_POINT",
+              "severity": "warning",
+              "subjects": [
+                "nat"
+              ],
+              "params": {
+                "component": "nat",
+                "domain": "1",
+                "intents": "web-orders"
+              },
+              "message": "nat runs in a single failure domain (1), and intents depend on it: web-orders."
+            }
+          ]
+        }
+      ]
+    },
+    "detailed": {
+      "library": {
+        "name": "solution-validator",
+        "version": "<version>"
+      },
+      "vocabulary": 5,
+      "packs": [
+        {
+          "id": "azure",
+          "version": "0.1.0"
+        },
+        {
+          "id": "core",
+          "version": "0.2.0"
+        }
+      ],
+      "options": {
+        "level": "detailed",
+        "analyses": [
+          "model-validity",
+          "connection-validity",
+          "access",
+          "address-plan",
+          "availability"
+        ],
+        "assumptions": "strict"
+      },
+      "analyses": [
+        {
+          "id": "model-validity",
+          "valid": true,
+          "findings": []
+        },
+        {
+          "id": "connection-validity",
+          "intents": [
+            {
+              "intent": "appgw-web",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "azure.application-gateway",
+                        "toType": "azure.vm-scale-set",
+                        "purpose": "invoke on port http",
+                        "rule": 0
+                      },
+                      "message": "azure.vm-scale-set accepts invoke on port http from azure.application-gateway (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "batch-orders",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "azure.vm",
+                        "toType": "azure.cosmos-db",
+                        "purpose": "read",
+                        "rule": 0
+                      },
+                      "message": "azure.cosmos-db accepts read from azure.vm (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "jump-web",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "azure.vm",
+                        "toType": "azure.vm-scale-set",
+                        "purpose": "port ssh",
+                        "rule": 1
+                      },
+                      "message": "azure.vm-scale-set accepts port ssh from azure.vm (accepts rule 1)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "users-appgw",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "azure.application-gateway",
+                        "purpose": "port https",
+                        "rule": 0
+                      },
+                      "message": "azure.application-gateway accepts port https from core.internet (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "users-jump",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "azure.vm",
+                        "purpose": "port ssh",
+                        "rule": 0
+                      },
+                      "message": "azure.vm accepts port ssh from core.internet (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "users-web",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "azure.vm-scale-set",
+                        "purpose": "port http",
+                        "rule": 0
+                      },
+                      "message": "azure.vm-scale-set accepts port http from core.internet (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "web-orders",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "azure.vm-scale-set",
+                        "toType": "azure.cosmos-db",
+                        "purpose": "read",
+                        "rule": 0
+                      },
+                      "message": "azure.cosmos-db accepts read from azure.vm-scale-set (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "summary": {
+            "pass": 7,
+            "fail": 0,
+            "undecidable": 0
+          },
+          "findings": []
+        },
+        {
+          "id": "access",
+          "intents": [
+            {
+              "intent": "appgw-web",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "azure.application-gateway",
+                        "toType": "azure.vm-scale-set",
+                        "purpose": "invoke on port http",
+                        "rule": 0
+                      },
+                      "message": "azure.vm-scale-set accepts invoke on port http from azure.application-gateway (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "forwarding",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ROUTE_FOUND",
+                      "params": {
+                        "from": "appgw",
+                        "to": "web"
+                      },
+                      "message": "appgw has a route to web."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "SAME_NETWORK",
+                      "params": {
+                        "from": "appgw",
+                        "to": "web",
+                        "network": "vnet"
+                      },
+                      "message": "appgw and web are in the same network, vnet."
+                    },
+                    {
+                      "code": "FILTER_BASE_ALLOWS",
+                      "params": {
+                        "filter": "gw-nsg",
+                        "direction": "outbound",
+                        "peer": "web",
+                        "rule": 1
+                      },
+                      "message": "gw-nsg allows outbound traffic with web (base rule 1 of its type)."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "web-nsg",
+                        "direction": "inbound",
+                        "peer": "appgw",
+                        "rule": 0
+                      },
+                      "message": "web-nsg allows inbound traffic with appgw (rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "batch-orders",
+              "verdict": "fail",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "azure.vm",
+                        "toType": "azure.cosmos-db",
+                        "purpose": "read",
+                        "rule": 0
+                      },
+                      "message": "azure.cosmos-db accepts read from azure.vm (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "fail",
+                  "evidence": [
+                    {
+                      "code": "NO_PUBLIC_ADDRESS",
+                      "params": {
+                        "component": "batch",
+                        "zone": "ops-subnet"
+                      },
+                      "message": "batch has no public endpoint, and ops-subnet has no internet route or outbound gateway for it."
+                    },
+                    {
+                      "code": "ENDPOINT_PUBLIC",
+                      "params": {
+                        "from": "batch",
+                        "to": "orders"
+                      },
+                      "message": "orders has a public endpoint."
+                    },
+                    {
+                      "code": "FILTER_BASE_ALLOWS",
+                      "params": {
+                        "filter": "ops-nsg",
+                        "direction": "outbound",
+                        "peer": "orders",
+                        "rule": 2
+                      },
+                      "message": "ops-nsg allows outbound traffic with orders (base rule 2 of its type)."
+                    }
+                  ]
+                },
+                {
+                  "check": "authorization",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "GRANT_FOUND",
+                      "params": {
+                        "from": "batch",
+                        "to": "orders",
+                        "access": "read",
+                        "action": "read"
+                      },
+                      "message": "batch has read access to orders, which allows read."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "jump-web",
+              "verdict": "fail",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "azure.vm",
+                        "toType": "azure.vm-scale-set",
+                        "purpose": "port ssh",
+                        "rule": 1
+                      },
+                      "message": "azure.vm-scale-set accepts port ssh from azure.vm (accepts rule 1)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "fail",
+                  "evidence": [
+                    {
+                      "code": "SAME_NETWORK",
+                      "params": {
+                        "from": "jump",
+                        "to": "web",
+                        "network": "vnet"
+                      },
+                      "message": "jump and web are in the same network, vnet."
+                    },
+                    {
+                      "code": "FILTER_BASE_ALLOWS",
+                      "params": {
+                        "filter": "ops-nsg",
+                        "direction": "outbound",
+                        "peer": "web",
+                        "rule": 1
+                      },
+                      "message": "ops-nsg allows outbound traffic with web (base rule 1 of its type)."
+                    },
+                    {
+                      "code": "FILTER_DENIES",
+                      "params": {
+                        "filter": "web-nsg",
+                        "direction": "inbound",
+                        "peer": "jump",
+                        "rule": 1
+                      },
+                      "message": "web-nsg denies inbound traffic with jump (rule 1)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "users-appgw",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "azure.application-gateway",
+                        "purpose": "port https",
+                        "rule": 0
+                      },
+                      "message": "azure.application-gateway accepts port https from core.internet (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "DIRECT_INTERNET",
+                      "params": {
+                        "component": "appgw",
+                        "zone": "gw-subnet"
+                      },
+                      "message": "appgw reaches the internet through its public address in gw-subnet."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "gw-nsg",
+                        "direction": "inbound",
+                        "peer": "users",
+                        "rule": 0
+                      },
+                      "message": "gw-nsg allows inbound traffic with users (rule 0)."
+                    },
+                    {
+                      "code": "PORT_OPEN",
+                      "params": {
+                        "to": "appgw",
+                        "port": "https"
+                      },
+                      "message": "appgw listens on port https."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "users-jump",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "azure.vm",
+                        "purpose": "port ssh",
+                        "rule": 0
+                      },
+                      "message": "azure.vm accepts port ssh from core.internet (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "DIRECT_INTERNET",
+                      "params": {
+                        "component": "jump",
+                        "zone": "ops-subnet"
+                      },
+                      "message": "jump reaches the internet through its public address in ops-subnet."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "ops-nsg",
+                        "direction": "inbound",
+                        "peer": "users",
+                        "rule": 0
+                      },
+                      "message": "ops-nsg allows inbound traffic with users (rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "users-web",
+              "verdict": "fail",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "azure.vm-scale-set",
+                        "purpose": "port http",
+                        "rule": 0
+                      },
+                      "message": "azure.vm-scale-set accepts port http from core.internet (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "fail",
+                  "evidence": [
+                    {
+                      "code": "ENDPOINT_PRIVATE",
+                      "params": {
+                        "from": "users",
+                        "to": "web"
+                      },
+                      "message": "web has a private endpoint, and users is not inside its network."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "web-orders",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "azure.vm-scale-set",
+                        "toType": "azure.cosmos-db",
+                        "purpose": "read",
+                        "rule": 0
+                      },
+                      "message": "azure.cosmos-db accepts read from azure.vm-scale-set (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "NAT_ROUTE",
+                      "params": {
+                        "zone": "app-subnet",
+                        "gateway": "nat"
+                      },
+                      "message": "app-subnet reaches the internet through nat, for outbound connections only."
+                    },
+                    {
+                      "code": "ENDPOINT_PUBLIC",
+                      "params": {
+                        "from": "web",
+                        "to": "orders"
+                      },
+                      "message": "orders has a public endpoint."
+                    },
+                    {
+                      "code": "FILTER_BASE_ALLOWS",
+                      "params": {
+                        "filter": "web-nsg",
+                        "direction": "outbound",
+                        "peer": "orders",
+                        "rule": 2
+                      },
+                      "message": "web-nsg allows outbound traffic with orders (base rule 2 of its type)."
+                    }
+                  ]
+                },
+                {
+                  "check": "authorization",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "GRANT_FOUND",
+                      "params": {
+                        "from": "web",
+                        "to": "orders",
+                        "access": "read",
+                        "action": "read"
+                      },
+                      "message": "web has read access to orders, which allows read."
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "summary": {
+            "pass": 4,
+            "fail": 3,
+            "undecidable": 0
+          },
+          "exposure": [
+            {
+              "component": "appgw",
+              "exposure": "exposed",
+              "ports": [
+                "https"
+              ],
+              "evidence": [
+                {
+                  "code": "ENDPOINT_PUBLIC",
+                  "params": {
+                    "from": "the internet",
+                    "to": "appgw"
+                  },
+                  "message": "appgw has a public endpoint."
+                },
+                {
+                  "code": "DIRECT_INTERNET",
+                  "params": {
+                    "component": "appgw",
+                    "zone": "gw-subnet"
+                  },
+                  "message": "appgw reaches the internet through its public address in gw-subnet."
+                },
+                {
+                  "code": "FILTER_ALLOWS",
+                  "params": {
+                    "filter": "gw-nsg",
+                    "direction": "inbound",
+                    "peer": "the internet",
+                    "rule": 0
+                  },
+                  "message": "gw-nsg allows inbound traffic with the internet (rule 0)."
+                },
+                {
+                  "code": "ANONYMOUS_ALLOWED",
+                  "params": {
+                    "component": "appgw"
+                  },
+                  "message": "appgw does not control access."
+                }
+              ]
+            },
+            {
+              "component": "batch",
+              "exposure": "not-exposed",
+              "evidence": [
+                {
+                  "code": "ENDPOINT_NOT_PUBLIC",
+                  "params": {
+                    "component": "batch"
+                  },
+                  "message": "batch has no public endpoint."
+                }
+              ]
+            },
+            {
+              "component": "jump",
+              "exposure": "exposed",
+              "ports": [
+                "ssh"
+              ],
+              "evidence": [
+                {
+                  "code": "ENDPOINT_PUBLIC",
+                  "params": {
+                    "from": "the internet",
+                    "to": "jump"
+                  },
+                  "message": "jump has a public endpoint."
+                },
+                {
+                  "code": "DIRECT_INTERNET",
+                  "params": {
+                    "component": "jump",
+                    "zone": "ops-subnet"
+                  },
+                  "message": "jump reaches the internet through its public address in ops-subnet."
+                },
+                {
+                  "code": "FILTER_ALLOWS",
+                  "params": {
+                    "filter": "ops-nsg",
+                    "direction": "inbound",
+                    "peer": "the internet",
+                    "rule": 0
+                  },
+                  "message": "ops-nsg allows inbound traffic with the internet (rule 0)."
+                },
+                {
+                  "code": "ANONYMOUS_ALLOWED",
+                  "params": {
+                    "component": "jump"
+                  },
+                  "message": "jump does not control access."
+                }
+              ]
+            },
+            {
+              "component": "orders",
+              "exposure": "not-exposed",
+              "evidence": [
+                {
+                  "code": "ENDPOINT_PUBLIC",
+                  "params": {
+                    "from": "the internet",
+                    "to": "orders"
+                  },
+                  "message": "orders has a public endpoint."
+                },
+                {
+                  "code": "PUBLIC_ACCESS_OFF",
+                  "params": {
+                    "component": "orders"
+                  },
+                  "message": "orders does not allow public access."
+                }
+              ]
+            },
+            {
+              "component": "web",
+              "exposure": "not-exposed",
+              "evidence": [
+                {
+                  "code": "ENDPOINT_NOT_PUBLIC",
+                  "params": {
+                    "component": "web"
+                  },
+                  "message": "web has no public endpoint."
+                }
+              ]
+            }
+          ],
+          "assumptions": [],
+          "findings": [
+            {
+              "code": "EXPOSED_TO_INTERNET",
+              "severity": "info",
+              "subjects": [
+                "appgw"
+              ],
+              "params": {
+                "component": "appgw"
+              },
+              "message": "appgw is directly accessible from the internet."
+            },
+            {
+              "code": "ACCESS_NOT_REACHABLE",
+              "severity": "error",
+              "subjects": [
+                "batch-orders"
+              ],
+              "params": {
+                "intent": "batch-orders",
+                "from": "batch",
+                "to": "orders"
+              },
+              "message": "Intent batch-orders: orders cannot be reached from batch."
+            },
+            {
+              "code": "EXPOSED_TO_INTERNET",
+              "severity": "info",
+              "subjects": [
+                "jump"
+              ],
+              "params": {
+                "component": "jump"
+              },
+              "message": "jump is directly accessible from the internet."
+            },
+            {
+              "code": "ACCESS_NOT_REACHABLE",
+              "severity": "error",
+              "subjects": [
+                "jump-web"
+              ],
+              "params": {
+                "intent": "jump-web",
+                "from": "jump",
+                "to": "web"
+              },
+              "message": "Intent jump-web: web cannot be reached from jump."
+            },
+            {
+              "code": "ACCESS_NOT_REACHABLE",
+              "severity": "error",
+              "subjects": [
+                "users-web"
+              ],
+              "params": {
+                "intent": "users-web",
+                "from": "users",
+                "to": "web"
+              },
+              "message": "Intent users-web: web cannot be reached from users."
+            }
+          ]
+        },
+        {
+          "id": "address-plan",
+          "zones": [
+            {
+              "zone": "app-subnet",
+              "parent": "vnet",
+              "space": "10.1.1.0/24",
+              "size": 256
+            },
+            {
+              "zone": "gw-subnet",
+              "parent": "vnet",
+              "space": "10.1.0.0/24",
+              "size": 256
+            },
+            {
+              "zone": "ops-subnet",
+              "parent": "vnet",
+              "space": "10.1.2.0/24",
+              "size": 256
+            },
+            {
+              "zone": "vnet",
+              "space": "10.1.0.0/16",
+              "size": 65536
+            }
+          ],
+          "findings": []
+        },
+        {
+          "id": "availability",
+          "components": [
+            {
+              "component": "appgw",
+              "availability": "redundant",
+              "domains": [
+                "1",
+                "2"
+              ],
+              "evidence": [
+                {
+                  "code": "FAILURE_DOMAINS",
+                  "params": {
+                    "component": "appgw",
+                    "domains": "1, 2"
+                  },
+                  "message": "appgw runs in: 1, 2."
+                }
+              ]
+            },
+            {
+              "component": "batch",
+              "availability": "single",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "NO_FAILURE_DOMAIN",
+                  "params": {
+                    "component": "batch"
+                  },
+                  "message": "batch is not assigned to failure domains, so it runs in one."
+                }
+              ]
+            },
+            {
+              "component": "jump",
+              "availability": "single",
+              "domains": [
+                "1"
+              ],
+              "evidence": [
+                {
+                  "code": "FAILURE_DOMAINS",
+                  "params": {
+                    "component": "jump",
+                    "domains": "1"
+                  },
+                  "message": "jump runs in: 1."
+                }
+              ]
+            },
+            {
+              "component": "nat",
+              "availability": "single",
+              "domains": [
+                "1"
+              ],
+              "evidence": [
+                {
+                  "code": "FAILURE_DOMAINS",
+                  "params": {
+                    "component": "nat",
+                    "domains": "1"
+                  },
+                  "message": "nat runs in: 1."
+                }
+              ]
+            },
+            {
+              "component": "orders",
+              "availability": "managed",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "MANAGED_SERVICE",
+                  "params": {
+                    "component": "orders"
+                  },
+                  "message": "The provider runs orders across failure domains."
+                }
+              ]
+            },
+            {
+              "component": "web",
+              "availability": "redundant",
+              "domains": [
+                "1",
+                "2",
+                "3"
+              ],
+              "evidence": [
+                {
+                  "code": "FAILURE_DOMAINS",
+                  "params": {
+                    "component": "web",
+                    "domains": "1, 2, 3"
+                  },
+                  "message": "web runs in: 1, 2, 3."
+                }
+              ]
+            }
+          ],
+          "findings": [
+            {
+              "code": "AVAILABILITY_SINGLE_POINT",
+              "severity": "warning",
+              "subjects": [
+                "jump"
+              ],
+              "params": {
+                "component": "jump",
+                "domain": "1",
+                "intents": "users-jump"
+              },
+              "message": "jump runs in a single failure domain (1), and intents depend on it: users-jump."
+            },
+            {
+              "code": "AVAILABILITY_SINGLE_POINT",
+              "severity": "warning",
+              "subjects": [
+                "nat"
+              ],
+              "params": {
+                "component": "nat",
+                "domain": "1",
+                "intents": "web-orders"
+              },
+              "message": "nat runs in a single failure domain (1), and intents depend on it: web-orders."
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

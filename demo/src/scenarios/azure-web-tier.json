@@ -1,0 +1,363 @@
+{
+  "id": "azure-web-tier",
+  "title": "Azure web tier (Application Gateway, scale set, NAT gateway)",
+  "description": "An Application Gateway in its own subnet forwards to a zone-redundant scale set, which reaches Cosmos DB through the NAT gateway associated with its subnet. Network security groups add rules before their default rules, which allow traffic inside the virtual network. The batch VM has neither a public IP address nor a NAT gateway, so it cannot reach Cosmos DB; the jump VM has a public IP address and, like the NAT gateway, runs in one availability zone.",
+  "packs": ["core", "azure"],
+  "solution": {
+    "schemaVersion": 1,
+    "packs": ["core", "azure"],
+    "components": [
+      {
+        "id": "users",
+        "type": "core.internet",
+        "meta": {
+          "position": {
+            "x": -280,
+            "y": 200
+          }
+        }
+      },
+      {
+        "id": "vnet",
+        "type": "azure.vnet",
+        "properties": {
+          "addressSpace": "10.1.0.0/16"
+        },
+        "meta": {
+          "position": {
+            "x": 0,
+            "y": 0
+          },
+          "size": {
+            "width": 980,
+            "height": 640
+          }
+        }
+      },
+      {
+        "id": "gw-subnet",
+        "type": "azure.subnet",
+        "placement": ["vnet"],
+        "properties": {
+          "addressPrefix": "10.1.0.0/24"
+        },
+        "meta": {
+          "position": {
+            "x": 30,
+            "y": 60
+          },
+          "size": {
+            "width": 300,
+            "height": 250
+          }
+        }
+      },
+      {
+        "id": "app-subnet",
+        "type": "azure.subnet",
+        "placement": ["vnet"],
+        "properties": {
+          "addressPrefix": "10.1.1.0/24"
+        },
+        "meta": {
+          "position": {
+            "x": 360,
+            "y": 60
+          },
+          "size": {
+            "width": 590,
+            "height": 250
+          }
+        }
+      },
+      {
+        "id": "ops-subnet",
+        "type": "azure.subnet",
+        "placement": ["vnet"],
+        "properties": {
+          "addressPrefix": "10.1.2.0/24"
+        },
+        "meta": {
+          "position": {
+            "x": 30,
+            "y": 350
+          },
+          "size": {
+            "width": 920,
+            "height": 260
+          }
+        }
+      },
+      {
+        "id": "appgw",
+        "type": "azure.application-gateway",
+        "placement": ["gw-subnet"],
+        "properties": {
+          "frontend": "public",
+          "backends": [
+            {
+              "path": "/*",
+              "backend": "web"
+            }
+          ],
+          "zones": ["1", "2"]
+        },
+        "meta": {
+          "position": {
+            "x": 70,
+            "y": 150
+          }
+        }
+      },
+      {
+        "id": "web",
+        "type": "azure.vm-scale-set",
+        "placement": ["app-subnet"],
+        "properties": {
+          "endpoint": "private",
+          "zones": ["1", "2", "3"],
+          "roleAssignments": [
+            {
+              "resource": "orders",
+              "access": "read"
+            }
+          ]
+        },
+        "meta": {
+          "position": {
+            "x": 430,
+            "y": 150
+          }
+        }
+      },
+      {
+        "id": "nat",
+        "type": "azure.nat-gateway",
+        "properties": {
+          "subnets": ["app-subnet"],
+          "zones": ["1"]
+        },
+        "meta": {
+          "position": {
+            "x": 1060,
+            "y": 40
+          }
+        }
+      },
+      {
+        "id": "jump",
+        "type": "azure.vm",
+        "placement": ["ops-subnet"],
+        "properties": {
+          "endpoint": "public",
+          "zones": ["1"],
+          "roleAssignments": []
+        },
+        "meta": {
+          "position": {
+            "x": 80,
+            "y": 450
+          }
+        }
+      },
+      {
+        "id": "batch",
+        "type": "azure.vm",
+        "placement": ["ops-subnet"],
+        "properties": {
+          "endpoint": "private",
+          "zones": [],
+          "roleAssignments": [
+            {
+              "resource": "orders",
+              "access": "read"
+            }
+          ]
+        },
+        "meta": {
+          "position": {
+            "x": 420,
+            "y": 450
+          }
+        }
+      },
+      {
+        "id": "orders",
+        "type": "azure.cosmos-db",
+        "properties": {
+          "zoneRedundant": true
+        },
+        "meta": {
+          "position": {
+            "x": 1060,
+            "y": 200
+          }
+        }
+      },
+      {
+        "id": "gw-nsg",
+        "type": "azure.nsg",
+        "properties": {
+          "rules": [
+            {
+              "direction": "inbound",
+              "peer": "internet",
+              "ports": ["https"]
+            }
+          ],
+          "associations": ["gw-subnet"]
+        },
+        "meta": {
+          "position": {
+            "x": 40,
+            "y": 700
+          }
+        }
+      },
+      {
+        "id": "web-nsg",
+        "type": "azure.nsg",
+        "properties": {
+          "rules": [
+            {
+              "direction": "inbound",
+              "peer": "gw-subnet",
+              "ports": ["http"]
+            },
+            {
+              "direction": "inbound",
+              "peer": "network",
+              "effect": "deny"
+            }
+          ],
+          "associations": ["web"]
+        },
+        "meta": {
+          "position": {
+            "x": 240,
+            "y": 700
+          }
+        }
+      },
+      {
+        "id": "ops-nsg",
+        "type": "azure.nsg",
+        "properties": {
+          "rules": [
+            {
+              "direction": "inbound",
+              "peer": "internet",
+              "ports": ["ssh"]
+            }
+          ],
+          "associations": ["ops-subnet"]
+        },
+        "meta": {
+          "position": {
+            "x": 440,
+            "y": 700
+          }
+        }
+      }
+    ],
+    "intents": [
+      {
+        "id": "users-appgw",
+        "from": "users",
+        "to": "appgw",
+        "port": "https"
+      },
+      {
+        "id": "appgw-web",
+        "from": "appgw",
+        "to": "web",
+        "action": "invoke",
+        "port": "http"
+      },
+      {
+        "id": "web-orders",
+        "from": "web",
+        "to": "orders",
+        "action": "read"
+      },
+      {
+        "id": "users-web",
+        "from": "users",
+        "to": "web",
+        "port": "http"
+      },
+      {
+        "id": "users-jump",
+        "from": "users",
+        "to": "jump",
+        "port": "ssh"
+      },
+      {
+        "id": "jump-web",
+        "from": "jump",
+        "to": "web",
+        "port": "ssh"
+      },
+      {
+        "id": "batch-orders",
+        "from": "batch",
+        "to": "orders",
+        "action": "read"
+      }
+    ]
+  },
+  "task": {
+    "schemaVersion": 1,
+    "id": "azure-web-tier",
+    "title": "Web tier behind Application Gateway",
+    "packs": ["core"],
+    "provided": [
+      {
+        "id": "users",
+        "type": "core.internet",
+        "locked": true
+      }
+    ],
+    "requirements": [
+      {
+        "id": "r1",
+        "type": "reachable",
+        "description": "Users on the internet can read orders through the web tier.",
+        "from": {
+          "id": "users"
+        },
+        "to": {
+          "category": "data-store"
+        },
+        "action": "read"
+      },
+      {
+        "id": "r2",
+        "type": "not-reachable",
+        "description": "No data store is directly accessible from the internet.",
+        "from": {
+          "id": "users"
+        },
+        "to": {
+          "category": "data-store"
+        }
+      },
+      {
+        "id": "r3",
+        "type": "redundant",
+        "description": "Every compute component survives the loss of an availability zone.",
+        "select": {
+          "category": "compute"
+        }
+      },
+      {
+        "id": "r4",
+        "type": "redundant",
+        "description": "The entry point survives the loss of an availability zone.",
+        "select": {
+          "category": "edge"
+        }
+      }
+    ]
+  }
+}

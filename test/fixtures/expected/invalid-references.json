@@ -9,7 +9,7 @@
         "name": "solution-validator",
         "version": "<version>"
       },
-      "vocabulary": 4,
+      "vocabulary": 5,
       "packs": [
         {
           "id": "aws",
@@ -453,7 +453,7 @@
         "name": "solution-validator",
         "version": "<version>"
       },
-      "vocabulary": 4,
+      "vocabulary": 5,
       "packs": [
         {
           "id": "aws",
@@ -897,7 +897,7 @@
         "name": "solution-validator",
         "version": "<version>"
       },
-      "vocabulary": 4,
+      "vocabulary": 5,
       "packs": [
         {
           "id": "aws",

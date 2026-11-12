@@ -1,0 +1,689 @@
+{
+  "$schema": "../schemas/pack.schema.json",
+  "id": "azure",
+  "version": "0.1.0",
+  "label": "Microsoft Azure",
+  "description": "Serverless (Functions, API Management, Cosmos DB, Blob Storage), web (Application Gateway, virtual machines, scale sets) and networking (virtual networks, subnets, NAT gateways, network security groups).",
+  "vocabulary": 5,
+  "requires": {
+    "core": "^0.2.0"
+  },
+  "types": [
+    {
+      "id": "azure.function-app",
+      "label": "Function app",
+      "description": "Runs functions on demand. HTTP-triggered functions are called at the Azure Functions endpoint; its managed identity's role assignments decide what it may access. With virtual network integration, place it in a subnet: its outbound traffic then goes through the virtual network.",
+      "category": "compute",
+      "traits": {
+        "endpoint": {
+          "visibility": "public",
+          "ports": ["https"],
+          "via": "provider"
+        },
+        "principal": {
+          "grants": {
+            "property": "roleAssignments"
+          }
+        },
+        "access-controlled": {
+          "levels": {
+            "invoke": ["invoke"]
+          },
+          "public": {
+            "property": "anonymous"
+          },
+          "publicActions": ["invoke"]
+        },
+        "redundancy": {
+          "managed": {
+            "property": "zoneRedundant"
+          }
+        }
+      },
+      "accepts": [
+        {
+          "from": {
+            "type": "azure.api-management"
+          },
+          "actions": ["invoke"]
+        },
+        {
+          "from": {
+            "type": "azure.application-gateway"
+          },
+          "actions": ["invoke"]
+        },
+        {
+          "from": {
+            "category": "compute"
+          },
+          "actions": ["invoke"]
+        },
+        {
+          "from": {
+            "category": "external"
+          },
+          "actions": ["invoke"],
+          "ports": ["https"]
+        }
+      ],
+      "properties": {
+        "runtime": {
+          "type": "string",
+          "title": "Runtime",
+          "description": "For example node or python. Informational only."
+        },
+        "anonymous": {
+          "type": "boolean",
+          "title": "Anonymous",
+          "description": "The HTTP trigger's authorization level is anonymous: anyone may call it. Otherwise callers need a function key, which API Management and Application Gateway backends hold, or a role assignment.",
+          "default": false
+        },
+        "roleAssignments": {
+          "type": "array",
+          "title": "Role assignments",
+          "description": "What its managed identity may do. A new identity has no role assignments.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "resource": {
+                "type": "string",
+                "title": "Resource",
+                "x-component-ref": true
+              },
+              "access": {
+                "type": "string",
+                "title": "Access",
+                "enum": ["read", "write", "read-write", "invoke"]
+              }
+            },
+            "required": ["resource", "access"]
+          },
+          "default": []
+        },
+        "zoneRedundant": {
+          "type": "boolean",
+          "title": "Zone redundant",
+          "description": "Zone redundancy of its hosting plan (Flex Consumption, Premium or Dedicated). Without it, Azure does not spread it across availability zones.",
+          "default": false
+        }
+      }
+    },
+    {
+      "id": "azure.api-management",
+      "label": "API Management",
+      "description": "A managed API gateway that routes requests to backends such as function apps. Each API also holds the credentials to call its backend.",
+      "category": "edge",
+      "traits": {
+        "endpoint": {
+          "visibility": {
+            "property": "endpoint"
+          },
+          "ports": ["https"]
+        },
+        "forwarder": {
+          "routes": {
+            "property": "apis"
+          },
+          "targetField": "backend",
+          "authorizes": true
+        },
+        "redundancy": {
+          "managed": {
+            "property": "zoneRedundant"
+          }
+        }
+      },
+      "accepts": [
+        {
+          "actions": ["invoke"],
+          "ports": ["https"]
+        }
+      ],
+      "properties": {
+        "endpoint": {
+          "type": "string",
+          "title": "Endpoint",
+          "description": "public: reachable from the internet. private: internal virtual network mode; place it in a subnet.",
+          "enum": ["public", "private"],
+          "default": "public"
+        },
+        "apis": {
+          "type": "array",
+          "title": "APIs",
+          "description": "Each API forwards requests on a path to a backend and holds the credentials to call it.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string",
+                "title": "Path",
+                "minLength": 1
+              },
+              "backend": {
+                "type": "string",
+                "title": "Backend",
+                "x-component-ref": true
+              }
+            },
+            "required": ["path", "backend"]
+          },
+          "default": []
+        },
+        "zoneRedundant": {
+          "type": "boolean",
+          "title": "Zone redundant",
+          "description": "Premium tier with units in two or more availability zones.",
+          "default": false
+        }
+      }
+    },
+    {
+      "id": "azure.cosmos-db",
+      "label": "Cosmos DB account",
+      "description": "A managed NoSQL database. Access requires a data-plane role assignment.",
+      "category": "data-store",
+      "traits": {
+        "endpoint": {
+          "visibility": "public",
+          "ports": ["https"]
+        },
+        "access-controlled": {
+          "levels": {
+            "read": ["read"],
+            "write": ["write"],
+            "read-write": ["read", "write"]
+          }
+        },
+        "redundancy": {
+          "managed": {
+            "property": "zoneRedundant"
+          }
+        }
+      },
+      "accepts": [
+        {
+          "from": {
+            "category": "compute"
+          },
+          "actions": ["read", "write"]
+        }
+      ],
+      "properties": {
+        "zoneRedundant": {
+          "type": "boolean",
+          "title": "Zone redundant",
+          "description": "Availability zone support in its region. Without it, the account's replicas in a region may share one zone.",
+          "default": false
+        }
+      }
+    },
+    {
+      "id": "azure.blob-storage",
+      "label": "Blob container",
+      "description": "Object storage in a storage account. Access requires a role assignment unless anonymous read access is on.",
+      "category": "data-store",
+      "traits": {
+        "endpoint": {
+          "visibility": "public",
+          "ports": ["https"]
+        },
+        "access-controlled": {
+          "levels": {
+            "read": ["read"],
+            "write": ["write"],
+            "read-write": ["read", "write"]
+          },
+          "public": {
+            "property": "anonymousRead"
+          },
+          "publicActions": ["read"]
+        },
+        "redundancy": {
+          "managed": {
+            "property": "zoneRedundant"
+          }
+        }
+      },
+      "accepts": [
+        {
+          "from": {
+            "category": "compute"
+          },
+          "actions": ["read", "write"]
+        },
+        {
+          "from": {
+            "category": "external"
+          },
+          "actions": ["read"],
+          "ports": ["https"]
+        }
+      ],
+      "properties": {
+        "anonymousRead": {
+          "type": "boolean",
+          "title": "Anonymous read",
+          "description": "Whether anyone on the internet may read blobs. It also needs blob public access allowed on the storage account, which new accounts turn off.",
+          "default": false
+        },
+        "zoneRedundant": {
+          "type": "boolean",
+          "title": "Zone redundant",
+          "description": "ZRS or GZRS. LRS and GRS keep the copies in the primary region in one datacenter.",
+          "default": false
+        }
+      }
+    },
+    {
+      "id": "azure.vnet",
+      "label": "Virtual network",
+      "description": "A private network. Components in its subnets reach each other, subject to network security groups. Components with a public IP address reach the internet and can be reached from it through Azure's system routes; other components need a NAT gateway on their subnet to open connections to the internet. Subnets span every availability zone of the region.",
+      "category": "network",
+      "traits": {
+        "zone": {
+          "addressSpace": {
+            "property": "addressSpace"
+          },
+          "directInternet": true
+        }
+      },
+      "accepts": [],
+      "properties": {
+        "addressSpace": {
+          "type": "string",
+          "title": "Address space",
+          "description": "The virtual network's IPv4 address range, for example 10.1.0.0/16. Used by the detailed analysis level.",
+          "pattern": "^([0-9]{1,3}\\.){3}[0-9]{1,3}/[0-9]{1,2}$"
+        }
+      }
+    },
+    {
+      "id": "azure.subnet",
+      "label": "Subnet",
+      "description": "A part of a virtual network; place it in the virtual network. A NAT gateway or a network security group can be associated with it.",
+      "category": "network",
+      "traits": {
+        "zone": {
+          "addressSpace": {
+            "property": "addressPrefix"
+          }
+        }
+      },
+      "accepts": [],
+      "properties": {
+        "addressPrefix": {
+          "type": "string",
+          "title": "Address prefix",
+          "description": "The subnet's IPv4 address range within its virtual network, for example 10.1.1.0/24. Used by the detailed analysis level.",
+          "pattern": "^([0-9]{1,3}\\.){3}[0-9]{1,3}/[0-9]{1,2}$"
+        }
+      }
+    },
+    {
+      "id": "azure.nsg",
+      "label": "Network security group",
+      "description": "A stateful firewall for the subnets and components it is associated with. Its default rules allow traffic within the virtual network and outbound traffic to the internet.",
+      "category": "network",
+      "traits": {
+        "traffic-filter": {
+          "stateful": true,
+          "attachTo": ["component", "zone"],
+          "rules": {
+            "property": "rules"
+          },
+          "targets": {
+            "property": "associations"
+          },
+          "baseRules": [
+            {
+              "direction": "inbound",
+              "peer": "network"
+            },
+            {
+              "direction": "outbound",
+              "peer": "network"
+            },
+            {
+              "direction": "outbound",
+              "peer": "internet"
+            }
+          ],
+          "default": {
+            "inbound": "deny",
+            "outbound": "deny"
+          }
+        }
+      },
+      "accepts": [],
+      "properties": {
+        "rules": {
+          "type": "array",
+          "title": "Security rules",
+          "description": "Checked in priority order (lowest number first); the first match decides. After them, the default rules allow traffic within the virtual network and outbound traffic to the internet, and deny everything else. Stateful: replies are allowed automatically.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "direction": {
+                "type": "string",
+                "title": "Direction",
+                "enum": ["inbound", "outbound"]
+              },
+              "peer": {
+                "type": "string",
+                "title": "Peer",
+                "minLength": 1,
+                "description": "any, internet, network (the VirtualNetwork service tag), the id of a component, subnet or virtual network, or an IPv4 range such as 10.0.0.0/16 (matched at the detailed level)."
+              },
+              "ports": {
+                "type": "array",
+                "title": "Ports",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Port ids (https), numbers (443) or ranges (8080-8090). Omitted: all ports."
+              },
+              "effect": {
+                "type": "string",
+                "title": "Effect",
+                "enum": ["allow", "deny"]
+              }
+            },
+            "required": ["direction", "peer"]
+          },
+          "default": []
+        },
+        "associations": {
+          "type": "array",
+          "title": "Associations",
+          "description": "The subnets and components (network interfaces) it is associated with.",
+          "items": {
+            "type": "string",
+            "x-component-ref": true
+          },
+          "default": []
+        }
+      }
+    },
+    {
+      "id": "azure.nat-gateway",
+      "label": "NAT gateway",
+      "description": "Gives the subnets it is associated with outbound connections to the internet, without a route table. A zonal NAT gateway lives in one availability zone.",
+      "category": "network",
+      "traits": {
+        "gateway": {
+          "direction": "outbound-only",
+          "connects": {
+            "property": "subnets"
+          },
+          "implicit": true
+        },
+        "redundancy": {
+          "domains": {
+            "property": "zones"
+          }
+        }
+      },
+      "accepts": [],
+      "properties": {
+        "subnets": {
+          "type": "array",
+          "title": "Subnets",
+          "description": "The subnets it is associated with.",
+          "items": {
+            "type": "string",
+            "x-component-ref": true
+          },
+          "default": []
+        },
+        "zones": {
+          "type": "array",
+          "title": "Availability zones",
+          "description": "The availability zones it runs in. Empty: no zone is chosen, and it runs in one.",
+          "items": {
+            "type": "string",
+            "enum": ["1", "2", "3"]
+          },
+          "default": []
+        }
+      }
+    },
+    {
+      "id": "azure.vm",
+      "label": "Virtual machine",
+      "description": "A virtual machine. Place it in a subnet and associate network security groups with it or its subnet.",
+      "category": "compute",
+      "traits": {
+        "endpoint": {
+          "visibility": {
+            "property": "endpoint"
+          }
+        },
+        "principal": {
+          "grants": {
+            "property": "roleAssignments"
+          }
+        },
+        "redundancy": {
+          "domains": {
+            "property": "zones"
+          }
+        }
+      },
+      "accepts": [
+        {
+          "actions": ["connect", "invoke"],
+          "ports": ["http", "https", "ssh"]
+        },
+        {
+          "from": {
+            "category": "compute"
+          },
+          "actions": ["invoke"]
+        }
+      ],
+      "properties": {
+        "endpoint": {
+          "type": "string",
+          "title": "Endpoint",
+          "description": "public: it has a public IP address. private: only a private address.",
+          "enum": ["public", "private"],
+          "default": "private"
+        },
+        "zones": {
+          "type": "array",
+          "title": "Availability zones",
+          "description": "The availability zone it runs in. Empty: no zone is chosen.",
+          "items": {
+            "type": "string",
+            "enum": ["1", "2", "3"]
+          },
+          "default": [],
+          "maxItems": 1
+        },
+        "roleAssignments": {
+          "type": "array",
+          "title": "Role assignments",
+          "description": "What its managed identity may do. A new identity has no role assignments.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "resource": {
+                "type": "string",
+                "title": "Resource",
+                "x-component-ref": true
+              },
+              "access": {
+                "type": "string",
+                "title": "Access",
+                "enum": ["read", "write", "read-write", "invoke"]
+              }
+            },
+            "required": ["resource", "access"]
+          },
+          "default": []
+        }
+      }
+    },
+    {
+      "id": "azure.vm-scale-set",
+      "label": "Virtual machine scale set",
+      "description": "A group of equivalent virtual machines running an application. Place it in a subnet; its zones say which availability zones its instances run in.",
+      "category": "compute",
+      "traits": {
+        "endpoint": {
+          "visibility": {
+            "property": "endpoint"
+          }
+        },
+        "group": {
+          "size": {
+            "property": "capacity"
+          }
+        },
+        "principal": {
+          "grants": {
+            "property": "roleAssignments"
+          }
+        },
+        "redundancy": {
+          "domains": {
+            "property": "zones"
+          }
+        }
+      },
+      "accepts": [
+        {
+          "actions": ["connect", "invoke"],
+          "ports": ["http", "https"]
+        },
+        {
+          "from": {
+            "category": "compute"
+          },
+          "actions": ["invoke"]
+        }
+      ],
+      "properties": {
+        "endpoint": {
+          "type": "string",
+          "title": "Endpoint",
+          "description": "public: every instance has a public IP address. private: only private addresses.",
+          "enum": ["public", "private"],
+          "default": "private"
+        },
+        "capacity": {
+          "type": "integer",
+          "title": "Capacity",
+          "description": "Number of instances. Informational only.",
+          "minimum": 0,
+          "default": 2
+        },
+        "zones": {
+          "type": "array",
+          "title": "Availability zones",
+          "description": "The availability zones its instances run in. Empty: no zone is chosen.",
+          "items": {
+            "type": "string",
+            "enum": ["1", "2", "3"]
+          },
+          "default": []
+        },
+        "roleAssignments": {
+          "type": "array",
+          "title": "Role assignments",
+          "description": "What its managed identity may do. A new identity has no role assignments.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "resource": {
+                "type": "string",
+                "title": "Resource",
+                "x-component-ref": true
+              },
+              "access": {
+                "type": "string",
+                "title": "Access",
+                "enum": ["read", "write", "read-write", "invoke"]
+              }
+            },
+            "required": ["resource", "access"]
+          },
+          "default": []
+        }
+      }
+    },
+    {
+      "id": "azure.application-gateway",
+      "label": "Application Gateway",
+      "description": "Distributes HTTP(S) requests to backends such as scale sets, virtual machines or function apps. Place it in its own subnet; its zones say which availability zones it runs in.",
+      "category": "edge",
+      "traits": {
+        "endpoint": {
+          "visibility": {
+            "property": "frontend"
+          },
+          "ports": ["http", "https"]
+        },
+        "forwarder": {
+          "routes": {
+            "property": "backends"
+          },
+          "targetField": "backend",
+          "authorizes": true
+        },
+        "redundancy": {
+          "domains": {
+            "property": "zones"
+          }
+        }
+      },
+      "accepts": [
+        {
+          "actions": ["invoke", "read"],
+          "ports": ["http", "https"]
+        }
+      ],
+      "properties": {
+        "frontend": {
+          "type": "string",
+          "title": "Endpoint",
+          "description": "public: a public frontend IP address. private: a private frontend only.",
+          "enum": ["public", "private"],
+          "default": "public"
+        },
+        "backends": {
+          "type": "array",
+          "title": "Backends",
+          "description": "Each rule forwards requests on a path to a backend.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string",
+                "title": "Path"
+              },
+              "backend": {
+                "type": "string",
+                "title": "Backend",
+                "x-component-ref": true
+              }
+            },
+            "required": ["backend"]
+          },
+          "default": []
+        },
+        "zones": {
+          "type": "array",
+          "title": "Availability zones",
+          "description": "The availability zones it runs in. Empty: no zone is chosen.",
+          "items": {
+            "type": "string",
+            "enum": ["1", "2", "3"]
+          },
+          "default": []
+        }
+      }
+    }
+  ]
+}

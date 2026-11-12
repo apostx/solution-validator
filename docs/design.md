@@ -340,11 +340,21 @@ These details implement the decisions above. They are not product decisions; ope
 - **What it does not claim:** failover, health checks, capacity and recovery times are not modeled. An intent depends on its two ends and the gateways it passes; chains of intents are not followed.
 - **AWS pack 0.5.0** binds a subnet's `availabilityZone` as its failure domain, marks the regional services as managed, and makes EC2 a single instance and RDS a single instance unless `multiAz` is set.
 
+### Implementation notes (Iteration 9)
+
+- **Trait vocabulary 5** (Q23) adds what Azure networking needs, as generic parameters:
+  - `zone.directInternet`: public endpoints reach the internet through their own addresses, without gateway components (Azure public IP addresses and system routes);
+  - `gateway.implicit`: a gateway that serves the zones it connects without a route (a NAT gateway associated with a subnet);
+  - `traffic-filter.baseRules` and the `network` rule peer: the default security rules of a network security group;
+  - a bindable `redundancy.managed` and `redundancy.domains`: zone redundancy as a setting, and availability zones chosen per resource rather than per subnet.
+- **The `azure` pack 0.1.0** covers Functions, API Management, Cosmos DB, Blob Storage, virtual networks, subnets, network security groups, NAT gateways, virtual machines, scale sets and Application Gateway. Tasks that select by category work across the `aws` and `azure` packs; a test checks one task against both.
+- **Known simplifications:** route tables (UDR), Azure Firewall, service endpoints and private endpoints are not modeled. A subnet's network security group does not filter traffic that stays inside the subnet. Security rules are checked in array order, so the array must follow rule priority. Outbound traffic in AWS networks still does not check whether the source has a public address, as before.
+
 ## 11. Out of scope for the first version
 
 - Scoring, weighting and complexity metrics (consumers build these; see [§7](#7-requirements-metadata-and-facts))
 - Terraform import or export
-- Azure and on-premises packs (the model is designed for them; see [component-model.md §6](component-model.md#6-cross-provider-mapping))
+- An on-premises pack (the model is designed for it; see [component-model.md §6](component-model.md#6-cross-provider-mapping))
 - Policy documents (IAM, RBAC), cost estimation and runtime simulation
 - AI of any kind
 - ArchitectMate itself (separate repository)
@@ -367,11 +377,12 @@ These details implement the decisions above. They are not product decisions; ope
 | Q12 | Shape of the metadata and facts query. | Decided (initial) | §7 |
 | Q13 | Build tool: tsup's README now says it is no longer actively maintained and recommends tsdown. tsup 9 works, with TypeScript 6. Proposal: switch to tsdown when the build needs more than tsup offers, or before TypeScript 6 stops being supported. | Proposed | §10 |
 | Q14 | SPDX license identifier in `package.json`. `AGPL-3.0-only` is implemented. `AGPL-3.0-or-later` would let users apply later AGPL versions. To confirm before the first npm release. | Proposed | §10 |
-| Q15 | How traffic filters and routers are attached: the filter or router lists what it applies to (`traffic-filter.targets`, `router.zones`), keeping all network wiring in the network traits; this matches how AWS associates network ACLs and route tables. | Decided (initial) | [formats.md](formats.md#trait-parameters-vocabulary-4) |
-| Q16 | Filter rule vocabulary: `direction`, `peer` (`any`, `internet` or the id of a component, zone or filter), optional `ports` and `effect`; rules in order, first match decides, then the default policy; stateless filters also check the return traffic. | Decided (initial) | [formats.md](formats.md#trait-parameters-vocabulary-4) |
+| Q15 | How traffic filters and routers are attached: the filter or router lists what it applies to (`traffic-filter.targets`, `router.zones`), keeping all network wiring in the network traits; this matches how AWS associates network ACLs and route tables. | Decided (initial) | [formats.md](formats.md#trait-parameters-vocabulary-5) |
+| Q16 | Filter rule vocabulary: `direction`, `peer` (`any`, `internet` or the id of a component, zone or filter), optional `ports` and `effect`; rules in order, first match decides, then the default policy; stateless filters also check the return traffic. | Decided (initial) | [formats.md](formats.md#trait-parameters-vocabulary-5) |
 | Q18 | Address family for the detailed level: IPv4 only for now; IPv6 can follow as its own step. | Decided (initial) | §6 |
 | Q19 | Return traffic through stateless filters at the detailed level uses the ephemeral ports 1024–65535; a rule must cover the whole range. | Decided (initial) | [formats.md](formats.md#detailed-level) |
 | Q20 | Matching address ranges when an address is unknown (parties outside every zone, or a range that covers part of a zone): `undecidable`, never a guess; route choice for internet traffic is `undecidable` when a more specific public route leads elsewhere. | Decided (initial) | [formats.md](formats.md#detailed-level) |
-| Q21 | Private access to provider services (VPC endpoints): a gateway lists the services it reaches (`gateway.services`), and a route whose destination is such a service sends that traffic through it, without the internet. | Decided (initial) | [formats.md](formats.md#trait-parameters-vocabulary-4) |
+| Q21 | Private access to provider services (VPC endpoints): a gateway lists the services it reaches (`gateway.services`), and a route whose destination is such a service sends that traffic through it, without the internet. | Decided (initial) | [formats.md](formats.md#trait-parameters-vocabulary-5) |
 | Q22 | Availability: zones name their failure domain (`zone.failureDomain`); types say whether the provider makes them redundant (`redundancy.managed`) or run one instance whatever their placement (`redundancy.spread: false`). A component is redundant in two or more failure domains; findings are warnings, and the library does not score them. | Decided (initial) | [formats.md](formats.md#availability) |
+| Q23 | Azure networking with generic parameters: zones with direct internet access for public endpoints, implicit gateways associated with zones, base rules of traffic filter types with a `network` peer, and failure domains and zone redundancy as component settings. | Decided (initial) | [formats.md](formats.md#trait-parameters-vocabulary-5) |
 | Q17 | Groups and multiple placements: an intent through a group or a component in several zones passes only if every member or placement passes. | Decided (initial) | [formats.md](formats.md#access-checks-logical-level) |

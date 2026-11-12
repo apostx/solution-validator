@@ -100,7 +100,7 @@ This document describes the implemented JSON formats. The reasoning behind them 
 - **`properties`** use a subset of JSON Schema: `string` (with `enum`, `minLength`, `maxLength`, `pattern`), `number`, `integer`, `boolean`, arrays of those or of objects, and objects whose fields are scalars or arrays of scalars. Objects are closed. `default` documents the value the `pack-defaults` assumption policy uses. `"x-component-ref": true` marks a string as a component id; references are checked.
 - **`required`** lists properties every component of the type must set. Most properties are optional: a missing property limits what can be decided but does not make the model invalid.
 
-### Trait parameters (vocabulary 4)
+### Trait parameters (vocabulary 5)
 
 | Trait | Parameters |
 |---|---|
@@ -108,21 +108,21 @@ This document describes the implemented JSON formats. The reasoning behind them 
 | `forwarder` | `routes`: binding to the routes array; `targetField` (default `target`); `authorizes`: a route also authorizes the forwarder on its target |
 | `principal` | `grants`: binding to the grants array; `resourceField` (default `resource`); `accessField` (default `access`) |
 | `access-controlled` | `levels`: access level → actions it allows; `public`: anonymous access (bindable boolean); `publicActions`: actions allowed when public |
-| `zone` | `addressSpace` (bindable string, detailed level); `failureDomain` (bindable string): the failure domain the zone is in, such as an availability zone |
-| `gateway` | `direction`: `both` or `outbound-only` (bindable); `connects`: binding to the zones it is attached to (without it, the gateway belongs to the network of the zone it is placed in); `services`: binding to the provider services it reaches privately |
+| `zone` | `addressSpace` (bindable string, detailed level); `failureDomain` (bindable string): the failure domain the zone is in, such as an availability zone; `directInternet` (bindable boolean): the provider routes internet traffic to and from public endpoints in the zone without gateway components, see below |
+| `gateway` | `direction`: `both` or `outbound-only` (bindable); `connects`: binding to the zones it is attached to (without it, the gateway belongs to the network of the zone it is placed in); `services`: binding to the provider services it reaches privately; `implicit`: the zones it connects use it for internet traffic without a route |
 | `router` | `routes`: binding to routes `{ destination, gateway }`, where the destination is `internet`, an IPv4 range, or the id of a service; `zones`: binding to the zones it serves |
-| `traffic-filter` | `stateful`; `attachTo`: `component`, `zone` and/or `self`; `rules`: binding to the rules (below); `targets`: binding to what it is attached to; `default`: `{ inbound, outbound }` of `allow` or `deny` (default: deny) |
+| `traffic-filter` | `stateful`; `attachTo`: `component`, `zone` and/or `self`; `rules`: binding to the rules (below); `baseRules`: rules of the type itself, checked after the component's rules (their peers are keywords or address ranges); `targets`: binding to what it is attached to; `default`: `{ inbound, outbound }` of `allow` or `deny` (default: deny) |
 | `group` | `members`: binding to component references; `size` (bindable integer, informational) |
-| `redundancy` | `managed`: the provider spreads the component across failure domains; `spread` (bindable boolean, default `true`): `false` means one instance runs in only one of the zones it is placed in |
+| `redundancy` | `managed` (bindable boolean): `true`, the provider spreads the component across failure domains; `false`, it runs in one; `spread` (bindable boolean, default `true`): `false` means one instance runs in only one of the zones it is placed in; `domains`: binding to the component's own list of failure domains, used instead of its zones' |
 
-Vocabulary 2 added `endpoint.via`, `router.zones` and `traffic-filter.targets`, removed `group.zones` (placement says where a group runs), and gave the network traits their behavior. Vocabulary 3 added `gateway.services`. Vocabulary 4 added `zone.failureDomain` and the `redundancy` trait for the [availability analysis](#availability). Packs declare the version they need, for example `"vocabulary": 4`.
+Vocabulary 2 added `endpoint.via`, `router.zones` and `traffic-filter.targets`, removed `group.zones` (placement says where a group runs), and gave the network traits their behavior. Vocabulary 3 added `gateway.services`. Vocabulary 4 added `zone.failureDomain` and the `redundancy` trait for the [availability analysis](#availability). Vocabulary 5 added `zone.directInternet`, `gateway.implicit`, `traffic-filter.baseRules`, the `network` rule peer, a bindable `redundancy.managed` and `redundancy.domains`, for networks such as Azure's, where public IP addresses, subnet associations and per-resource availability zones decide what zones and routes decide elsewhere. Packs declare the version they need, for example `"vocabulary": 5`.
 
 **Traffic filter rules** are objects, checked in order; the first rule that matches the traffic's direction, peer and ports decides, and the `default` policy decides when none matches:
 
 | Field | Meaning |
 |---|---|
 | `direction` | `inbound` or `outbound`, seen from what the filter protects |
-| `peer` | `any`; `internet` (anything outside the protected side's network); the id of a component, a zone (anything placed in it, at any depth) or a filter (anything it is attached to); or an IPv4 range such as `10.0.0.0/16` (see [the detailed level](#detailed-level)) |
+| `peer` | `any`; `internet` (anything outside the protected side's network); `network` (anything inside it); the id of a component, a zone (anything placed in it, at any depth) or a filter (anything it is attached to); or an IPv4 range such as `10.0.0.0/16` (see [the detailed level](#detailed-level)) |
 | `ports` | Port ids (`https`), port numbers (`"443"`) or ranges (`"1024-65535"`). Omitted: all ports |
 | `effect` | `allow` (default) or `deny` |
 
@@ -198,6 +198,7 @@ An intent verdict has the shape below. A verdict is never a boolean: `pass` is p
 **Connectivity.** A component's position is the zone it is placed in; components without placement are outside every zone (the internet, and provider services such as object storage). The outermost zone of a position is its network.
 
 - **Same network:** public and private endpoints are reachable through the local routes.
+- **Implicit gateways and direct internet access:** when the zone's router has no internet route (or there is no router), a gateway with `implicit` that `connects` the zone, or a zone it is placed in, carries its internet traffic; an implicit `outbound-only` gateway reaches the internet itself. In a zone with `directInternet` (or placed in one), a component with a public endpoint reaches the internet and is reached from it through its own address; inbound traffic to it does not depend on routes. A component without a public endpoint there needs an internet route or an implicit gateway to open connections (`NO_PUBLIC_ADDRESS`).
 - **Private service routes:** traffic from a network to a service outside it uses a route whose destination is that service, if the zone's router has one; its gateway must be attached to the network and list the service in `services`. No internet route is needed then.
 - **Between networks, or with the outside:** the endpoint must be public. A source inside a network needs a route to the internet in its router: through a `both` gateway attached to its network, or through an `outbound-only` gateway placed in a zone that itself routes to a `both` gateway. A target inside a network needs a route to the internet through a `both` gateway; `outbound-only` gateways do not let traffic in. A zone without a router uses the router of the nearest zone it is placed in; with none, it only has local routes.
 - **Traffic filters on the way:** the filters attached to the source and to the target, and the zone filters of every zone the traffic leaves or enters, must allow it; `self` filters on a gateway the traffic passes apply too.
@@ -234,15 +235,15 @@ The `address-plan` report lists every zone with its `space` and `size`, and thes
 
 ## Availability
 
-The `availability` analysis runs at both levels. A failure domain is a part of the infrastructure that can fail on its own, such as an availability zone or a data center; zone types name theirs with `zone.failureDomain`, and a zone whose type declares none is in the failure domain of the zone it is placed in. Under `strict`, an unset `failureDomain` property makes the components in that zone `undecidable`.
+The `availability` analysis runs at both levels. A failure domain is a part of the infrastructure that can fail on its own, such as an availability zone or a data center; zone types name theirs with `zone.failureDomain`, and a zone whose type declares none is in the failure domain of the zone it is placed in. Where the provider assigns failure domains per component (Azure availability zones), `redundancy.domains` lists them instead. Under `strict`, an unset `failureDomain` property makes the components in that zone `undecidable`.
 
 It lists a fact for every running component: one with an `endpoint`, a `gateway` or a `group`, except `external` components.
 
 | `availability` | Meaning |
 |---|---|
-| `managed` | The type's `redundancy.managed` says the provider spreads it across failure domains (for example S3 or DynamoDB). |
-| `redundant` | Its placements, or its group's members, run in two or more failure domains. |
-| `single` | They all run in one failure domain, or `redundancy.spread` is `false` (one instance, for example an EC2 instance or a single-AZ database). |
+| `managed` | `redundancy.managed` (the type's value or the component's bound setting) says the provider spreads it across failure domains (for example S3, DynamoDB, or zone-redundant Cosmos DB). |
+| `redundant` | Its placements, its group's members, or its own `domains`, span two or more failure domains. |
+| `single` | They all run in one failure domain, `redundancy.spread` is `false` (one instance, for example an EC2 instance or a single-AZ database), `redundancy.managed` is `false`, or its own `domains` list has one entry or none. |
 | `undecidable` | It is not placed, a zone it runs in has no failure domain, or a setting it depends on is unset under `strict`. |
 
 ```json

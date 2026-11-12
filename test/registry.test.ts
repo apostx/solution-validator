@@ -7,6 +7,7 @@ describe("createRegistry", () => {
   it("loads the official packs", () => {
     expect(officialRegistry.packs.map((pack) => `${pack.id}@${pack.version}`)).toEqual([
       "aws@0.5.0",
+      "azure@0.1.0",
       "core@0.2.0",
     ]);
     expect(officialRegistry.types.map((type) => type.id)).toEqual([
@@ -28,6 +29,17 @@ describe("createRegistry", () => {
       "aws.ec2",
       "aws.rds",
       "aws.gateway-endpoint",
+      "azure.function-app",
+      "azure.api-management",
+      "azure.cosmos-db",
+      "azure.blob-storage",
+      "azure.vnet",
+      "azure.subnet",
+      "azure.nsg",
+      "azure.nat-gateway",
+      "azure.vm",
+      "azure.vm-scale-set",
+      "azure.application-gateway",
     ]);
     expect(officialRegistry.getType("aws.lambda")?.category).toBe("compute");
     expect(officialRegistry.getAction("invoke")?.pack).toBe("core");

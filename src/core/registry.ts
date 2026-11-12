@@ -1,5 +1,6 @@
 import { createFinding, type Finding, hasErrors, sortFindings } from "../messages/finding";
 import { compareStrings } from "../util/compare";
+import { parseCidr, parsePortRange } from "../util/ipv4";
 import { cloneJson, isObject } from "../util/json";
 import { type Meta, namespaceOf } from "./ids";
 import {
@@ -18,6 +19,7 @@ import {
   bindingSlots,
   describeExpectation,
   isTraitId,
+  PEER_KEYWORDS,
   TRAIT_VOCABULARY_VERSION,
   type Traits,
 } from "./traits";
@@ -260,6 +262,18 @@ function checkType(
     });
   }
 
+  traits["traffic-filter"]?.baseRules?.forEach((rule, r) => {
+    const path = `${base}/traits/traffic-filter/baseRules/${r}`;
+    if (!(PEER_KEYWORDS as readonly string[]).includes(rule.peer) && !parseCidr(rule.peer)) {
+      unknown(`${path}/peer`, "rule peer", rule.peer);
+    }
+    rule.ports?.forEach((port, i) => {
+      if (!isVisible("port", port) && !parsePortRange(port)) {
+        unknown(`${path}/ports/${i}`, "port", port);
+      }
+    });
+  });
+
   (type.accepts ?? []).forEach((rule, r) => {
     const path = `${base}/accepts/${r}`;
     if (rule.from?.type && !isVisible("type", rule.from.type)) {
@@ -336,6 +350,12 @@ function fits(schema: PropertySchema, expectation: BindingExpectation): boolean 
         schema.type === "array" &&
         schema.items.type === "string" &&
         schema.items["x-component-ref"] === true
+      );
+    case "strings":
+      return (
+        schema.type === "array" &&
+        schema.items.type === "string" &&
+        schema.items["x-component-ref"] !== true
       );
     case "objects": {
       if (schema.type !== "array" || schema.items.type !== "object") return false;

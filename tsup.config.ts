@@ -5,6 +5,7 @@ export default defineConfig({
     index: "src/index.ts",
     "packs/core": "src/packs/core.ts",
     "packs/aws": "src/packs/aws.ts",
+    "packs/azure": "src/packs/azure.ts",
   },
   format: ["esm"],
   target: "es2022",

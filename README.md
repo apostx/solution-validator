@@ -2,14 +2,14 @@
 
 A deterministic, provider-neutral library that analyzes designed software and infrastructure solutions. It answers two questions: does the solution work, and does it meet a task's requirements?
 
-> **Status: 0.x.** Iterations 1–8 of the [roadmap](docs/roadmap.md) are implemented: the model and pack format, the `model-validity`, `connection-validity` and `access` analyses (including networks: zones, routes, gateways, security groups, network ACLs and private service endpoints), the `availability` analysis (failure domains and single points of failure), the opt-in detailed level with IPv4 address plans, requirement checks and the metadata query. The API may change before 1.0.
+> **Status: 0.x.** Iterations 1–9 of the [roadmap](docs/roadmap.md) are implemented: the model and pack format, the `model-validity`, `connection-validity` and `access` analyses (including networks: zones, routes, gateways, security groups, network ACLs and private service endpoints), the `availability` analysis (failure domains and single points of failure), the opt-in detailed level with IPv4 address plans, requirement checks and the metadata query. The API may change before 1.0.
 
 ## What it does
 
 - Checks relationships, not just components. A connection between an application and a database does not prove that the application can reach it. An API route, a permission or a public access setting decides that.
 - Returns three-state verdicts: `pass`, `fail` or `undecidable`. It never claims more than the input supports.
 - Reports which failure domains (such as availability zones) each component runs in, and the single points of failure that working paths depend on.
-- Takes component types from JSON packs. The `aws` pack covers serverless (API Gateway, Lambda, DynamoDB, S3), web tiers (CloudFront, Application Load Balancer, EC2, Auto Scaling, RDS) and networking (VPC, subnets, internet and NAT gateways, VPC endpoints, route tables, security groups, network ACLs). The engine itself contains no provider-specific logic.
+- Takes component types from JSON packs. The `aws` pack covers serverless (API Gateway, Lambda, DynamoDB, S3), web tiers (CloudFront, Application Load Balancer, EC2, Auto Scaling, RDS) and networking (VPC, subnets, internet and NAT gateways, VPC endpoints, route tables, security groups, network ACLs). The `azure` pack covers Functions, API Management, Cosmos DB, Blob Storage, Application Gateway, virtual machines, scale sets and networking (virtual networks, subnets, NAT gateways, network security groups). The engine itself contains no provider-specific logic, and tasks that select by category work with either pack.
 - Runs in browsers and in Node.js, with no backend.
 - Is deterministic: no randomness, clock, network access or AI. It does not score; consumers build scoring from its verdicts, metadata and facts.
 
@@ -103,7 +103,7 @@ npm run check   # everything CI runs
 
 ```
 src/              library source (browser and Node.js compatible)
-packs/            official packs (core, aws) as JSON
+packs/            official packs (core, aws, azure) as JSON
 schemas/          JSON Schemas generated from the library's TypeBox definitions
 test/             tests; example models and golden results in test/fixtures/
 demo/             visual sandbox, an npm workspace that imports the library from source

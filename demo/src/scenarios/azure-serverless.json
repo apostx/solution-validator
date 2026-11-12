@@ -1,0 +1,169 @@
+{
+  "id": "azure-serverless",
+  "title": "Azure serverless orders API",
+  "description": "The serverless orders API on Azure: API Management, a function app and Cosmos DB, plus a blob container. The task selects only by category, so the same task works on AWS too. The function has no role assignment on the container, and the container is not zone-redundant (LRS); fix both to meet the task.",
+  "packs": ["core", "azure"],
+  "solution": {
+    "schemaVersion": 1,
+    "packs": ["core", "azure"],
+    "components": [
+      {
+        "id": "users",
+        "type": "core.internet",
+        "meta": {
+          "position": {
+            "x": 0,
+            "y": 140
+          }
+        }
+      },
+      {
+        "id": "api",
+        "type": "azure.api-management",
+        "properties": {
+          "endpoint": "public",
+          "apis": [
+            {
+              "path": "/orders",
+              "backend": "orders-fn"
+            }
+          ],
+          "zoneRedundant": true
+        },
+        "meta": {
+          "position": {
+            "x": 240,
+            "y": 140
+          }
+        }
+      },
+      {
+        "id": "orders-fn",
+        "type": "azure.function-app",
+        "properties": {
+          "anonymous": false,
+          "roleAssignments": [
+            {
+              "resource": "orders-db",
+              "access": "read-write"
+            }
+          ],
+          "zoneRedundant": true
+        },
+        "meta": {
+          "position": {
+            "x": 480,
+            "y": 140
+          }
+        }
+      },
+      {
+        "id": "orders-db",
+        "type": "azure.cosmos-db",
+        "properties": {
+          "zoneRedundant": true
+        },
+        "meta": {
+          "position": {
+            "x": 740,
+            "y": 40
+          }
+        }
+      },
+      {
+        "id": "uploads",
+        "type": "azure.blob-storage",
+        "properties": {
+          "anonymousRead": false,
+          "zoneRedundant": false
+        },
+        "meta": {
+          "position": {
+            "x": 740,
+            "y": 240
+          }
+        }
+      }
+    ],
+    "intents": [
+      {
+        "id": "i1",
+        "from": "users",
+        "to": "api",
+        "port": "https"
+      },
+      {
+        "id": "i2",
+        "from": "api",
+        "to": "orders-fn",
+        "action": "invoke"
+      },
+      {
+        "id": "i3",
+        "from": "orders-fn",
+        "to": "orders-db",
+        "action": "write"
+      },
+      {
+        "id": "i4",
+        "from": "orders-fn",
+        "to": "uploads",
+        "action": "write"
+      }
+    ]
+  },
+  "task": {
+    "schemaVersion": 1,
+    "id": "orders-api-any-cloud",
+    "title": "Orders API on any cloud",
+    "packs": ["core"],
+    "provided": [
+      {
+        "id": "users",
+        "type": "core.internet",
+        "locked": true
+      }
+    ],
+    "requirements": [
+      {
+        "id": "r1",
+        "type": "reachable",
+        "description": "Users on the internet can write to a data store.",
+        "from": {
+          "id": "users"
+        },
+        "to": {
+          "category": "data-store"
+        },
+        "action": "write"
+      },
+      {
+        "id": "r2",
+        "type": "not-reachable",
+        "description": "No data store is directly accessible from the internet.",
+        "from": {
+          "id": "users"
+        },
+        "to": {
+          "category": "data-store"
+        }
+      },
+      {
+        "id": "r3",
+        "type": "uses",
+        "description": "The solution has an API entry point.",
+        "select": {
+          "category": "edge"
+        }
+      },
+      {
+        "id": "r4",
+        "type": "redundant",
+        "description": "Every data store survives the loss of an availability zone.",
+        "select": {
+          "category": "data-store"
+        }
+      }
+    ]
+  }
+}

@@ -299,14 +299,18 @@ export class Network {
     return { known: true, value: hit, evidence: targets.evidence };
   }
 
-  /** Whether a rule's peer names the party. `internet` means outside the filter's network. */
+  /**
+   * Whether a rule's peer names the party. `internet` means outside the filter's network, and
+   * `network` inside it.
+   */
   #peerMatches(peer: string, party: Party, network: string | undefined): Resolved<boolean> {
     if (peer === "any") return { known: true, value: true, evidence: [] };
     const cidr = parseCidr(peer);
     if (cidr) return this.#cidrMatches(cidr, party);
-    if (peer === "internet") {
+    if (peer === "internet" || peer === "network") {
       const root = this.root(party.position);
-      return { known: true, value: root === undefined || root !== network, evidence: [] };
+      const inside = root !== undefined && root === network;
+      return { known: true, value: peer === "network" ? inside : !inside, evidence: [] };
     }
     if (party.ids.includes(peer)) return { known: true, value: true, evidence: [] };
     if (party.position !== undefined && this.chain(party.position).includes(peer)) {
@@ -361,8 +365,9 @@ export class Network {
   }
 
   /**
-   * Evaluates a filter for traffic in one direction with a peer. Rules are checked in order and
-   * the first match decides; without a match, the filter's default policy applies.
+   * Evaluates a filter for traffic in one direction with a peer. The component's rules are
+   * checked in order, then the type's base rules; the first match decides. Without a match, the
+   * filter's default policy applies.
    */
   evaluate(
     filter: FilterInfo,
@@ -371,15 +376,37 @@ export class Network {
     ports: PortSpec,
     network: string | undefined,
   ): Step {
+    const peerName = peer.component?.id ?? "the internet";
+    let evidence: Evidence[] = [];
+    if (filter.params.rules !== undefined) {
+      const rules = this.#resolve(filter.component, filter.type, filter.params.rules);
+      if (!rules.known) return rules.step;
+      if (!Array.isArray(rules.value)) {
+        return step("undecidable", invalidValue(filter.component, filter.params.rules).evidence);
+      }
+      const decided = this.#firstMatch(filter, rules.value, false, direction, peer, ports, network);
+      if (decided) return { ...decided, evidence: [...rules.evidence, ...decided.evidence] };
+      evidence = rules.evidence;
+    }
+    const base = filter.params.baseRules ?? [];
+    const decided = this.#firstMatch(filter, base, true, direction, peer, ports, network);
+    if (decided) return { ...decided, evidence: [...evidence, ...decided.evidence] };
+    return this.#default(filter, direction, peerName, evidence);
+  }
+
+  /** The step of the first rule that matches the traffic, if any. */
+  #firstMatch(
+    filter: FilterInfo,
+    rules: readonly unknown[],
+    base: boolean,
+    direction: "inbound" | "outbound",
+    peer: Party,
+    ports: PortSpec,
+    network: string | undefined,
+  ): Step | undefined {
     const name = filter.component.id;
     const peerName = peer.component?.id ?? "the internet";
-    if (filter.params.rules === undefined) return this.#default(filter, direction, peerName, []);
-    const rules = this.#resolve(filter.component, filter.type, filter.params.rules);
-    if (!rules.known) return rules.step;
-    if (!Array.isArray(rules.value)) {
-      return step("undecidable", invalidValue(filter.component, filter.params.rules).evidence);
-    }
-    for (const [index, rule] of rules.value.entries()) {
+    for (const [index, rule] of rules.entries()) {
       if (!isObject(rule) || rule.direction !== direction || typeof rule.peer !== "string") {
         continue;
       }
@@ -391,18 +418,23 @@ export class Network {
       if (portMatch === "unknown") {
         return {
           ...step("undecidable", [
-            ...rules.evidence,
-            createEvidence("FILTER_PORT_UNKNOWN", { filter: name, rule: index }),
+            createEvidence(base ? "FILTER_BASE_PORT_UNKNOWN" : "FILTER_PORT_UNKNOWN", {
+              filter: name,
+              rule: index,
+            }),
           ]),
           portUnknown: true,
         };
       }
       const params = { filter: name, direction, peer: peerName, rule: index };
-      return rule.effect === "deny"
-        ? step("fail", [...rules.evidence, createEvidence("FILTER_DENIES", params)])
-        : step("pass", [...rules.evidence, createEvidence("FILTER_ALLOWS", params)]);
+      if (rule.effect === "deny") {
+        return step("fail", [
+          createEvidence(base ? "FILTER_BASE_DENIES" : "FILTER_DENIES", params),
+        ]);
+      }
+      return step("pass", [createEvidence(base ? "FILTER_BASE_ALLOWS" : "FILTER_ALLOWS", params)]);
     }
-    return this.#default(filter, direction, peerName, rules.evidence);
+    return undefined;
   }
 
   #default(
@@ -606,9 +638,12 @@ export class Network {
   }
 
   /**
-   * How traffic between a zone and the internet goes: through the gateway of its `internet`
-   * route. `inbound` traffic needs a gateway that allows both directions; `outbound` traffic may
-   * also use an outbound-only gateway, which itself needs such a route.
+   * How traffic between a zone and the internet goes. A router's internet route decides first:
+   * `inbound` traffic needs a gateway that allows both directions; `outbound` traffic may also
+   * use an outbound-only gateway, which itself needs such a route. Without one, an implicit
+   * gateway attached to the zone carries the traffic, and in a zone with direct internet access
+   * a component with a public endpoint uses its own address. `local` is the component on the
+   * zone's side, when there is one.
    */
   internet(
     zone: string,
@@ -616,43 +651,136 @@ export class Network {
     peer: Party,
     ports: PortSpec,
     depth = 0,
+    local?: Party,
   ): Step {
     const found = this.#routes(zone);
     if (!found.known) return found.step;
-    if (!found.value) {
-      return step("fail", [createEvidence("LOCAL_ROUTES_ONLY", { zone })]);
-    }
-    const router = found.value.router.id;
     const service = peer.component?.id;
-    if (direction === "outbound" && service !== undefined && peer.position === undefined) {
+    if (
+      found.value &&
+      direction === "outbound" &&
+      service !== undefined &&
+      peer.position === undefined
+    ) {
       const private_ = found.value.routes.find((route) => route.destination === service);
       if (private_ && typeof private_.gateway === "string") {
         return this.#serviceRoute(zone, private_.gateway, peer, ports, found.evidence);
       }
     }
-    const selected = this.#internetRoute(found.value.routes);
+    const direct = this.#directInternet(zone);
+    if (!direct.known) return direct.step;
+    if (direction === "inbound" && direct.value !== undefined) {
+      return this.#direct(zone, local, direct.evidence);
+    }
+    const selected = found.value ? this.#internetRoute(found.value.routes) : undefined;
     if (selected === "ambiguous") {
       return {
         ...step("undecidable", [
           ...found.evidence,
-          createEvidence("ROUTE_AMBIGUOUS", { zone, router }),
+          createEvidence("ROUTE_AMBIGUOUS", { zone, router: found.value?.router.id ?? zone }),
         ]),
         addressUnknown: true,
       };
     }
-    const route = selected;
-    if (!route || typeof route.gateway !== "string") {
-      return step("fail", [
-        ...found.evidence,
-        createEvidence("INTERNET_ROUTE_MISSING", { zone, router }),
-      ]);
+    if (selected && typeof selected.gateway === "string") {
+      return this.#viaGateway(zone, selected.gateway, direction, peer, ports, depth, {
+        evidence: found.evidence,
+        implicit: false,
+      });
     }
-    const id = route.gateway;
+    const implicit = this.#implicitGateway(zone);
+    if (!implicit.known) return implicit.step;
+    if (implicit.value !== undefined) {
+      return this.#viaGateway(zone, implicit.value, direction, peer, ports, depth, {
+        evidence: [...found.evidence, ...implicit.evidence],
+        implicit: true,
+      });
+    }
+    if (direct.value !== undefined) {
+      return this.#direct(zone, local, [...found.evidence, ...direct.evidence]);
+    }
+    if (!found.value) return step("fail", [createEvidence("LOCAL_ROUTES_ONLY", { zone })]);
+    return step("fail", [
+      ...found.evidence,
+      createEvidence("INTERNET_ROUTE_MISSING", { zone, router: found.value.router.id }),
+    ]);
+  }
+
+  /** The nearest zone with direct internet access in a zone's chain, if any. */
+  #directInternet(zone: string): Resolved<string | undefined> {
+    for (const current of this.chain(zone)) {
+      const component = this.#component(current);
+      const type = component && this.#type(component);
+      const parameter = type?.traits.zone?.directInternet;
+      if (!component || !type || parameter === undefined) continue;
+      const value = this.#resolve(component, type, parameter);
+      if (!value.known) return value;
+      return { known: true, value: value.value === true ? current : undefined, evidence: [] };
+    }
+    return { known: true, value: undefined, evidence: [] };
+  }
+
+  /** Direct internet access: the local component needs a public endpoint of its own. */
+  #direct(zone: string, local: Party | undefined, evidence: Evidence[]): Step {
+    const component = local?.component;
+    const name = component?.id ?? "the component";
+    const type = component && this.#type(component);
+    const endpoint = type?.traits.endpoint;
+    if (component && type && endpoint && endpoint.via !== "provider") {
+      const visibility = this.#resolve(component, type, endpoint.visibility);
+      if (!visibility.known) return visibility.step;
+      if (visibility.value === "public") {
+        return step("pass", [
+          ...evidence,
+          ...visibility.evidence,
+          createEvidence("DIRECT_INTERNET", { component: name, zone }),
+        ]);
+      }
+    }
+    return step("fail", [
+      ...evidence,
+      createEvidence("NO_PUBLIC_ADDRESS", { component: name, zone }),
+    ]);
+  }
+
+  /** The implicit gateway attached to the nearest zone of a zone's chain, if any. */
+  #implicitGateway(zone: string): Resolved<string | undefined> {
+    const gateways: { component: Component; type: ComponentType }[] = [];
+    const seen = new Set<string>();
+    for (const component of this.#context.model.components) {
+      if (seen.has(component.id)) continue;
+      seen.add(component.id);
+      const type = this.#type(component);
+      if (type?.traits.gateway?.implicit) gateways.push({ component, type });
+    }
+    gateways.sort((a, b) => compareStrings(a.component.id, b.component.id));
+    for (const current of this.chain(zone)) {
+      for (const { component, type } of gateways) {
+        const connects = this.#references(component, type, type.traits.gateway?.connects);
+        if (!connects.known) return connects;
+        if (connects.value.includes(current)) {
+          return { known: true, value: component.id, evidence: connects.evidence };
+        }
+      }
+    }
+    return { known: true, value: undefined, evidence: [] };
+  }
+
+  /** Traffic through a gateway, chosen by a route or attached to the zone implicitly. */
+  #viaGateway(
+    zone: string,
+    id: string,
+    direction: "inbound" | "outbound",
+    peer: Party,
+    ports: PortSpec,
+    depth: number,
+    how: { evidence: Evidence[]; implicit: boolean },
+  ): Step {
     const gateway = this.#component(id);
     const type = gateway && this.#type(gateway);
     const params = type?.traits.gateway;
     if (!gateway || !type || !params) {
-      return step("fail", [...found.evidence, createEvidence("GATEWAY_INVALID", { gateway: id })]);
+      return step("fail", [...how.evidence, createEvidence("GATEWAY_INVALID", { gateway: id })]);
     }
     const network = this.root(zone);
     const connects = this.#references(gateway, type, params.connects);
@@ -663,13 +791,13 @@ export class Network {
     ];
     if (!networks.includes(network)) {
       return step("fail", [
-        ...found.evidence,
+        ...how.evidence,
         createEvidence("GATEWAY_NOT_ATTACHED", { gateway: id, network: network ?? zone }),
       ]);
     }
     const directionValue = this.#resolve(gateway, type, params.direction);
     if (!directionValue.known) return directionValue.step;
-    const evidence = [...found.evidence, ...connects.evidence, ...directionValue.evidence];
+    const evidence = [...how.evidence, ...connects.evidence, ...directionValue.evidence];
     const self = this.#attached([id], "self");
     const throughGateway = (): Step => {
       if (!self.known) return self.step;
@@ -698,6 +826,8 @@ export class Network {
         createEvidence("GATEWAY_OUTBOUND_ONLY", { gateway: id, zone }),
       ]);
     }
+    const nat = step("pass", [...evidence, createEvidence("NAT_ROUTE", { zone, gateway: id })]);
+    if (how.implicit) return combineSteps([nat, throughGateway()]);
     const home = this.placements(gateway)[0];
     if (home === undefined || depth > 0) {
       return step("fail", [
@@ -713,10 +843,6 @@ export class Network {
         createEvidence("NAT_WITHOUT_INTERNET", { gateway: id, zone: home }),
       ]);
     }
-    return combineSteps([
-      step("pass", [...evidence, createEvidence("NAT_ROUTE", { zone, gateway: id })]),
-      onward,
-      throughGateway(),
-    ]);
+    return combineSteps([nat, onward, throughGateway()]);
   }
 }

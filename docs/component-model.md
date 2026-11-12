@@ -52,16 +52,16 @@ const parsed = parseSolution(json, registry);
 
 | Trait | What the engine evaluates | Key parameters / properties |
 |---|---|---|
-| `zone` | A network area that contains components. Members can reach each other at the routing level, subject to filters. | parent zone (through placement); address space (detailed level); failure domain |
-| `gateway` | Connects a zone to another zone or to an external network. | direction: `both` or `outbound-only`; what it connects |
+| `zone` | A network area that contains components. Members can reach each other at the routing level, subject to filters. | parent zone (through placement); address space (detailed level); failure domain; direct internet access for public endpoints |
+| `gateway` | Connects a zone to another zone or to an external network. | direction: `both` or `outbound-only`; what it connects; services it reaches privately; whether the zones it connects use it without a route |
 | `router` | Decides which gateway traffic leaving a zone uses. | routes: destination → gateway; the zones it serves |
-| `traffic-filter` | Allows or denies traffic by source, destination and port. | stateful or stateless; attaches to `component`, `zone` or `self` (traffic passing through it); what it is attached to; rules; default policy |
+| `traffic-filter` | Allows or denies traffic by source, destination and port. | stateful or stateless; attaches to `component`, `zone` or `self` (traffic passing through it); what it is attached to; rules; base rules of the type; default policy |
 | `endpoint` | How a component can be called from outside. | visibility: `public`, `private` or `none`; protocols and ports; reached in its placement or at the provider (`via`) |
 | `forwarder` | Receives requests and forwards them to targets. | routes or targets |
 | `principal` | Has an identity that can be granted access. | grants: resource + access level |
 | `access-controlled` | Requires a grant, a resource policy or a public setting before others can use it. | public access; logical resource policy |
 | `group` | A set of equivalent instances. | members or size; zones spanned |
-| `redundancy` | Whether a component survives the loss of one failure domain on its own. | managed by the provider; one instance or spread over its placements |
+| `redundancy` | Whether a component survives the loss of one failure domain on its own. | managed by the provider (fixed or a setting); one instance or spread over its placements; its own failure domains |
 
 ### How an intent is verified
 
@@ -127,12 +127,12 @@ The table below checks whether the proposed vocabulary covers the components the
 | Concept | AWS | Azure | On-premises | Traits |
 |---|---|---|---|---|
 | Network area | VPC, Subnet | VNet, Subnet | LAN, VLAN | `zone` |
-| Internet access | Internet Gateway | Public IP | Edge router | `gateway` |
-| Outbound-only internet | NAT Gateway | NAT Gateway | NAT on the edge router | `gateway` (`outbound-only`) |
+| Internet access | Internet Gateway | Public IP address | Edge router | `gateway`; Azure: `zone` (`directInternet`) |
+| Outbound-only internet | NAT Gateway | NAT Gateway (associated with subnets) | NAT on the edge router | `gateway` (`outbound-only`; Azure: `implicit`) |
 | Private access to provider services | Gateway VPC endpoint | Service endpoint | — | `gateway` (`services`) |
 | Routing | Route table | Route table (UDR) | Router | `router` |
 | Instance-level firewall | Security Group | NSG on a NIC | Host firewall | `traffic-filter` (`component`) |
-| Subnet-level firewall | Network ACL | NSG on a subnet | — | `traffic-filter` (`zone`) |
+| Subnet-level firewall | Network ACL | NSG on a subnet (with default rules) | — | `traffic-filter` (`zone`; Azure: `baseRules`) |
 | Perimeter firewall | Network Firewall | Azure Firewall | Firewall appliance | `gateway` + `traffic-filter` (`self`) |
 | Function | Lambda | Azure Functions | App server | `principal` (+ zone membership when placed in a network) |
 | Scaling group | Auto Scaling Group | VM Scale Set | Server cluster | `group` |
@@ -141,8 +141,8 @@ The table below checks whether the proposed vocabulary covers the components the
 | NoSQL database | DynamoDB | Cosmos DB | Database server | `endpoint` + `access-controlled` |
 | Object storage | S3 | Blob Storage | File / object server | `endpoint` + `access-controlled` |
 | Workload identity | IAM role | Managed identity | Service account | grants on `principal` |
-| Failure domain | Availability zone (on a subnet) | Availability zone | Data center, rack | `zone` (`failureDomain`) |
-| Provider-managed redundancy | S3, DynamoDB, Lambda | Blob Storage (ZRS), Cosmos DB | — | `redundancy` (`managed`) |
+| Failure domain | Availability zone (on a subnet) | Availability zone (on a resource) | Data center, rack | `zone` (`failureDomain`); Azure: `redundancy` (`domains`) |
+| Provider-managed redundancy | S3, DynamoDB, Lambda | Zone-redundant Blob Storage, Cosmos DB, Functions, API Management | — | `redundancy` (`managed`, a setting in Azure) |
 
 Every row maps onto the traits. No row needs provider-specific engine code.
 

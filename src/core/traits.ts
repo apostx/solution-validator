@@ -13,8 +13,11 @@ import { LevelName, Name, PropertyName } from "./ids";
  * - 3: `gateway.services`: gateways that give private access to provider services, used by
  *   routes whose destination is such a service.
  * - 4: `zone.failureDomain` and the `redundancy` trait, for the availability analysis.
+ * - 5: `zone.directInternet`, `gateway.implicit`, `traffic-filter.baseRules`, the `network`
+ *   rule peer, a bindable `redundancy.managed` and `redundancy.domains`, for networks whose
+ *   internet access and failure domains belong to components rather than routes and zones.
  */
-export const TRAIT_VOCABULARY_VERSION = 4;
+export const TRAIT_VOCABULARY_VERSION = 5;
 
 /** Binds a trait parameter to a property of the component, for example its endpoint type. */
 export const Binding = Type.Object({ property: PropertyName }, { additionalProperties: false });
@@ -30,6 +33,24 @@ export const VISIBILITIES = ["public", "private", "none"] as const;
 export const GATEWAY_DIRECTIONS = ["both", "outbound-only"] as const;
 export const FILTER_ATTACHMENTS = ["component", "zone", "self"] as const;
 export const ENDPOINT_LOCATIONS = ["placement", "provider"] as const;
+export const FILTER_DIRECTIONS = ["inbound", "outbound"] as const;
+/** Rule peers that are keywords rather than ids or address ranges. */
+export const PEER_KEYWORDS = ["any", "internet", "network"] as const;
+
+/**
+ * A traffic filter rule that a type applies itself (`traffic-filter.baseRules`). Its peer is a
+ * keyword or an IPv4 range, never a component id.
+ */
+export const BaseRule = Type.Object(
+  {
+    direction: Type.Enum([...FILTER_DIRECTIONS]),
+    peer: Type.String({ minLength: 1 }),
+    ports: Type.Optional(Type.Array(Type.String({ minLength: 1 }), { minItems: 1 })),
+    effect: Type.Optional(Type.Enum(["allow", "deny"])),
+  },
+  { additionalProperties: false },
+);
+export type BaseRule = Type.Static<typeof BaseRule>;
 
 /**
  * Parameter schemas of the traits. Behavior is implemented per iteration (see the roadmap);
@@ -98,6 +119,12 @@ export const TraitParameters = {
        * it inherit it unless they declare their own.
        */
       failureDomain: Type.Optional(bindable(Type.String())),
+      /**
+       * The provider routes traffic between the internet and components in the zone that have a
+       * public endpoint, without router or gateway components (as with public IP addresses in
+       * Azure). Zones placed in it inherit it.
+       */
+      directInternet: Type.Optional(bindable(Type.Boolean())),
     },
     closed,
   ),
@@ -119,6 +146,13 @@ export const TraitParameters = {
        * them sends that traffic through the gateway.
        */
       services: Type.Optional(Binding),
+      /**
+       * The zones the gateway `connects` send their internet traffic through it without a
+       * route, unless their router has an internet route (as with an Azure NAT gateway
+       * associated with a subnet). An implicit `outbound-only` gateway reaches the internet
+       * itself.
+       */
+      implicit: Type.Optional(Type.Boolean()),
     },
     closed,
   ),
@@ -147,11 +181,16 @@ export const TraitParameters = {
       attachTo: Type.Array(Type.Enum([...FILTER_ATTACHMENTS]), { minItems: 1 }),
       /**
        * Array property with the rules, evaluated in order, the first match deciding: objects with
-       * `direction` (`inbound` or `outbound`), `peer` (`any`, `internet`, or the id of a
-       * component, zone or filter), optional `ports` (port ids; omitted: all ports) and optional
-       * `effect` (`allow`, the default, or `deny`).
+       * `direction` (`inbound` or `outbound`), `peer` (`any`, `internet`, `network`, an IPv4
+       * range, or the id of a component, zone or filter), optional `ports` (port ids, numbers or
+       * ranges; omitted: all ports) and optional `effect` (`allow`, the default, or `deny`).
        */
       rules: Type.Optional(Binding),
+      /**
+       * Rules the type applies after the component's own rules and before the default policy,
+       * such as the default security rules of an Azure network security group.
+       */
+      baseRules: Type.Optional(Type.Array(BaseRule)),
       /** Array property with the ids of the components or zones the filter is attached to. */
       targets: Type.Optional(Binding),
       /** What happens to traffic no rule matches. Default: deny in both directions. */
@@ -170,14 +209,23 @@ export const TraitParameters = {
    */
   redundancy: Type.Object(
     {
-      /** The provider runs it across failure domains itself, for example a regional service. */
-      managed: Type.Optional(Type.Boolean()),
+      /**
+       * The provider runs it across failure domains itself, for example a regional service.
+       * `false`: the provider runs it in one failure domain.
+       */
+      managed: Type.Optional(bindable(Type.Boolean())),
       /**
        * Whether instances run in every zone the component is placed in. `false`: one instance
        * runs in one of them, as for a single virtual machine or a database without a standby.
        * Default: `true`.
        */
       spread: Type.Optional(bindable(Type.Boolean())),
+      /**
+       * Array property with the failure domains the component runs in, when the provider assigns
+       * them per component rather than per zone (as with Azure availability zones). When set, it
+       * is used instead of the failure domains of the zones it is placed in.
+       */
+      domains: Type.Optional(Binding),
     },
     closed,
   ),
@@ -230,6 +278,7 @@ export type BindingExpectation =
   | { kind: "string" }
   | { kind: "integer" }
   | { kind: "references" }
+  | { kind: "strings" }
   | { kind: "objects"; fields: readonly { name: string; reference: boolean }[] };
 
 export interface BindingSlot {
@@ -276,8 +325,13 @@ export function bindingSlots(traits: Traits): BindingSlot[] {
   if (t.zone) {
     add("zone", "addressSpace", t.zone.addressSpace, { kind: "string" });
     add("zone", "failureDomain", t.zone.failureDomain, { kind: "string" });
+    add("zone", "directInternet", t.zone.directInternet, { kind: "boolean" });
   }
-  if (t.redundancy) add("redundancy", "spread", t.redundancy.spread, { kind: "boolean" });
+  if (t.redundancy) {
+    add("redundancy", "managed", t.redundancy.managed, { kind: "boolean" });
+    add("redundancy", "spread", t.redundancy.spread, { kind: "boolean" });
+    add("redundancy", "domains", t.redundancy.domains, { kind: "strings" });
+  }
   if (t.gateway) {
     add("gateway", "direction", t.gateway.direction, { kind: "enum", values: GATEWAY_DIRECTIONS });
     add("gateway", "connects", t.gateway.connects, { kind: "references" });
@@ -333,6 +387,8 @@ export function describeExpectation(expectation: BindingExpectation): string {
       return "an integer";
     case "references":
       return "an array of component references";
+    case "strings":
+      return "an array of strings";
     case "objects":
       return expectation.fields.length === 0
         ? "an array of objects"
