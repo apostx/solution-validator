@@ -1,0 +1,308 @@
+{
+  "id": "onprem-web-tier",
+  "title": "On-premises web tier (firewall, VLANs, racks)",
+  "description": "A web tier in your own data center: a load balancer in the DMZ VLAN, a server cluster in the app VLAN and a database in the data VLAN. The firewall is the network's internet gateway and filters traffic entering the VLANs it protects. The ops server in the office VLAN cannot reach the database, and the firewall and the database each run in one rack. Add a firewall rule, a second location for the database, or a second firewall unit, and watch the results change. The task is the same kind as the AWS and Azure ones: it selects by category only.",
+  "packs": ["core", "onprem"],
+  "solution": {
+    "schemaVersion": 1,
+    "packs": ["core", "onprem"],
+    "components": [
+      {
+        "id": "users",
+        "type": "core.internet",
+        "meta": {
+          "position": {
+            "x": -300,
+            "y": 170
+          }
+        }
+      },
+      {
+        "id": "lan",
+        "type": "onprem.network",
+        "properties": {
+          "addressSpace": "192.168.0.0/16"
+        },
+        "meta": {
+          "position": {
+            "x": 0,
+            "y": 0
+          },
+          "size": {
+            "width": 1000,
+            "height": 640
+          }
+        }
+      },
+      {
+        "id": "dmz",
+        "type": "onprem.vlan",
+        "placement": ["lan"],
+        "properties": {
+          "vlanId": 10,
+          "subnet": "192.168.10.0/24"
+        },
+        "meta": {
+          "position": {
+            "x": 30,
+            "y": 60
+          },
+          "size": {
+            "width": 300,
+            "height": 250
+          }
+        }
+      },
+      {
+        "id": "app",
+        "type": "onprem.vlan",
+        "placement": ["lan"],
+        "properties": {
+          "vlanId": 20,
+          "subnet": "192.168.20.0/24"
+        },
+        "meta": {
+          "position": {
+            "x": 360,
+            "y": 60
+          },
+          "size": {
+            "width": 300,
+            "height": 250
+          }
+        }
+      },
+      {
+        "id": "data",
+        "type": "onprem.vlan",
+        "placement": ["lan"],
+        "properties": {
+          "vlanId": 30,
+          "subnet": "192.168.30.0/24"
+        },
+        "meta": {
+          "position": {
+            "x": 690,
+            "y": 60
+          },
+          "size": {
+            "width": 280,
+            "height": 250
+          }
+        }
+      },
+      {
+        "id": "office",
+        "type": "onprem.vlan",
+        "placement": ["lan"],
+        "properties": {
+          "vlanId": 40,
+          "subnet": "192.168.40.0/24"
+        },
+        "meta": {
+          "position": {
+            "x": 30,
+            "y": 350
+          },
+          "size": {
+            "width": 300,
+            "height": 250
+          }
+        }
+      },
+      {
+        "id": "fw",
+        "type": "onprem.firewall",
+        "properties": {
+          "networks": ["lan"],
+          "protects": ["dmz", "app", "data"],
+          "rules": [
+            {
+              "direction": "inbound",
+              "peer": "internet",
+              "ports": ["https"]
+            },
+            {
+              "direction": "inbound",
+              "peer": "dmz",
+              "ports": ["http"]
+            },
+            {
+              "direction": "inbound",
+              "peer": "app",
+              "ports": ["postgresql"]
+            },
+            {
+              "direction": "inbound",
+              "peer": "office",
+              "ports": ["ssh"]
+            }
+          ],
+          "locations": ["rack-a"]
+        },
+        "meta": {
+          "position": {
+            "x": -300,
+            "y": 20
+          }
+        }
+      },
+      {
+        "id": "lb",
+        "type": "onprem.load-balancer",
+        "placement": ["dmz"],
+        "properties": {
+          "endpoint": "public",
+          "pools": [
+            {
+              "path": "/",
+              "target": "web"
+            }
+          ],
+          "locations": ["rack-a", "rack-b"]
+        },
+        "meta": {
+          "position": {
+            "x": 80,
+            "y": 150
+          }
+        }
+      },
+      {
+        "id": "web",
+        "type": "onprem.server-cluster",
+        "placement": ["app"],
+        "properties": {
+          "endpoint": "private",
+          "servers": 4,
+          "locations": ["rack-a", "rack-b"]
+        },
+        "meta": {
+          "position": {
+            "x": 410,
+            "y": 150
+          }
+        }
+      },
+      {
+        "id": "db",
+        "type": "onprem.database",
+        "placement": ["data"],
+        "properties": {
+          "engine": "postgresql",
+          "locations": ["rack-a"]
+        },
+        "meta": {
+          "position": {
+            "x": 740,
+            "y": 150
+          }
+        }
+      },
+      {
+        "id": "ops",
+        "type": "onprem.server",
+        "placement": ["office"],
+        "properties": {
+          "endpoint": "private",
+          "locations": ["rack-c"]
+        },
+        "meta": {
+          "position": {
+            "x": 80,
+            "y": 450
+          }
+        }
+      }
+    ],
+    "intents": [
+      {
+        "id": "users-lb",
+        "from": "users",
+        "to": "lb",
+        "port": "https"
+      },
+      {
+        "id": "lb-web",
+        "from": "lb",
+        "to": "web",
+        "action": "invoke",
+        "port": "http"
+      },
+      {
+        "id": "web-db",
+        "from": "web",
+        "to": "db",
+        "action": "read",
+        "port": "postgresql"
+      },
+      {
+        "id": "users-web",
+        "from": "users",
+        "to": "web",
+        "port": "http"
+      },
+      {
+        "id": "ops-db",
+        "from": "ops",
+        "to": "db",
+        "action": "read",
+        "port": "postgresql"
+      }
+    ]
+  },
+  "task": {
+    "schemaVersion": 1,
+    "id": "onprem-web-tier",
+    "title": "Web tier in your own data center",
+    "packs": ["core"],
+    "provided": [
+      {
+        "id": "users",
+        "type": "core.internet",
+        "locked": true
+      }
+    ],
+    "requirements": [
+      {
+        "id": "r1",
+        "type": "reachable",
+        "description": "Users on the internet can read data through the web tier.",
+        "from": {
+          "id": "users"
+        },
+        "to": {
+          "category": "data-store"
+        },
+        "action": "read"
+      },
+      {
+        "id": "r2",
+        "type": "not-reachable",
+        "description": "No data store is directly accessible from the internet.",
+        "from": {
+          "id": "users"
+        },
+        "to": {
+          "category": "data-store"
+        }
+      },
+      {
+        "id": "r3",
+        "type": "redundant",
+        "description": "The load balancer survives the loss of a rack.",
+        "select": {
+          "category": "edge"
+        }
+      },
+      {
+        "id": "r4",
+        "type": "redundant",
+        "description": "Every data store survives the loss of a rack.",
+        "select": {
+          "category": "data-store"
+        }
+      }
+    ]
+  }
+}
