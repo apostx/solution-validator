@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.10.0](https://github.com/apostx/solution-validator/compare/v0.9.0...v0.10.0) (2026-11-12)
+
+
+### Features
+
+* on-premises pack (iteration 10) ([#20](https://github.com/apostx/solution-validator/issues/20)) ([09ebe75](https://github.com/apostx/solution-validator/commit/09ebe752c5ecdf1df755876223c8fb24c53a7c5c))
+
 ## [0.9.0](https://github.com/apostx/solution-validator/compare/v0.8.0...v0.9.0) (2026-11-12)
 
 
