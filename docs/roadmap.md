@@ -1,6 +1,6 @@
 # Roadmap
 
-> **Status:** Approved (initial) · 2026-11-10 · **Current iteration: 10 — On-premises pack** (Iterations 7–10 approved in this order)
+> **Status:** Approved (initial) · 2026-11-10 · **Current iteration: none** (Iterations 0–10 are done; the next one needs the product owner's approval, for example from the backlog)
 >
 > Iterations 0–4 are approved. Only the current iteration is a commitment. The scope of later iterations may still change and is confirmed before each one starts. Open questions (Q1, Q2, …) are listed in [design.md](design.md#12-open-questions).
 
@@ -42,7 +42,7 @@ Trade-off: the vision's own example (network placement, Security Group and ACL r
 | 7 | More AWS types | 0.7.0 | Q21 | Done |
 | 8 | Availability analysis | 0.8.0 | Q22 | Done |
 | 9 | Azure pack | 0.9.0 | Q23 | Done |
-| 10 | On-premises pack | 0.10.0 | to be scoped | Approved |
+| 10 | On-premises pack | 0.10.0 | Q24 | Done |
 
 ### Iteration 0 — Foundations
 
@@ -147,7 +147,9 @@ The product owner approved Iterations 7–10 in this order after Iteration 6.
 
 ### Iteration 10 — On-premises pack (0.10.0)
 
-LANs and VLANs, firewalls, routers, servers, load balancers and databases on premises, built on the same traits. Scoped when it starts.
+- **Packs:** `onprem` 0.1.0 covers networks, VLANs, firewalls, routers, servers, server clusters, load balancers and database servers, on the existing traits (Q24).
+- **Tests:** one web tier task, selecting only by category, is checked against AWS, Azure and on-premises solutions.
+- **Demo:** an on-premises web tier scenario.
 
 ## Backlog (not scheduled; each item needs approval)
 
