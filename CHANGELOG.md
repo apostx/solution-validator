@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.13.0](https://github.com/apostx/solution-validator/compare/v0.12.0...v0.13.0) (2026-11-12)
+
+
+### Features
+
+* role-tag selectors (iteration 13) ([#26](https://github.com/apostx/solution-validator/issues/26)) ([e61e9b8](https://github.com/apostx/solution-validator/commit/e61e9b85980b5be8cbb191638e3149a10c73a01d))
+
 ## [0.12.0](https://github.com/apostx/solution-validator/compare/v0.11.0...v0.12.0) (2026-11-12)
 
 
