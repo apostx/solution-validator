@@ -1,6 +1,6 @@
 import { createFinding, type Finding, hasErrors, sortFindings } from "../messages/finding";
 import { compareStrings } from "../util/compare";
-import { parseCidr, parsePortRange } from "../util/ipv4";
+import { parseCidr, parsePortRange } from "../util/ip";
 import { cloneJson, isObject } from "../util/json";
 import { type Meta, namespaceOf } from "./ids";
 import {

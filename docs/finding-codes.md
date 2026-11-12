@@ -87,11 +87,13 @@ Checks the address plan: zones' IPv4 address spaces, their nesting and overlaps,
 |---|---|---|---|
 | `ADDRESS_SPACE_MISSING` | warning | Zone {zone} has no address space, so its address plan cannot be checked. | The detailed level needs the zone's address space. |
 | `ADDRESS_SPACE_INVALID` | error | Zone {zone} has the address space {value}, which is not an IPv4 range such as 10.0.0.0/16. | Address spaces are IPv4 ranges in CIDR notation; IPv6 is not supported yet. |
+| `IPV6_SPACE_INVALID` | error | Zone {zone} has the IPv6 address space {value}, which is not an IPv6 range such as 2001:db8::/56. | The zone's IPv6 address space must be an IPv6 range in CIDR notation. |
+| `IPV6_SPACE_WITHOUT_PARENT` | error | Zone {zone} has the IPv6 address space {space}, but {parent}, the zone it is placed in, has none. | A zone can only have IPv6 addresses when the zone it is placed in has an IPv6 address space. |
 | `ADDRESS_SPACE_HOST_BITS` | warning | The address space {value} of zone {zone} is not a network address; it stands for {network}. | The range has host bits set; most providers reject it. |
 | `ADDRESS_SPACE_OUTSIDE_PARENT` | error | The address space {space} of zone {zone} is not within {parentSpace}, the address space of {parent}. | A zone's address space must lie within the address space of the zone it is placed in. |
 | `ADDRESS_SPACE_OVERLAP` | error | {zone} ({space}) overlaps {other} ({otherSpace}), which is placed in the same zone. | Zones placed in the same zone must not share addresses. |
 | `NETWORK_OVERLAP` | warning | The networks {zone} ({space}) and {other} ({otherSpace}) overlap, so they cannot be connected directly. | Overlapping networks cannot be peered or routed to each other. |
-| `ROUTE_DESTINATION_INVALID` | error | Route {index} of {router} has the destination {destination}, which is neither internet nor an IPv4 range. | Route destinations are internet or IPv4 ranges in CIDR notation. |
+| `ROUTE_DESTINATION_INVALID` | error | Route {index} of {router} has the destination {destination}, which is neither internet, an address range nor a service. | Route destinations are `internet`, IPv4 or IPv6 ranges in CIDR notation, or the ids of services. |
 | `ROUTE_SHADOWED` | warning | Route {destination} of {router} lies within {space}, the address space of {network}; the local route takes that traffic. | A route inside the network's own address space never applies. |
 
 ## Analysis: availability
@@ -156,6 +158,9 @@ Evidence explains an intent's verdict: each check lists the evidence it used. Ev
 | `INTERNET_ROUTE_MISSING` | {router}, the router of {zone}, has no route to the internet. | The zone's router has no route with the destination internet. |
 | `INTERNET_ROUTE` | {zone} reaches the internet through {gateway}. | The zone's internet route uses a gateway that allows both directions. |
 | `NAT_ROUTE` | {zone} reaches the internet through {gateway}, for outbound connections only. | The zone's internet route uses an outbound-only gateway. |
+| `GATEWAY_SERVICES_ONLY` | {gateway} only reaches provider services, so it cannot carry internet traffic from {zone}. | A gateway with `services` is not a route to the internet. |
+| `GATEWAY_FAMILY_UNSUPPORTED` | {gateway} does not carry {family} traffic. | The gateway's `families` do not include the traffic's address family (detailed level). |
+| `ADDRESS_FAMILY` | Over {family}: | Both ends have IPv4 and IPv6 at the detailed level; the evidence that follows is for this address family. |
 | `DIRECT_INTERNET` | {component} reaches the internet through its public address in {zone}. | The zone's network routes internet traffic to and from public endpoints without gateway components (`zone.directInternet`). |
 | `NO_PUBLIC_ADDRESS` | {component} has no public endpoint, and {zone} has no internet route or outbound gateway for it. | In a network with direct internet access, a component without a public endpoint needs a route or an implicit gateway, such as a NAT gateway, to open connections to the internet. |
 | `GATEWAY_INVALID` | {gateway} is not a gateway. | A route points to a component without the gateway trait. |

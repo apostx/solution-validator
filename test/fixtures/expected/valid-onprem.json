@@ -9,7 +9,7 @@
         "name": "solution-validator",
         "version": "<version>"
       },
-      "vocabulary": 5,
+      "vocabulary": 6,
       "packs": [
         {
           "id": "core",
@@ -17,7 +17,7 @@
         },
         {
           "id": "onprem",
-          "version": "0.1.0"
+          "version": "0.2.0"
         }
       ],
       "options": {
@@ -707,7 +707,7 @@
         "name": "solution-validator",
         "version": "<version>"
       },
-      "vocabulary": 5,
+      "vocabulary": 6,
       "packs": [
         {
           "id": "core",
@@ -715,7 +715,7 @@
         },
         {
           "id": "onprem",
-          "version": "0.1.0"
+          "version": "0.2.0"
         }
       ],
       "options": {
@@ -1405,7 +1405,7 @@
         "name": "solution-validator",
         "version": "<version>"
       },
-      "vocabulary": 5,
+      "vocabulary": 6,
       "packs": [
         {
           "id": "core",
@@ -1413,7 +1413,7 @@
         },
         {
           "id": "onprem",
-          "version": "0.1.0"
+          "version": "0.2.0"
         }
       ],
       "options": {

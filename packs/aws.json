@@ -1,10 +1,10 @@
 {
   "$schema": "../schemas/pack.schema.json",
   "id": "aws",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "label": "Amazon Web Services",
-  "description": "Serverless (API Gateway, Lambda, DynamoDB, S3), web (CloudFront, Application Load Balancer, EC2, Auto Scaling, RDS) and networking (VPC, subnets, gateways, VPC endpoints, route tables, security groups, network ACLs).",
-  "vocabulary": 4,
+  "description": "Serverless (API Gateway, Lambda, DynamoDB, S3), web (CloudFront, Application Load Balancer, EC2, Auto Scaling, RDS) and networking (VPC, subnets, gateways, VPC endpoints, IPv6, route tables, security groups, network ACLs).",
+  "vocabulary": 6,
   "requires": {
     "core": "^0.2.0"
   },
@@ -237,6 +237,9 @@
         "zone": {
           "addressSpace": {
             "property": "cidrBlock"
+          },
+          "ipv6AddressSpace": {
+            "property": "ipv6CidrBlock"
           }
         }
       },
@@ -247,6 +250,12 @@
           "title": "CIDR block",
           "description": "The VPC's IPv4 address range, for example 10.0.0.0/16. Used by the detailed analysis level.",
           "pattern": "^([0-9]{1,3}\\.){3}[0-9]{1,3}/[0-9]{1,2}$"
+        },
+        "ipv6CidrBlock": {
+          "type": "string",
+          "title": "IPv6 CIDR block",
+          "description": "The VPC's IPv6 address range, for example 2600:1f18:1234:5600::/56. Optional: a VPC without one has no IPv6 addresses. Used by the detailed analysis level.",
+          "pattern": "^[0-9a-fA-F:]+/[0-9]{1,3}$"
         }
       }
     },
@@ -262,6 +271,9 @@
           },
           "failureDomain": {
             "property": "availabilityZone"
+          },
+          "ipv6AddressSpace": {
+            "property": "ipv6CidrBlock"
           }
         }
       },
@@ -278,6 +290,12 @@
           "title": "Availability zone",
           "description": "For example eu-west-1a. Used by the availability analysis.",
           "minLength": 1
+        },
+        "ipv6CidrBlock": {
+          "type": "string",
+          "title": "IPv6 CIDR block",
+          "description": "The subnet's IPv6 range within its VPC's, a /64 such as 2600:1f18:1234:5601::/64. Optional. Used by the detailed analysis level.",
+          "pattern": "^[0-9a-fA-F:]+/[0-9]{1,3}$"
         }
       }
     },
@@ -313,13 +331,46 @@
       }
     },
     {
-      "id": "aws.nat-gateway",
-      "label": "NAT gateway",
-      "description": "Lets private subnets open connections to the internet, but not the other way round. Place it in a public subnet. A NAT gateway lives in one availability zone; use one per zone for resilience.",
+      "id": "aws.egress-only-internet-gateway",
+      "label": "Egress-only internet gateway",
+      "description": "Lets a VPC's subnets open IPv6 connections to the internet, but not the other way round. Attach it to the VPC and route ::/0 to it.",
       "category": "network",
       "traits": {
         "gateway": {
-          "direction": "outbound-only"
+          "direction": "outbound-only",
+          "connects": {
+            "property": "attachedTo"
+          },
+          "families": [6]
+        },
+        "redundancy": {
+          "managed": true
+        }
+      },
+      "accepts": [],
+      "properties": {
+        "attachedTo": {
+          "type": "array",
+          "title": "Attached to",
+          "description": "The VPC it is attached to.",
+          "items": {
+            "type": "string",
+            "x-component-ref": true
+          },
+          "default": [],
+          "maxItems": 1
+        }
+      }
+    },
+    {
+      "id": "aws.nat-gateway",
+      "label": "NAT gateway",
+      "description": "Lets private subnets open IPv4 connections to the internet, but not the other way round; for IPv6, use an egress-only internet gateway. Place it in a public subnet. A NAT gateway lives in one availability zone; use one per zone for resilience.",
+      "category": "network",
+      "traits": {
+        "gateway": {
+          "direction": "outbound-only",
+          "families": [4]
         }
       },
       "accepts": []
@@ -351,7 +402,7 @@
               "destination": {
                 "type": "string",
                 "title": "Destination",
-                "description": "internet, an IPv4 range such as 0.0.0.0/0 (the detailed level matches the longest prefix), or the id of a service a gateway endpoint reaches (for example a DynamoDB table).",
+                "description": "internet (both address families), an IPv4 or IPv6 range such as 0.0.0.0/0 or ::/0 (the detailed level matches the longest prefix of the traffic's family), or the id of a service a gateway endpoint reaches (for example a DynamoDB table).",
                 "minLength": 1
               },
               "gateway": {
@@ -415,7 +466,7 @@
                 "type": "string",
                 "title": "Peer",
                 "minLength": 1,
-                "description": "any, internet, the id of a component, subnet, VPC or security group, or an IPv4 range such as 10.0.0.0/16 (matched at the detailed level)."
+                "description": "any, internet, the id of a component, subnet, VPC or security group, or an IPv4 or IPv6 range such as 10.0.0.0/16 or ::/0 (matched at the detailed level; a range only matches traffic of its own address family)."
               },
               "ports": {
                 "type": "array",
@@ -486,7 +537,7 @@
                 "type": "string",
                 "title": "Peer",
                 "minLength": 1,
-                "description": "any, internet, the id of a component, subnet, VPC or security group, or an IPv4 range such as 10.0.0.0/16 (matched at the detailed level)."
+                "description": "any, internet, the id of a component, subnet, VPC or security group, or an IPv4 or IPv6 range such as 10.0.0.0/16 or ::/0 (matched at the detailed level; a range only matches traffic of its own address family)."
               },
               "ports": {
                 "type": "array",

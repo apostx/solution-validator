@@ -13,7 +13,7 @@ import {
   containsPublic,
   parseCidr,
   parsePortRange,
-} from "../src/util/ipv4";
+} from "../src/util/ip";
 import { officialRegistry } from "./helpers/registry";
 
 describe("IPv4 ranges", () => {

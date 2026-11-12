@@ -16,8 +16,9 @@ import { LevelName, Name, PropertyName } from "./ids";
  * - 5: `zone.directInternet`, `gateway.implicit`, `traffic-filter.baseRules`, the `network`
  *   rule peer, a bindable `redundancy.managed` and `redundancy.domains`, for networks whose
  *   internet access and failure domains belong to components rather than routes and zones.
+ * - 6: `zone.ipv6AddressSpace` and `gateway.families`, for IPv6 at the detailed level.
  */
-export const TRAIT_VOCABULARY_VERSION = 5;
+export const TRAIT_VOCABULARY_VERSION = 6;
 
 /** Binds a trait parameter to a property of the component, for example its endpoint type. */
 export const Binding = Type.Object({ property: PropertyName }, { additionalProperties: false });
@@ -112,8 +113,13 @@ export const TraitParameters = {
   /** A network area that contains components. */
   zone: Type.Object(
     {
-      /** Address space, for the detailed level. */
+      /** IPv4 address space, for the detailed level. */
       addressSpace: Type.Optional(bindable(Type.String())),
+      /**
+       * IPv6 address space, for the detailed level. Optional: a zone without one (and whose
+       * enclosing zones have none) has no IPv6 addresses.
+       */
+      ipv6AddressSpace: Type.Optional(bindable(Type.String())),
       /**
        * The failure domain the zone lies in, for example an availability zone. Zones placed in
        * it inherit it unless they declare their own.
@@ -153,6 +159,13 @@ export const TraitParameters = {
        * itself.
        */
       implicit: Type.Optional(Type.Boolean()),
+      /**
+       * The address families the gateway carries at the detailed level, for example `[4]` for a
+       * NAT gateway that translates IPv4 only. Default: both.
+       */
+      families: Type.Optional(
+        Type.Array(Type.Union([Type.Literal(4), Type.Literal(6)]), { minItems: 1 }),
+      ),
     },
     closed,
   ),
@@ -324,6 +337,7 @@ export function bindingSlots(traits: Traits): BindingSlot[] {
   }
   if (t.zone) {
     add("zone", "addressSpace", t.zone.addressSpace, { kind: "string" });
+    add("zone", "ipv6AddressSpace", t.zone.ipv6AddressSpace, { kind: "string" });
     add("zone", "failureDomain", t.zone.failureDomain, { kind: "string" });
     add("zone", "directInternet", t.zone.directInternet, { kind: "boolean" });
   }

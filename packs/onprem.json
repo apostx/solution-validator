@@ -1,10 +1,10 @@
 {
   "$schema": "../schemas/pack.schema.json",
   "id": "onprem",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "label": "On-premises",
   "description": "A site's own infrastructure: networks and VLANs, firewalls, routers, servers, server clusters, load balancers and database servers.",
-  "vocabulary": 5,
+  "vocabulary": 6,
   "requires": {
     "core": "^0.2.0"
   },
@@ -18,6 +18,9 @@
         "zone": {
           "addressSpace": {
             "property": "addressSpace"
+          },
+          "ipv6AddressSpace": {
+            "property": "ipv6AddressSpace"
           }
         }
       },
@@ -28,6 +31,12 @@
           "title": "Address space",
           "description": "The network's IPv4 address range, for example 192.168.0.0/16. Used by the detailed analysis level.",
           "pattern": "^([0-9]{1,3}\\.){3}[0-9]{1,3}/[0-9]{1,2}$"
+        },
+        "ipv6AddressSpace": {
+          "type": "string",
+          "title": "IPv6 address space",
+          "description": "The network's IPv6 prefix, for example 2001:db8:100::/48. Optional: a network without one has no IPv6 addresses. Used by the detailed analysis level.",
+          "pattern": "^[0-9a-fA-F:]+/[0-9]{1,3}$"
         }
       }
     },
@@ -40,6 +49,9 @@
         "zone": {
           "addressSpace": {
             "property": "subnet"
+          },
+          "ipv6AddressSpace": {
+            "property": "ipv6Subnet"
           }
         }
       },
@@ -57,6 +69,12 @@
           "title": "Subnet",
           "description": "The VLAN's IPv4 subnet within the network, for example 192.168.10.0/24. Used by the detailed analysis level.",
           "pattern": "^([0-9]{1,3}\\.){3}[0-9]{1,3}/[0-9]{1,2}$"
+        },
+        "ipv6Subnet": {
+          "type": "string",
+          "title": "IPv6 subnet",
+          "description": "The VLAN's IPv6 prefix within the network's, usually a /64. Optional. Used by the detailed analysis level.",
+          "pattern": "^[0-9a-fA-F:]+/[0-9]{1,3}$"
         }
       }
     },
@@ -132,7 +150,7 @@
                 "type": "string",
                 "title": "Peer",
                 "minLength": 1,
-                "description": "any, internet, network (anything inside the network), the id of a component, VLAN or network, or an IPv4 range such as 192.168.10.0/24 (matched at the detailed level)."
+                "description": "any, internet, network (anything inside the network), the id of a component, VLAN or network, or an IPv4 or IPv6 range such as 192.168.10.0/24 or 2001:db8:100:10::/64 (matched at the detailed level; a range only matches traffic of its own address family)."
               },
               "ports": {
                 "type": "array",

@@ -1,0 +1,1972 @@
+{
+  "parse": {
+    "ok": true,
+    "findings": []
+  },
+  "analysis": {
+    "strict": {
+      "library": {
+        "name": "solution-validator",
+        "version": "<version>"
+      },
+      "vocabulary": 6,
+      "packs": [
+        {
+          "id": "aws",
+          "version": "0.6.0"
+        },
+        {
+          "id": "core",
+          "version": "0.2.0"
+        }
+      ],
+      "options": {
+        "level": "logical",
+        "analyses": [
+          "model-validity",
+          "connection-validity",
+          "access",
+          "availability"
+        ],
+        "assumptions": "strict"
+      },
+      "analyses": [
+        {
+          "id": "model-validity",
+          "valid": true,
+          "findings": []
+        },
+        {
+          "id": "connection-validity",
+          "intents": [
+            {
+              "intent": "batch-bucket",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.ec2",
+                        "toType": "aws.s3",
+                        "purpose": "read",
+                        "rule": 0
+                      },
+                      "message": "aws.s3 accepts read from aws.ec2 (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "users-web",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "aws.ec2",
+                        "purpose": "port https",
+                        "rule": 0
+                      },
+                      "message": "aws.ec2 accepts port https from core.internet (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "users-worker",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "aws.ec2",
+                        "purpose": "port https",
+                        "rule": 0
+                      },
+                      "message": "aws.ec2 accepts port https from core.internet (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "worker-bucket",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.ec2",
+                        "toType": "aws.s3",
+                        "purpose": "read",
+                        "rule": 0
+                      },
+                      "message": "aws.s3 accepts read from aws.ec2 (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "summary": {
+            "pass": 4,
+            "fail": 0,
+            "undecidable": 0
+          },
+          "findings": []
+        },
+        {
+          "id": "access",
+          "intents": [
+            {
+              "intent": "batch-bucket",
+              "verdict": "fail",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.ec2",
+                        "toType": "aws.s3",
+                        "purpose": "read",
+                        "rule": 0
+                      },
+                      "message": "aws.s3 accepts read from aws.ec2 (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "fail",
+                  "evidence": [
+                    {
+                      "code": "INTERNET_ROUTE_MISSING",
+                      "params": {
+                        "zone": "legacy",
+                        "router": "private-rt"
+                      },
+                      "message": "private-rt, the router of legacy, has no route to the internet."
+                    },
+                    {
+                      "code": "ENDPOINT_PUBLIC",
+                      "params": {
+                        "from": "batch",
+                        "to": "bucket"
+                      },
+                      "message": "bucket has a public endpoint."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "worker-sg",
+                        "direction": "outbound",
+                        "peer": "bucket",
+                        "rule": 0
+                      },
+                      "message": "worker-sg allows outbound traffic with bucket (rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "authorization",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "GRANT_FOUND",
+                      "params": {
+                        "from": "batch",
+                        "to": "bucket",
+                        "access": "read",
+                        "action": "read"
+                      },
+                      "message": "batch has read access to bucket, which allows read."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "users-web",
+              "verdict": "fail",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "aws.ec2",
+                        "purpose": "port https",
+                        "rule": 0
+                      },
+                      "message": "aws.ec2 accepts port https from core.internet (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "fail",
+                  "evidence": [
+                    {
+                      "code": "INTERNET_ROUTE",
+                      "params": {
+                        "zone": "public",
+                        "gateway": "igw"
+                      },
+                      "message": "public reaches the internet through igw."
+                    },
+                    {
+                      "code": "FILTER_DEFAULT_DENIES",
+                      "params": {
+                        "filter": "web-sg",
+                        "direction": "inbound",
+                        "peer": "users"
+                      },
+                      "message": "No rule of web-sg matches inbound traffic with users; its default denies it."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "users-worker",
+              "verdict": "fail",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "aws.ec2",
+                        "purpose": "port https",
+                        "rule": 0
+                      },
+                      "message": "aws.ec2 accepts port https from core.internet (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "fail",
+                  "evidence": [
+                    {
+                      "code": "ENDPOINT_PRIVATE",
+                      "params": {
+                        "from": "users",
+                        "to": "worker"
+                      },
+                      "message": "worker has a private endpoint, and users is not inside its network."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "worker-bucket",
+              "verdict": "fail",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.ec2",
+                        "toType": "aws.s3",
+                        "purpose": "read",
+                        "rule": 0
+                      },
+                      "message": "aws.s3 accepts read from aws.ec2 (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "fail",
+                  "evidence": [
+                    {
+                      "code": "INTERNET_ROUTE_MISSING",
+                      "params": {
+                        "zone": "private",
+                        "router": "private-rt"
+                      },
+                      "message": "private-rt, the router of private, has no route to the internet."
+                    },
+                    {
+                      "code": "ENDPOINT_PUBLIC",
+                      "params": {
+                        "from": "worker",
+                        "to": "bucket"
+                      },
+                      "message": "bucket has a public endpoint."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "worker-sg",
+                        "direction": "outbound",
+                        "peer": "bucket",
+                        "rule": 0
+                      },
+                      "message": "worker-sg allows outbound traffic with bucket (rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "authorization",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "GRANT_FOUND",
+                      "params": {
+                        "from": "worker",
+                        "to": "bucket",
+                        "access": "read",
+                        "action": "read"
+                      },
+                      "message": "worker has read access to bucket, which allows read."
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "summary": {
+            "pass": 0,
+            "fail": 4,
+            "undecidable": 0
+          },
+          "exposure": [
+            {
+              "component": "batch",
+              "exposure": "not-exposed",
+              "evidence": [
+                {
+                  "code": "ENDPOINT_NOT_PUBLIC",
+                  "params": {
+                    "component": "batch"
+                  },
+                  "message": "batch has no public endpoint."
+                }
+              ]
+            },
+            {
+              "component": "bucket",
+              "exposure": "not-exposed",
+              "evidence": [
+                {
+                  "code": "ENDPOINT_PUBLIC",
+                  "params": {
+                    "from": "the internet",
+                    "to": "bucket"
+                  },
+                  "message": "bucket has a public endpoint."
+                },
+                {
+                  "code": "PUBLIC_ACCESS_OFF",
+                  "params": {
+                    "component": "bucket"
+                  },
+                  "message": "bucket does not allow public access."
+                }
+              ]
+            },
+            {
+              "component": "web",
+              "exposure": "not-exposed",
+              "evidence": [
+                {
+                  "code": "ENDPOINT_PUBLIC",
+                  "params": {
+                    "from": "the internet",
+                    "to": "web"
+                  },
+                  "message": "web has a public endpoint."
+                },
+                {
+                  "code": "INTERNET_ROUTE",
+                  "params": {
+                    "zone": "public",
+                    "gateway": "igw"
+                  },
+                  "message": "public reaches the internet through igw."
+                },
+                {
+                  "code": "FILTER_DEFAULT_DENIES",
+                  "params": {
+                    "filter": "web-sg",
+                    "direction": "inbound",
+                    "peer": "the internet"
+                  },
+                  "message": "No rule of web-sg matches inbound traffic with the internet; its default denies it."
+                },
+                {
+                  "code": "NOT_REACHABLE_FROM_INTERNET",
+                  "params": {
+                    "component": "web"
+                  },
+                  "message": "web cannot be reached from the internet on any port."
+                }
+              ]
+            },
+            {
+              "component": "worker",
+              "exposure": "not-exposed",
+              "evidence": [
+                {
+                  "code": "ENDPOINT_NOT_PUBLIC",
+                  "params": {
+                    "component": "worker"
+                  },
+                  "message": "worker has no public endpoint."
+                }
+              ]
+            }
+          ],
+          "assumptions": [],
+          "findings": [
+            {
+              "code": "ACCESS_NOT_REACHABLE",
+              "severity": "error",
+              "subjects": [
+                "batch-bucket"
+              ],
+              "params": {
+                "intent": "batch-bucket",
+                "from": "batch",
+                "to": "bucket"
+              },
+              "message": "Intent batch-bucket: bucket cannot be reached from batch."
+            },
+            {
+              "code": "ACCESS_NOT_REACHABLE",
+              "severity": "error",
+              "subjects": [
+                "users-web"
+              ],
+              "params": {
+                "intent": "users-web",
+                "from": "users",
+                "to": "web"
+              },
+              "message": "Intent users-web: web cannot be reached from users."
+            },
+            {
+              "code": "ACCESS_NOT_REACHABLE",
+              "severity": "error",
+              "subjects": [
+                "users-worker"
+              ],
+              "params": {
+                "intent": "users-worker",
+                "from": "users",
+                "to": "worker"
+              },
+              "message": "Intent users-worker: worker cannot be reached from users."
+            },
+            {
+              "code": "ACCESS_NOT_REACHABLE",
+              "severity": "error",
+              "subjects": [
+                "worker-bucket"
+              ],
+              "params": {
+                "intent": "worker-bucket",
+                "from": "worker",
+                "to": "bucket"
+              },
+              "message": "Intent worker-bucket: bucket cannot be reached from worker."
+            }
+          ]
+        },
+        {
+          "id": "availability",
+          "components": [
+            {
+              "component": "batch",
+              "availability": "single",
+              "domains": [
+                "us-east-1a"
+              ],
+              "evidence": [
+                {
+                  "code": "SINGLE_INSTANCE",
+                  "params": {
+                    "component": "batch"
+                  },
+                  "message": "batch runs one instance, in one of the zones it is placed in."
+                },
+                {
+                  "code": "FAILURE_DOMAINS",
+                  "params": {
+                    "component": "batch",
+                    "domains": "us-east-1a"
+                  },
+                  "message": "batch runs in: us-east-1a."
+                }
+              ]
+            },
+            {
+              "component": "bucket",
+              "availability": "managed",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "MANAGED_SERVICE",
+                  "params": {
+                    "component": "bucket"
+                  },
+                  "message": "The provider runs bucket across failure domains."
+                }
+              ]
+            },
+            {
+              "component": "eigw",
+              "availability": "managed",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "MANAGED_SERVICE",
+                  "params": {
+                    "component": "eigw"
+                  },
+                  "message": "The provider runs eigw across failure domains."
+                }
+              ]
+            },
+            {
+              "component": "igw",
+              "availability": "managed",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "MANAGED_SERVICE",
+                  "params": {
+                    "component": "igw"
+                  },
+                  "message": "The provider runs igw across failure domains."
+                }
+              ]
+            },
+            {
+              "component": "web",
+              "availability": "single",
+              "domains": [
+                "us-east-1a"
+              ],
+              "evidence": [
+                {
+                  "code": "SINGLE_INSTANCE",
+                  "params": {
+                    "component": "web"
+                  },
+                  "message": "web runs one instance, in one of the zones it is placed in."
+                },
+                {
+                  "code": "FAILURE_DOMAINS",
+                  "params": {
+                    "component": "web",
+                    "domains": "us-east-1a"
+                  },
+                  "message": "web runs in: us-east-1a."
+                }
+              ]
+            },
+            {
+              "component": "worker",
+              "availability": "single",
+              "domains": [
+                "us-east-1a"
+              ],
+              "evidence": [
+                {
+                  "code": "SINGLE_INSTANCE",
+                  "params": {
+                    "component": "worker"
+                  },
+                  "message": "worker runs one instance, in one of the zones it is placed in."
+                },
+                {
+                  "code": "FAILURE_DOMAINS",
+                  "params": {
+                    "component": "worker",
+                    "domains": "us-east-1a"
+                  },
+                  "message": "worker runs in: us-east-1a."
+                }
+              ]
+            }
+          ],
+          "findings": []
+        }
+      ]
+    },
+    "pack-defaults": {
+      "library": {
+        "name": "solution-validator",
+        "version": "<version>"
+      },
+      "vocabulary": 6,
+      "packs": [
+        {
+          "id": "aws",
+          "version": "0.6.0"
+        },
+        {
+          "id": "core",
+          "version": "0.2.0"
+        }
+      ],
+      "options": {
+        "level": "logical",
+        "analyses": [
+          "model-validity",
+          "connection-validity",
+          "access",
+          "availability"
+        ],
+        "assumptions": "pack-defaults"
+      },
+      "analyses": [
+        {
+          "id": "model-validity",
+          "valid": true,
+          "findings": []
+        },
+        {
+          "id": "connection-validity",
+          "intents": [
+            {
+              "intent": "batch-bucket",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.ec2",
+                        "toType": "aws.s3",
+                        "purpose": "read",
+                        "rule": 0
+                      },
+                      "message": "aws.s3 accepts read from aws.ec2 (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "users-web",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "aws.ec2",
+                        "purpose": "port https",
+                        "rule": 0
+                      },
+                      "message": "aws.ec2 accepts port https from core.internet (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "users-worker",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "aws.ec2",
+                        "purpose": "port https",
+                        "rule": 0
+                      },
+                      "message": "aws.ec2 accepts port https from core.internet (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "worker-bucket",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.ec2",
+                        "toType": "aws.s3",
+                        "purpose": "read",
+                        "rule": 0
+                      },
+                      "message": "aws.s3 accepts read from aws.ec2 (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "summary": {
+            "pass": 4,
+            "fail": 0,
+            "undecidable": 0
+          },
+          "findings": []
+        },
+        {
+          "id": "access",
+          "intents": [
+            {
+              "intent": "batch-bucket",
+              "verdict": "fail",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.ec2",
+                        "toType": "aws.s3",
+                        "purpose": "read",
+                        "rule": 0
+                      },
+                      "message": "aws.s3 accepts read from aws.ec2 (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "fail",
+                  "evidence": [
+                    {
+                      "code": "INTERNET_ROUTE_MISSING",
+                      "params": {
+                        "zone": "legacy",
+                        "router": "private-rt"
+                      },
+                      "message": "private-rt, the router of legacy, has no route to the internet."
+                    },
+                    {
+                      "code": "ENDPOINT_PUBLIC",
+                      "params": {
+                        "from": "batch",
+                        "to": "bucket"
+                      },
+                      "message": "bucket has a public endpoint."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "worker-sg",
+                        "direction": "outbound",
+                        "peer": "bucket",
+                        "rule": 0
+                      },
+                      "message": "worker-sg allows outbound traffic with bucket (rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "authorization",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "GRANT_FOUND",
+                      "params": {
+                        "from": "batch",
+                        "to": "bucket",
+                        "access": "read",
+                        "action": "read"
+                      },
+                      "message": "batch has read access to bucket, which allows read."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "users-web",
+              "verdict": "fail",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "aws.ec2",
+                        "purpose": "port https",
+                        "rule": 0
+                      },
+                      "message": "aws.ec2 accepts port https from core.internet (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "fail",
+                  "evidence": [
+                    {
+                      "code": "INTERNET_ROUTE",
+                      "params": {
+                        "zone": "public",
+                        "gateway": "igw"
+                      },
+                      "message": "public reaches the internet through igw."
+                    },
+                    {
+                      "code": "FILTER_DEFAULT_DENIES",
+                      "params": {
+                        "filter": "web-sg",
+                        "direction": "inbound",
+                        "peer": "users"
+                      },
+                      "message": "No rule of web-sg matches inbound traffic with users; its default denies it."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "users-worker",
+              "verdict": "fail",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "aws.ec2",
+                        "purpose": "port https",
+                        "rule": 0
+                      },
+                      "message": "aws.ec2 accepts port https from core.internet (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "fail",
+                  "evidence": [
+                    {
+                      "code": "ENDPOINT_PRIVATE",
+                      "params": {
+                        "from": "users",
+                        "to": "worker"
+                      },
+                      "message": "worker has a private endpoint, and users is not inside its network."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "worker-bucket",
+              "verdict": "fail",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.ec2",
+                        "toType": "aws.s3",
+                        "purpose": "read",
+                        "rule": 0
+                      },
+                      "message": "aws.s3 accepts read from aws.ec2 (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "fail",
+                  "evidence": [
+                    {
+                      "code": "INTERNET_ROUTE_MISSING",
+                      "params": {
+                        "zone": "private",
+                        "router": "private-rt"
+                      },
+                      "message": "private-rt, the router of private, has no route to the internet."
+                    },
+                    {
+                      "code": "ENDPOINT_PUBLIC",
+                      "params": {
+                        "from": "worker",
+                        "to": "bucket"
+                      },
+                      "message": "bucket has a public endpoint."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "worker-sg",
+                        "direction": "outbound",
+                        "peer": "bucket",
+                        "rule": 0
+                      },
+                      "message": "worker-sg allows outbound traffic with bucket (rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "authorization",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "GRANT_FOUND",
+                      "params": {
+                        "from": "worker",
+                        "to": "bucket",
+                        "access": "read",
+                        "action": "read"
+                      },
+                      "message": "worker has read access to bucket, which allows read."
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "summary": {
+            "pass": 0,
+            "fail": 4,
+            "undecidable": 0
+          },
+          "exposure": [
+            {
+              "component": "batch",
+              "exposure": "not-exposed",
+              "evidence": [
+                {
+                  "code": "ENDPOINT_NOT_PUBLIC",
+                  "params": {
+                    "component": "batch"
+                  },
+                  "message": "batch has no public endpoint."
+                }
+              ]
+            },
+            {
+              "component": "bucket",
+              "exposure": "not-exposed",
+              "evidence": [
+                {
+                  "code": "ENDPOINT_PUBLIC",
+                  "params": {
+                    "from": "the internet",
+                    "to": "bucket"
+                  },
+                  "message": "bucket has a public endpoint."
+                },
+                {
+                  "code": "PUBLIC_ACCESS_OFF",
+                  "params": {
+                    "component": "bucket"
+                  },
+                  "message": "bucket does not allow public access."
+                }
+              ]
+            },
+            {
+              "component": "web",
+              "exposure": "not-exposed",
+              "evidence": [
+                {
+                  "code": "ENDPOINT_PUBLIC",
+                  "params": {
+                    "from": "the internet",
+                    "to": "web"
+                  },
+                  "message": "web has a public endpoint."
+                },
+                {
+                  "code": "INTERNET_ROUTE",
+                  "params": {
+                    "zone": "public",
+                    "gateway": "igw"
+                  },
+                  "message": "public reaches the internet through igw."
+                },
+                {
+                  "code": "FILTER_DEFAULT_DENIES",
+                  "params": {
+                    "filter": "web-sg",
+                    "direction": "inbound",
+                    "peer": "the internet"
+                  },
+                  "message": "No rule of web-sg matches inbound traffic with the internet; its default denies it."
+                },
+                {
+                  "code": "NOT_REACHABLE_FROM_INTERNET",
+                  "params": {
+                    "component": "web"
+                  },
+                  "message": "web cannot be reached from the internet on any port."
+                }
+              ]
+            },
+            {
+              "component": "worker",
+              "exposure": "not-exposed",
+              "evidence": [
+                {
+                  "code": "ENDPOINT_NOT_PUBLIC",
+                  "params": {
+                    "component": "worker"
+                  },
+                  "message": "worker has no public endpoint."
+                }
+              ]
+            }
+          ],
+          "assumptions": [],
+          "findings": [
+            {
+              "code": "ACCESS_NOT_REACHABLE",
+              "severity": "error",
+              "subjects": [
+                "batch-bucket"
+              ],
+              "params": {
+                "intent": "batch-bucket",
+                "from": "batch",
+                "to": "bucket"
+              },
+              "message": "Intent batch-bucket: bucket cannot be reached from batch."
+            },
+            {
+              "code": "ACCESS_NOT_REACHABLE",
+              "severity": "error",
+              "subjects": [
+                "users-web"
+              ],
+              "params": {
+                "intent": "users-web",
+                "from": "users",
+                "to": "web"
+              },
+              "message": "Intent users-web: web cannot be reached from users."
+            },
+            {
+              "code": "ACCESS_NOT_REACHABLE",
+              "severity": "error",
+              "subjects": [
+                "users-worker"
+              ],
+              "params": {
+                "intent": "users-worker",
+                "from": "users",
+                "to": "worker"
+              },
+              "message": "Intent users-worker: worker cannot be reached from users."
+            },
+            {
+              "code": "ACCESS_NOT_REACHABLE",
+              "severity": "error",
+              "subjects": [
+                "worker-bucket"
+              ],
+              "params": {
+                "intent": "worker-bucket",
+                "from": "worker",
+                "to": "bucket"
+              },
+              "message": "Intent worker-bucket: bucket cannot be reached from worker."
+            }
+          ]
+        },
+        {
+          "id": "availability",
+          "components": [
+            {
+              "component": "batch",
+              "availability": "single",
+              "domains": [
+                "us-east-1a"
+              ],
+              "evidence": [
+                {
+                  "code": "SINGLE_INSTANCE",
+                  "params": {
+                    "component": "batch"
+                  },
+                  "message": "batch runs one instance, in one of the zones it is placed in."
+                },
+                {
+                  "code": "FAILURE_DOMAINS",
+                  "params": {
+                    "component": "batch",
+                    "domains": "us-east-1a"
+                  },
+                  "message": "batch runs in: us-east-1a."
+                }
+              ]
+            },
+            {
+              "component": "bucket",
+              "availability": "managed",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "MANAGED_SERVICE",
+                  "params": {
+                    "component": "bucket"
+                  },
+                  "message": "The provider runs bucket across failure domains."
+                }
+              ]
+            },
+            {
+              "component": "eigw",
+              "availability": "managed",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "MANAGED_SERVICE",
+                  "params": {
+                    "component": "eigw"
+                  },
+                  "message": "The provider runs eigw across failure domains."
+                }
+              ]
+            },
+            {
+              "component": "igw",
+              "availability": "managed",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "MANAGED_SERVICE",
+                  "params": {
+                    "component": "igw"
+                  },
+                  "message": "The provider runs igw across failure domains."
+                }
+              ]
+            },
+            {
+              "component": "web",
+              "availability": "single",
+              "domains": [
+                "us-east-1a"
+              ],
+              "evidence": [
+                {
+                  "code": "SINGLE_INSTANCE",
+                  "params": {
+                    "component": "web"
+                  },
+                  "message": "web runs one instance, in one of the zones it is placed in."
+                },
+                {
+                  "code": "FAILURE_DOMAINS",
+                  "params": {
+                    "component": "web",
+                    "domains": "us-east-1a"
+                  },
+                  "message": "web runs in: us-east-1a."
+                }
+              ]
+            },
+            {
+              "component": "worker",
+              "availability": "single",
+              "domains": [
+                "us-east-1a"
+              ],
+              "evidence": [
+                {
+                  "code": "SINGLE_INSTANCE",
+                  "params": {
+                    "component": "worker"
+                  },
+                  "message": "worker runs one instance, in one of the zones it is placed in."
+                },
+                {
+                  "code": "FAILURE_DOMAINS",
+                  "params": {
+                    "component": "worker",
+                    "domains": "us-east-1a"
+                  },
+                  "message": "worker runs in: us-east-1a."
+                }
+              ]
+            }
+          ],
+          "findings": []
+        }
+      ]
+    },
+    "detailed": {
+      "library": {
+        "name": "solution-validator",
+        "version": "<version>"
+      },
+      "vocabulary": 6,
+      "packs": [
+        {
+          "id": "aws",
+          "version": "0.6.0"
+        },
+        {
+          "id": "core",
+          "version": "0.2.0"
+        }
+      ],
+      "options": {
+        "level": "detailed",
+        "analyses": [
+          "model-validity",
+          "connection-validity",
+          "access",
+          "address-plan",
+          "availability"
+        ],
+        "assumptions": "strict"
+      },
+      "analyses": [
+        {
+          "id": "model-validity",
+          "valid": true,
+          "findings": []
+        },
+        {
+          "id": "connection-validity",
+          "intents": [
+            {
+              "intent": "batch-bucket",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.ec2",
+                        "toType": "aws.s3",
+                        "purpose": "read",
+                        "rule": 0
+                      },
+                      "message": "aws.s3 accepts read from aws.ec2 (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "users-web",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "aws.ec2",
+                        "purpose": "port https",
+                        "rule": 0
+                      },
+                      "message": "aws.ec2 accepts port https from core.internet (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "users-worker",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "aws.ec2",
+                        "purpose": "port https",
+                        "rule": 0
+                      },
+                      "message": "aws.ec2 accepts port https from core.internet (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "worker-bucket",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.ec2",
+                        "toType": "aws.s3",
+                        "purpose": "read",
+                        "rule": 0
+                      },
+                      "message": "aws.s3 accepts read from aws.ec2 (accepts rule 0)."
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "summary": {
+            "pass": 4,
+            "fail": 0,
+            "undecidable": 0
+          },
+          "findings": []
+        },
+        {
+          "id": "access",
+          "intents": [
+            {
+              "intent": "batch-bucket",
+              "verdict": "fail",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.ec2",
+                        "toType": "aws.s3",
+                        "purpose": "read",
+                        "rule": 0
+                      },
+                      "message": "aws.s3 accepts read from aws.ec2 (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "fail",
+                  "evidence": [
+                    {
+                      "code": "INTERNET_ROUTE_MISSING",
+                      "params": {
+                        "zone": "legacy",
+                        "router": "private-rt"
+                      },
+                      "message": "private-rt, the router of legacy, has no route to the internet."
+                    },
+                    {
+                      "code": "ENDPOINT_PUBLIC",
+                      "params": {
+                        "from": "batch",
+                        "to": "bucket"
+                      },
+                      "message": "bucket has a public endpoint."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "worker-sg",
+                        "direction": "outbound",
+                        "peer": "bucket",
+                        "rule": 0
+                      },
+                      "message": "worker-sg allows outbound traffic with bucket (rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "authorization",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "GRANT_FOUND",
+                      "params": {
+                        "from": "batch",
+                        "to": "bucket",
+                        "access": "read",
+                        "action": "read"
+                      },
+                      "message": "batch has read access to bucket, which allows read."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "users-web",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "aws.ec2",
+                        "purpose": "port https",
+                        "rule": 0
+                      },
+                      "message": "aws.ec2 accepts port https from core.internet (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ADDRESS_FAMILY",
+                      "params": {
+                        "family": "IPv6"
+                      },
+                      "message": "Over IPv6:"
+                    },
+                    {
+                      "code": "INTERNET_ROUTE",
+                      "params": {
+                        "zone": "public",
+                        "gateway": "igw"
+                      },
+                      "message": "public reaches the internet through igw."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "web-sg",
+                        "direction": "inbound",
+                        "peer": "users",
+                        "rule": 0
+                      },
+                      "message": "web-sg allows inbound traffic with users (rule 0)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "users-worker",
+              "verdict": "fail",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "core.internet",
+                        "toType": "aws.ec2",
+                        "purpose": "port https",
+                        "rule": 0
+                      },
+                      "message": "aws.ec2 accepts port https from core.internet (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "fail",
+                  "evidence": [
+                    {
+                      "code": "ADDRESS_FAMILY",
+                      "params": {
+                        "family": "IPv4"
+                      },
+                      "message": "Over IPv4:"
+                    },
+                    {
+                      "code": "ENDPOINT_PRIVATE",
+                      "params": {
+                        "from": "users",
+                        "to": "worker"
+                      },
+                      "message": "worker has a private endpoint, and users is not inside its network."
+                    },
+                    {
+                      "code": "ADDRESS_FAMILY",
+                      "params": {
+                        "family": "IPv6"
+                      },
+                      "message": "Over IPv6:"
+                    },
+                    {
+                      "code": "ENDPOINT_PRIVATE",
+                      "params": {
+                        "from": "users",
+                        "to": "worker"
+                      },
+                      "message": "worker has a private endpoint, and users is not inside its network."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "intent": "worker-bucket",
+              "verdict": "pass",
+              "checks": [
+                {
+                  "check": "compatibility",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ACCEPTED",
+                      "params": {
+                        "fromType": "aws.ec2",
+                        "toType": "aws.s3",
+                        "purpose": "read",
+                        "rule": 0
+                      },
+                      "message": "aws.s3 accepts read from aws.ec2 (accepts rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "connectivity",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "ADDRESS_FAMILY",
+                      "params": {
+                        "family": "IPv6"
+                      },
+                      "message": "Over IPv6:"
+                    },
+                    {
+                      "code": "NAT_ROUTE",
+                      "params": {
+                        "zone": "private",
+                        "gateway": "eigw"
+                      },
+                      "message": "private reaches the internet through eigw, for outbound connections only."
+                    },
+                    {
+                      "code": "ENDPOINT_PUBLIC",
+                      "params": {
+                        "from": "worker",
+                        "to": "bucket"
+                      },
+                      "message": "bucket has a public endpoint."
+                    },
+                    {
+                      "code": "FILTER_ALLOWS",
+                      "params": {
+                        "filter": "worker-sg",
+                        "direction": "outbound",
+                        "peer": "bucket",
+                        "rule": 0
+                      },
+                      "message": "worker-sg allows outbound traffic with bucket (rule 0)."
+                    }
+                  ]
+                },
+                {
+                  "check": "authorization",
+                  "verdict": "pass",
+                  "evidence": [
+                    {
+                      "code": "GRANT_FOUND",
+                      "params": {
+                        "from": "worker",
+                        "to": "bucket",
+                        "access": "read",
+                        "action": "read"
+                      },
+                      "message": "worker has read access to bucket, which allows read."
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "summary": {
+            "pass": 2,
+            "fail": 2,
+            "undecidable": 0
+          },
+          "exposure": [
+            {
+              "component": "batch",
+              "exposure": "not-exposed",
+              "evidence": [
+                {
+                  "code": "ENDPOINT_NOT_PUBLIC",
+                  "params": {
+                    "component": "batch"
+                  },
+                  "message": "batch has no public endpoint."
+                }
+              ]
+            },
+            {
+              "component": "bucket",
+              "exposure": "not-exposed",
+              "evidence": [
+                {
+                  "code": "ENDPOINT_PUBLIC",
+                  "params": {
+                    "from": "the internet",
+                    "to": "bucket"
+                  },
+                  "message": "bucket has a public endpoint."
+                },
+                {
+                  "code": "PUBLIC_ACCESS_OFF",
+                  "params": {
+                    "component": "bucket"
+                  },
+                  "message": "bucket does not allow public access."
+                }
+              ]
+            },
+            {
+              "component": "web",
+              "exposure": "exposed",
+              "ports": [
+                "https"
+              ],
+              "evidence": [
+                {
+                  "code": "ENDPOINT_PUBLIC",
+                  "params": {
+                    "from": "the internet",
+                    "to": "web"
+                  },
+                  "message": "web has a public endpoint."
+                },
+                {
+                  "code": "INTERNET_ROUTE",
+                  "params": {
+                    "zone": "public",
+                    "gateway": "igw"
+                  },
+                  "message": "public reaches the internet through igw."
+                },
+                {
+                  "code": "FILTER_ALLOWS",
+                  "params": {
+                    "filter": "web-sg",
+                    "direction": "inbound",
+                    "peer": "the internet",
+                    "rule": 0
+                  },
+                  "message": "web-sg allows inbound traffic with the internet (rule 0)."
+                },
+                {
+                  "code": "ANONYMOUS_ALLOWED",
+                  "params": {
+                    "component": "web"
+                  },
+                  "message": "web does not control access."
+                }
+              ]
+            },
+            {
+              "component": "worker",
+              "exposure": "not-exposed",
+              "evidence": [
+                {
+                  "code": "ENDPOINT_NOT_PUBLIC",
+                  "params": {
+                    "component": "worker"
+                  },
+                  "message": "worker has no public endpoint."
+                }
+              ]
+            }
+          ],
+          "assumptions": [],
+          "findings": [
+            {
+              "code": "ACCESS_NOT_REACHABLE",
+              "severity": "error",
+              "subjects": [
+                "batch-bucket"
+              ],
+              "params": {
+                "intent": "batch-bucket",
+                "from": "batch",
+                "to": "bucket"
+              },
+              "message": "Intent batch-bucket: bucket cannot be reached from batch."
+            },
+            {
+              "code": "ACCESS_NOT_REACHABLE",
+              "severity": "error",
+              "subjects": [
+                "users-worker"
+              ],
+              "params": {
+                "intent": "users-worker",
+                "from": "users",
+                "to": "worker"
+              },
+              "message": "Intent users-worker: worker cannot be reached from users."
+            },
+            {
+              "code": "EXPOSED_TO_INTERNET",
+              "severity": "info",
+              "subjects": [
+                "web"
+              ],
+              "params": {
+                "component": "web"
+              },
+              "message": "web is directly accessible from the internet."
+            }
+          ]
+        },
+        {
+          "id": "address-plan",
+          "zones": [
+            {
+              "zone": "legacy",
+              "parent": "vpc",
+              "space": "10.0.3.0/24",
+              "size": 256
+            },
+            {
+              "zone": "private",
+              "parent": "vpc",
+              "space": "10.0.2.0/24",
+              "size": 256,
+              "ipv6Space": "2600:1f18:1234:5602::/64"
+            },
+            {
+              "zone": "public",
+              "parent": "vpc",
+              "space": "10.0.1.0/24",
+              "size": 256,
+              "ipv6Space": "2600:1f18:1234:5601::/64"
+            },
+            {
+              "zone": "vpc",
+              "space": "10.0.0.0/16",
+              "size": 65536,
+              "ipv6Space": "2600:1f18:1234:5600::/56"
+            }
+          ],
+          "findings": []
+        },
+        {
+          "id": "availability",
+          "components": [
+            {
+              "component": "batch",
+              "availability": "single",
+              "domains": [
+                "us-east-1a"
+              ],
+              "evidence": [
+                {
+                  "code": "SINGLE_INSTANCE",
+                  "params": {
+                    "component": "batch"
+                  },
+                  "message": "batch runs one instance, in one of the zones it is placed in."
+                },
+                {
+                  "code": "FAILURE_DOMAINS",
+                  "params": {
+                    "component": "batch",
+                    "domains": "us-east-1a"
+                  },
+                  "message": "batch runs in: us-east-1a."
+                }
+              ]
+            },
+            {
+              "component": "bucket",
+              "availability": "managed",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "MANAGED_SERVICE",
+                  "params": {
+                    "component": "bucket"
+                  },
+                  "message": "The provider runs bucket across failure domains."
+                }
+              ]
+            },
+            {
+              "component": "eigw",
+              "availability": "managed",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "MANAGED_SERVICE",
+                  "params": {
+                    "component": "eigw"
+                  },
+                  "message": "The provider runs eigw across failure domains."
+                }
+              ]
+            },
+            {
+              "component": "igw",
+              "availability": "managed",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "MANAGED_SERVICE",
+                  "params": {
+                    "component": "igw"
+                  },
+                  "message": "The provider runs igw across failure domains."
+                }
+              ]
+            },
+            {
+              "component": "web",
+              "availability": "single",
+              "domains": [
+                "us-east-1a"
+              ],
+              "evidence": [
+                {
+                  "code": "SINGLE_INSTANCE",
+                  "params": {
+                    "component": "web"
+                  },
+                  "message": "web runs one instance, in one of the zones it is placed in."
+                },
+                {
+                  "code": "FAILURE_DOMAINS",
+                  "params": {
+                    "component": "web",
+                    "domains": "us-east-1a"
+                  },
+                  "message": "web runs in: us-east-1a."
+                }
+              ]
+            },
+            {
+              "component": "worker",
+              "availability": "single",
+              "domains": [
+                "us-east-1a"
+              ],
+              "evidence": [
+                {
+                  "code": "SINGLE_INSTANCE",
+                  "params": {
+                    "component": "worker"
+                  },
+                  "message": "worker runs one instance, in one of the zones it is placed in."
+                },
+                {
+                  "code": "FAILURE_DOMAINS",
+                  "params": {
+                    "component": "worker",
+                    "domains": "us-east-1a"
+                  },
+                  "message": "worker runs in: us-east-1a."
+                }
+              ]
+            }
+          ],
+          "findings": [
+            {
+              "code": "AVAILABILITY_SINGLE_POINT",
+              "severity": "warning",
+              "subjects": [
+                "web"
+              ],
+              "params": {
+                "component": "web",
+                "domain": "us-east-1a",
+                "intents": "users-web"
+              },
+              "message": "web runs in a single failure domain (us-east-1a), and intents depend on it: users-web."
+            },
+            {
+              "code": "AVAILABILITY_SINGLE_POINT",
+              "severity": "warning",
+              "subjects": [
+                "worker"
+              ],
+              "params": {
+                "component": "worker",
+                "domain": "us-east-1a",
+                "intents": "worker-bucket"
+              },
+              "message": "worker runs in a single failure domain (us-east-1a), and intents depend on it: worker-bucket."
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

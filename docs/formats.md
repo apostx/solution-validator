@@ -100,7 +100,7 @@ This document describes the implemented JSON formats. The reasoning behind them 
 - **`properties`** use a subset of JSON Schema: `string` (with `enum`, `minLength`, `maxLength`, `pattern`), `number`, `integer`, `boolean`, arrays of those or of objects, and objects whose fields are scalars or arrays of scalars. Objects are closed. `default` documents the value the `pack-defaults` assumption policy uses. `"x-component-ref": true` marks a string as a component id; references are checked.
 - **`required`** lists properties every component of the type must set. Most properties are optional: a missing property limits what can be decided but does not make the model invalid.
 
-### Trait parameters (vocabulary 5)
+### Trait parameters (vocabulary 6)
 
 | Trait | Parameters |
 |---|---|
@@ -108,14 +108,14 @@ This document describes the implemented JSON formats. The reasoning behind them 
 | `forwarder` | `routes`: binding to the routes array; `targetField` (default `target`); `authorizes`: a route also authorizes the forwarder on its target |
 | `principal` | `grants`: binding to the grants array; `resourceField` (default `resource`); `accessField` (default `access`) |
 | `access-controlled` | `levels`: access level → actions it allows; `public`: anonymous access (bindable boolean); `publicActions`: actions allowed when public |
-| `zone` | `addressSpace` (bindable string, detailed level); `failureDomain` (bindable string): the failure domain the zone is in, such as an availability zone; `directInternet` (bindable boolean): the provider routes internet traffic to and from public endpoints in the zone without gateway components, see below |
-| `gateway` | `direction`: `both` or `outbound-only` (bindable); `connects`: binding to the zones it is attached to (without it, the gateway belongs to the network of the zone it is placed in); `services`: binding to the provider services it reaches privately; `implicit`: the zones it connects use it for internet traffic without a route |
+| `zone` | `addressSpace` (bindable string, detailed level); `failureDomain` (bindable string): the failure domain the zone is in, such as an availability zone; `directInternet` (bindable boolean): the provider routes internet traffic to and from public endpoints in the zone without gateway components, see below; `ipv6AddressSpace` (bindable string, detailed level) |
+| `gateway` | `direction`: `both` or `outbound-only` (bindable); `connects`: binding to the zones it is attached to (without it, the gateway belongs to the network of the zone it is placed in); `services`: binding to the provider services it reaches privately; `implicit`: the zones it connects use it for internet traffic without a route; `families`: the address families it carries, `[4]`, `[6]` or both (default) |
 | `router` | `routes`: binding to routes `{ destination, gateway }`, where the destination is `internet`, an IPv4 range, or the id of a service; `zones`: binding to the zones it serves |
 | `traffic-filter` | `stateful`; `attachTo`: `component`, `zone` and/or `self`; `rules`: binding to the rules (below); `baseRules`: rules of the type itself, checked after the component's rules (their peers are keywords or address ranges); `targets`: binding to what it is attached to; `default`: `{ inbound, outbound }` of `allow` or `deny` (default: deny) |
 | `group` | `members`: binding to component references; `size` (bindable integer, informational) |
 | `redundancy` | `managed` (bindable boolean): `true`, the provider spreads the component across failure domains; `false`, it runs in one; `spread` (bindable boolean, default `true`): `false` means one instance runs in only one of the zones it is placed in; `domains`: binding to the component's own list of failure domains, used instead of its zones' |
 
-Vocabulary 2 added `endpoint.via`, `router.zones` and `traffic-filter.targets`, removed `group.zones` (placement says where a group runs), and gave the network traits their behavior. Vocabulary 3 added `gateway.services`. Vocabulary 4 added `zone.failureDomain` and the `redundancy` trait for the [availability analysis](#availability). Vocabulary 5 added `zone.directInternet`, `gateway.implicit`, `traffic-filter.baseRules`, the `network` rule peer, a bindable `redundancy.managed` and `redundancy.domains`, for networks such as Azure's, where public IP addresses, subnet associations and per-resource availability zones decide what zones and routes decide elsewhere. Packs declare the version they need, for example `"vocabulary": 5`.
+Vocabulary 2 added `endpoint.via`, `router.zones` and `traffic-filter.targets`, removed `group.zones` (placement says where a group runs), and gave the network traits their behavior. Vocabulary 3 added `gateway.services`. Vocabulary 4 added `zone.failureDomain` and the `redundancy` trait for the [availability analysis](#availability). Vocabulary 5 added `zone.directInternet`, `gateway.implicit`, `traffic-filter.baseRules`, the `network` rule peer, a bindable `redundancy.managed` and `redundancy.domains`, for networks such as Azure's, where public IP addresses, subnet associations and per-resource availability zones decide what zones and routes decide elsewhere. Vocabulary 6 added `zone.ipv6AddressSpace` and `gateway.families` for IPv6 at the [detailed level](#detailed-level). Packs declare the version they need, for example `"vocabulary": 6`.
 
 **Traffic filter rules** are objects, checked in order; the first rule that matches the traffic's direction, peer and ports decides, and the `default` policy decides when none matches:
 
@@ -215,20 +215,23 @@ An intent verdict has the shape below. A verdict is never a boolean: `pass` is p
 
 ## Detailed level
 
-`analyze(model, { level: "detailed" })` uses concrete values as well. It is a static feasibility check of the planned configuration; it does not simulate runtime behavior. Only IPv4 is supported.
+`analyze(model, { level: "detailed" })` uses concrete values as well. It is a static feasibility check of the planned configuration; it does not simulate runtime behavior. It supports IPv4 and IPv6.
 
 | What | Detailed behavior |
 |---|---|
-| Address spaces | A zone's `addressSpace` (for example a VPC's `cidrBlock`) is an IPv4 range. The `address-plan` analysis checks it. |
-| Rule peers with ranges | A range covers a party inside a zone when it contains the address space of the party's innermost zone that has one; it does not when they do not overlap; it is `undecidable` when it covers only part of it. Parties outside every zone have unknown public addresses: `0.0.0.0/0` covers them, ranges without public addresses do not, and other ranges are `undecidable`. At the logical level only `0.0.0.0/0` decides; other ranges are `undecidable`. |
+| Address spaces | A zone's `addressSpace` (for example a VPC's `cidrBlock`) is an IPv4 range, and its optional `ipv6AddressSpace` an IPv6 range. The `address-plan` analysis checks both. |
+| Address families | Every zone has IPv4. A zone has IPv6 when its own IPv6 address space is set, or, for zone types without one, when the zone it is placed in has IPv6. Parties outside every zone have both. Traffic between two parties may use any family both have; each family is checked on its own (routes, gateways and filter rules of that family), and one family that works is enough: the verdict is `pass` if one passes, `fail` if all fail, otherwise `undecidable`. Evidence then starts each family with `ADDRESS_FAMILY`. The logical level checks IPv4 only. |
+| Rule peers with ranges | A range only matches traffic of its own family. It covers a party inside a zone when it contains the address space of that family of the party's innermost zone that has one; it does not when they do not overlap; it is `undecidable` when it covers only part of it. Parties outside every zone have unknown public addresses: `0.0.0.0/0` and `::/0` cover them, ranges without public addresses (private, unique local, link-local and similar) do not, and other ranges are `undecidable`. At the logical level only `0.0.0.0/0` decides; other ranges are `undecidable`, and IPv6 ranges match nothing. |
 | Port ranges | Rules may list ranges such as `"8080-8090"`, at both levels. |
 | Return traffic | Stateless filters must allow the replies on the ephemeral ports `1024-65535`: a rule matches when its ports cover that whole range or it lists no ports. (At the logical level only rules without ports match.) |
-| Route destinations | `internet` and `0.0.0.0/0` are default routes at both levels. At the detailed level a more specific route whose range contains public addresses may catch internet traffic; since the destination's address is not known, such a route to a different gateway makes the verdict `undecidable`. Ranges without public addresses never carry internet traffic, and the local route always wins inside the network's own address space. |
+| Route destinations | `internet` is a default route for both families, `0.0.0.0/0` for IPv4 and `::/0` for IPv6 (the logical level uses `internet` and `0.0.0.0/0`). At the detailed level a more specific route whose range contains public addresses may catch internet traffic; since the destination's address is not known, such a route to a different gateway makes the verdict `undecidable`. Ranges without public addresses never carry internet traffic, and the local route always wins inside the network's own address space. |
+| Gateways and families | A gateway carries the families in its `families` (default: both), so an IPv4-only NAT gateway does not carry IPv6 traffic (`GATEWAY_FAMILY_UNSUPPORTED`). An outbound-only gateway that is not placed in a zone reaches the internet itself, as an egress-only internet gateway does. |
 
-The `address-plan` report lists every zone with its `space` and `size`, and these findings:
+The `address-plan` report lists every zone with its `space`, `size` (IPv4) and `ipv6Space`, and these findings:
 
 - `ADDRESS_SPACE_MISSING`, `ADDRESS_SPACE_INVALID` and `ADDRESS_SPACE_HOST_BITS`;
-- `ADDRESS_SPACE_OUTSIDE_PARENT`: a subnet outside its VPC's range;
+- `IPV6_SPACE_INVALID` and `IPV6_SPACE_WITHOUT_PARENT`: an IPv6 range in a zone whose enclosing zone has none (IPv6 spaces are optional, so a missing one is not reported);
+- `ADDRESS_SPACE_OUTSIDE_PARENT`: a subnet outside its VPC's range, in either family;
 - `ADDRESS_SPACE_OVERLAP`: zones in the same zone that overlap;
 - `NETWORK_OVERLAP`: networks that overlap and so cannot be connected;
 - `ROUTE_DESTINATION_INVALID` and `ROUTE_SHADOWED`: a route inside the network's own range, which the local route overrides.

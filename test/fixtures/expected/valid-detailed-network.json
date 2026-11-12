@@ -9,11 +9,11 @@
         "name": "solution-validator",
         "version": "<version>"
       },
-      "vocabulary": 5,
+      "vocabulary": 6,
       "packs": [
         {
           "id": "aws",
-          "version": "0.5.0"
+          "version": "0.6.0"
         },
         {
           "id": "core",
@@ -471,11 +471,11 @@
         "name": "solution-validator",
         "version": "<version>"
       },
-      "vocabulary": 5,
+      "vocabulary": 6,
       "packs": [
         {
           "id": "aws",
-          "version": "0.5.0"
+          "version": "0.6.0"
         },
         {
           "id": "core",
@@ -933,11 +933,11 @@
         "name": "solution-validator",
         "version": "<version>"
       },
-      "vocabulary": 5,
+      "vocabulary": 6,
       "packs": [
         {
           "id": "aws",
-          "version": "0.5.0"
+          "version": "0.6.0"
         },
         {
           "id": "core",
@@ -1439,7 +1439,7 @@
                 "index": 2,
                 "destination": "10.0.0.0/33"
               },
-              "message": "Route 2 of rt has the destination 10.0.0.0/33, which is neither internet nor an IPv4 range."
+              "message": "Route 2 of rt has the destination 10.0.0.0/33, which is neither internet, an address range nor a service."
             },
             {
               "code": "ROUTE_SHADOWED",

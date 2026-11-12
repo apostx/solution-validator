@@ -1,6 +1,6 @@
 # Roadmap
 
-> **Status:** Approved (initial) · 2026-11-10 · **Current iteration: none** (Iterations 0–10 are done; the next one needs the product owner's approval, for example from the backlog)
+> **Status:** Approved (initial) · 2026-11-10 · **Current iteration: 12 — Terraform export** (Iterations 11–13 approved in this order from the backlog)
 >
 > Iterations 0–4 are approved. Only the current iteration is a commitment. The scope of later iterations may still change and is confirmed before each one starts. Open questions (Q1, Q2, …) are listed in [design.md](design.md#12-open-questions).
 
@@ -43,6 +43,9 @@ Trade-off: the vision's own example (network placement, Security Group and ACL r
 | 8 | Availability analysis | 0.8.0 | Q22 | Done |
 | 9 | Azure pack | 0.9.0 | Q23 | Done |
 | 10 | On-premises pack | 0.10.0 | Q24 | Done |
+| 11 | IPv6 for the detailed level | 0.11.0 | Q25 | Done |
+| 12 | Terraform export | 0.12.0 | to be scoped | Approved |
+| 13 | Role-tag selectors | 0.13.0 | to be scoped | Approved |
 
 ### Iteration 0 — Foundations
 
@@ -151,8 +154,22 @@ The product owner approved Iterations 7–10 in this order after Iteration 6.
 - **Tests:** one web tier task, selecting only by category, is checked against AWS, Azure and on-premises solutions.
 - **Demo:** an on-premises web tier scenario.
 
+### Iteration 11 — IPv6 for the detailed level (0.11.0)
+
+The product owner approved the backlog items as Iterations 11–13, in this order, after Iteration 10.
+
+- **Library:** trait vocabulary 6 adds `zone.ipv6AddressSpace` and `gateway.families`. The detailed level checks IPv6 address plans, matches IPv6 ranges in rules and routes, and checks each address family both ends have (Q25).
+- **Packs:** `aws` 0.6.0 (IPv6 CIDR blocks, egress-only internet gateway, IPv4-only NAT gateway) and `onprem` 0.2.0 (IPv6 prefixes).
+- **Demo:** zones show both address ranges; a dual-stack VPC scenario.
+
+### Iteration 12 — Terraform export (0.12.0)
+
+An optional export of a solution to Terraform, as the vision allows. Scoped when it starts.
+
+### Iteration 13 — Role-tag selectors (0.13.0)
+
+Role tags that the solver assigns to components, and task selectors that match them ([design.md §7](design.md#7-requirements-metadata-and-facts)). Scoped when it starts.
+
 ## Backlog (not scheduled; each item needs approval)
 
-- IPv6 for the detailed level
-- Terraform export
-- Role-tag selectors
+- (empty)

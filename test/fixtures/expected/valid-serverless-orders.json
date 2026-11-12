@@ -9,11 +9,11 @@
         "name": "solution-validator",
         "version": "<version>"
       },
-      "vocabulary": 5,
+      "vocabulary": 6,
       "packs": [
         {
           "id": "aws",
-          "version": "0.5.0"
+          "version": "0.6.0"
         },
         {
           "id": "core",
@@ -547,11 +547,11 @@
         "name": "solution-validator",
         "version": "<version>"
       },
-      "vocabulary": 5,
+      "vocabulary": 6,
       "packs": [
         {
           "id": "aws",
-          "version": "0.5.0"
+          "version": "0.6.0"
         },
         {
           "id": "core",
@@ -1085,11 +1085,11 @@
         "name": "solution-validator",
         "version": "<version>"
       },
-      "vocabulary": 5,
+      "vocabulary": 6,
       "packs": [
         {
           "id": "aws",
-          "version": "0.5.0"
+          "version": "0.6.0"
         },
         {
           "id": "core",

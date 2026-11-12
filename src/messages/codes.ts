@@ -311,6 +311,21 @@ export const FINDING_CODES = {
       "Zone {zone} has the address space {value}, which is not an IPv4 range such as 10.0.0.0/16.",
     description: "Address spaces are IPv4 ranges in CIDR notation; IPv6 is not supported yet.",
   },
+  IPV6_SPACE_INVALID: {
+    severity: "error",
+    source: "address-plan",
+    template:
+      "Zone {zone} has the IPv6 address space {value}, which is not an IPv6 range such as 2001:db8::/56.",
+    description: "The zone's IPv6 address space must be an IPv6 range in CIDR notation.",
+  },
+  IPV6_SPACE_WITHOUT_PARENT: {
+    severity: "error",
+    source: "address-plan",
+    template:
+      "Zone {zone} has the IPv6 address space {space}, but {parent}, the zone it is placed in, has none.",
+    description:
+      "A zone can only have IPv6 addresses when the zone it is placed in has an IPv6 address space.",
+  },
   ADDRESS_SPACE_HOST_BITS: {
     severity: "warning",
     source: "address-plan",
@@ -343,8 +358,9 @@ export const FINDING_CODES = {
     severity: "error",
     source: "address-plan",
     template:
-      "Route {index} of {router} has the destination {destination}, which is neither internet nor an IPv4 range.",
-    description: "Route destinations are internet or IPv4 ranges in CIDR notation.",
+      "Route {index} of {router} has the destination {destination}, which is neither internet, an address range nor a service.",
+    description:
+      "Route destinations are `internet`, IPv4 or IPv6 ranges in CIDR notation, or the ids of services.",
   },
   ROUTE_SHADOWED: {
     severity: "warning",
@@ -567,6 +583,21 @@ export const EVIDENCE_CODES = {
   NAT_ROUTE: {
     template: "{zone} reaches the internet through {gateway}, for outbound connections only.",
     description: "The zone's internet route uses an outbound-only gateway.",
+  },
+  GATEWAY_SERVICES_ONLY: {
+    template:
+      "{gateway} only reaches provider services, so it cannot carry internet traffic from {zone}.",
+    description: "A gateway with `services` is not a route to the internet.",
+  },
+  GATEWAY_FAMILY_UNSUPPORTED: {
+    template: "{gateway} does not carry {family} traffic.",
+    description:
+      "The gateway's `families` do not include the traffic's address family (detailed level).",
+  },
+  ADDRESS_FAMILY: {
+    template: "Over {family}:",
+    description:
+      "Both ends have IPv4 and IPv6 at the detailed level; the evidence that follows is for this address family.",
   },
   DIRECT_INTERNET: {
     template: "{component} reaches the internet through its public address in {zone}.",

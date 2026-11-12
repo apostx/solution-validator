@@ -171,7 +171,7 @@ describe("access", () => {
     const registry = createRegistry([
       ...officialPacks,
       testPack({
-        requires: { aws: "^0.5.0" },
+        requires: { aws: "^0.6.0" },
         vocabulary: 2,
         types: [{ id: "acme.net", label: "Net", category: "network", traits: { zone: {} } }],
       }),
@@ -201,7 +201,7 @@ describe("access", () => {
     const registry = createRegistry([
       ...officialPacks,
       testPack({
-        requires: { aws: "^0.5.0" },
+        requires: { aws: "^0.6.0" },
         types: [
           {
             id: "acme.worker",

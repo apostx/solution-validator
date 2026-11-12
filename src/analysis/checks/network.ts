@@ -3,6 +3,7 @@ import type { Component } from "../../core/solution-schema";
 import type { Traits } from "../../core/traits";
 import { compareStrings } from "../../util/compare";
 import {
+  type AddressFamily,
   type Cidr,
   cidrContains,
   cidrOverlaps,
@@ -11,7 +12,7 @@ import {
   type PortRange,
   parseCidr,
   parsePortRange,
-} from "../../util/ipv4";
+} from "../../util/ip";
 import { isObject } from "../../util/json";
 import { invalidValue, type MissingProperty } from "../parameters";
 import { combineVerdicts, createEvidence, type Evidence, type Verdict } from "../verdict";
@@ -54,6 +55,19 @@ export function combineSteps(steps: readonly Step[]): Step {
   };
 }
 
+/**
+ * Alternatives where one is enough, such as the address families traffic may use: `pass` if any
+ * passes, `fail` if all fail, otherwise `undecidable`.
+ */
+export function anySteps(steps: readonly Step[]): Step {
+  const passed = steps.find((s) => s.verdict === "pass");
+  if (passed) return passed;
+  const open = steps.filter((s) => s.verdict === "undecidable");
+  return open.length > 0
+    ? { ...combineSteps(open), verdict: "undecidable" }
+    : { ...combineSteps(steps), verdict: "fail" };
+}
+
 /** A side of a connection: a component at a position, or an anonymous party outside. */
 export interface Party {
   component?: Component;
@@ -83,9 +97,29 @@ interface FilterInfo {
 
 export class Network {
   readonly #context: AccessContext;
+  /** The address family of the traffic, at the detailed level. */
+  readonly family: AddressFamily;
 
-  constructor(context: AccessContext) {
+  constructor(context: AccessContext, family: AddressFamily = 4) {
     this.#context = context;
+    this.family = family;
+  }
+
+  /** The same network, for traffic of another address family. */
+  withFamily(family: AddressFamily): Network {
+    return family === this.family ? this : new Network(this.#context, family);
+  }
+
+  /**
+   * The address families a party can use at the detailed level. Every zone has IPv4; a zone has
+   * IPv6 when it or a zone it is placed in has an IPv6 address space. Parties outside every zone
+   * (the internet, provider services) have both. At the logical level only IPv4 is checked.
+   */
+  familiesOf(party: Party): AddressFamily[] {
+    if (this.#context.level !== "detailed") return [4];
+    if (party.position === undefined) return [4, 6];
+    const ipv6 = this.#spaceOf(party.position, 6);
+    return ipv6.known && ipv6.value ? [4, 6] : [4];
   }
 
   // Zones
@@ -167,18 +201,34 @@ export class Network {
     return this.#resolve(component, type, parameter);
   }
 
-  /** The address space of the innermost zone of a position that has one (detailed level). */
+  /**
+   * The address space of the innermost zone of a position that has one, for the traffic's
+   * address family (detailed level).
+   */
   addressOf(position: string): Resolved<{ zone: string; cidr: Cidr } | undefined> {
+    return this.#spaceOf(position, this.family);
+  }
+
+  #spaceOf(
+    position: string,
+    family: AddressFamily,
+  ): Resolved<{ zone: string; cidr: Cidr } | undefined> {
     for (const zone of this.chain(position)) {
       const component = this.#component(zone);
       const type = component && this.#type(component);
-      const parameter = type?.traits.zone?.addressSpace;
+      const parameter =
+        family === 4 ? type?.traits.zone?.addressSpace : type?.traits.zone?.ipv6AddressSpace;
       if (!component || !type || parameter === undefined) continue;
       const value = this.#resolve(component, type, parameter);
+      // IPv6 is optional: a zone whose type has an IPv6 address space but leaves it unset has no
+      // IPv6 addresses, even when the zone it is placed in has some.
+      if (family === 6 && (!value.known || typeof value.value !== "string")) {
+        return { known: true, value: undefined, evidence: [] };
+      }
       if (!value.known) return value;
       if (typeof value.value !== "string") continue;
       const cidr = parseCidr(value.value);
-      if (!cidr) {
+      if (cidr?.family !== family) {
         return {
           known: false,
           step: step("undecidable", invalidValue(component, parameter).evidence),
@@ -327,6 +377,9 @@ export class Network {
    * unknown public addresses, so only ranges without public addresses decide for them.
    */
   #cidrMatches(cidr: Cidr, party: Party): Resolved<boolean> {
+    const detailed = this.#context.level === "detailed";
+    // A range only matches traffic of its own address family; the logical level checks IPv4.
+    if (cidr.family !== this.family) return { known: true, value: false, evidence: [] };
     if (cidr.prefix === 0) return { known: true, value: true, evidence: [] };
     const name = party.component?.id ?? "the internet";
     const unknown = (code: "CIDR_NEEDS_DETAILED" | "PEER_ADDRESS_UNKNOWN") => ({
@@ -336,7 +389,7 @@ export class Network {
         addressUnknown: true,
       },
     });
-    if (this.#context.level !== "detailed") return unknown("CIDR_NEEDS_DETAILED");
+    if (!detailed) return unknown("CIDR_NEEDS_DETAILED");
     if (party.position === undefined) {
       return containsPublic(cidr)
         ? unknown("PEER_ADDRESS_UNKNOWN")
@@ -564,7 +617,8 @@ export class Network {
   }
 
   /**
-   * The route internet traffic takes. `internet` and `0.0.0.0/0` are default routes. At the
+   * The route internet traffic takes. `internet` is a default route for both address families,
+   * `0.0.0.0/0` for IPv4 and `::/0` for IPv6 (detailed level). At the
    * detailed level, a more specific route whose range contains public addresses may catch the
    * traffic; the destination's address is not known, so a different gateway there makes the
    * choice ambiguous. Ranges without public addresses never carry internet traffic.
@@ -572,15 +626,19 @@ export class Network {
   #internetRoute(
     routes: readonly Record<string, unknown>[],
   ): Record<string, unknown> | undefined | "ambiguous" {
-    const isDefault = (route: Record<string, unknown>) =>
-      route.destination === "internet" ||
-      (typeof route.destination === "string" && parseCidr(route.destination)?.prefix === 0);
+    const family = this.family;
+    const rangeOf = (route: Record<string, unknown>) =>
+      typeof route.destination === "string" ? parseCidr(route.destination) : undefined;
+    const isDefault = (route: Record<string, unknown>) => {
+      if (route.destination === "internet") return true;
+      const cidr = rangeOf(route);
+      return cidr?.prefix === 0 && cidr.family === family;
+    };
     const fallback = routes.find(isDefault);
     if (this.#context.level !== "detailed") return fallback;
     const specific = routes.filter((route) => {
-      if (isDefault(route) || typeof route.destination !== "string") return false;
-      const cidr = parseCidr(route.destination);
-      return cidr !== undefined && containsPublic(cidr);
+      const cidr = rangeOf(route);
+      return !isDefault(route) && cidr?.family === family && containsPublic(cidr);
     });
     if (specific.some((route) => route.gateway !== fallback?.gateway)) return "ambiguous";
     return fallback;
@@ -751,7 +809,9 @@ export class Network {
       if (seen.has(component.id)) continue;
       seen.add(component.id);
       const type = this.#type(component);
-      if (type?.traits.gateway?.implicit) gateways.push({ component, type });
+      const params = type?.traits.gateway;
+      const carries = params?.families?.includes(this.family) ?? true;
+      if (type && params?.implicit && carries) gateways.push({ component, type });
     }
     gateways.sort((a, b) => compareStrings(a.component.id, b.component.id));
     for (const current of this.chain(zone)) {
@@ -795,6 +855,18 @@ export class Network {
         createEvidence("GATEWAY_NOT_ATTACHED", { gateway: id, network: network ?? zone }),
       ]);
     }
+    if (params.services !== undefined) {
+      return step("fail", [
+        ...how.evidence,
+        createEvidence("GATEWAY_SERVICES_ONLY", { gateway: id, zone }),
+      ]);
+    }
+    if (params.families && !params.families.includes(this.family)) {
+      return step("fail", [
+        ...how.evidence,
+        createEvidence("GATEWAY_FAMILY_UNSUPPORTED", { gateway: id, family: `IPv${this.family}` }),
+      ]);
+    }
     const directionValue = this.#resolve(gateway, type, params.direction);
     if (!directionValue.known) return directionValue.step;
     const evidence = [...how.evidence, ...connects.evidence, ...directionValue.evidence];
@@ -827,12 +899,15 @@ export class Network {
       ]);
     }
     const nat = step("pass", [...evidence, createEvidence("NAT_ROUTE", { zone, gateway: id })]);
-    if (how.implicit) return combineSteps([nat, throughGateway()]);
+    // An outbound-only gateway that is not placed in a zone reaches the internet itself (an
+    // implicit NAT gateway, an egress-only internet gateway); one placed in a zone uses that
+    // zone's internet route.
     const home = this.placements(gateway)[0];
-    if (home === undefined || depth > 0) {
+    if (how.implicit || home === undefined) return combineSteps([nat, throughGateway()]);
+    if (depth > 0) {
       return step("fail", [
         ...evidence,
-        createEvidence("NAT_WITHOUT_INTERNET", { gateway: id, zone: home ?? zone }),
+        createEvidence("NAT_WITHOUT_INTERNET", { gateway: id, zone: home }),
       ]);
     }
     const onward = this.internet(home, "outbound", peer, ports, depth + 1);
