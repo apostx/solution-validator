@@ -9,7 +9,7 @@
         "name": "solution-validator",
         "version": "<version>"
       },
-      "vocabulary": 5,
+      "vocabulary": 6,
       "packs": [
         {
           "id": "azure",
@@ -951,7 +951,7 @@
         "name": "solution-validator",
         "version": "<version>"
       },
-      "vocabulary": 5,
+      "vocabulary": 6,
       "packs": [
         {
           "id": "azure",
@@ -1893,7 +1893,7 @@
         "name": "solution-validator",
         "version": "<version>"
       },
-      "vocabulary": 5,
+      "vocabulary": 6,
       "packs": [
         {
           "id": "azure",

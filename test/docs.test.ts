@@ -30,7 +30,7 @@ describe("finding codes", () => {
   it.each(Object.entries(FINDING_CODES))(
     "%s has a template and description",
     (code, definition) => {
-      expect(code).toMatch(/^[A-Z][A-Z_]*$/);
+      expect(code).toMatch(/^[A-Z][A-Z0-9_]*$/);
       expect(definition.template.length).toBeGreaterThan(0);
       expect(definition.description).toMatch(/\.$/);
     },

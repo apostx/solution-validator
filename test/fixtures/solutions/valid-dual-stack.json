@@ -1,0 +1,193 @@
+{
+  "$schema": "../../../schemas/solution.schema.json",
+  "schemaVersion": 1,
+  "packs": ["core", "aws"],
+  "components": [
+    {
+      "id": "users",
+      "type": "core.internet"
+    },
+    {
+      "id": "vpc",
+      "type": "aws.vpc",
+      "properties": {
+        "cidrBlock": "10.0.0.0/16",
+        "ipv6CidrBlock": "2600:1f18:1234:5600::/56"
+      }
+    },
+    {
+      "id": "public",
+      "type": "aws.subnet",
+      "placement": ["vpc"],
+      "properties": {
+        "cidrBlock": "10.0.1.0/24",
+        "ipv6CidrBlock": "2600:1f18:1234:5601::/64",
+        "availabilityZone": "us-east-1a"
+      }
+    },
+    {
+      "id": "private",
+      "type": "aws.subnet",
+      "placement": ["vpc"],
+      "properties": {
+        "cidrBlock": "10.0.2.0/24",
+        "ipv6CidrBlock": "2600:1f18:1234:5602::/64",
+        "availabilityZone": "us-east-1a"
+      }
+    },
+    {
+      "id": "legacy",
+      "type": "aws.subnet",
+      "placement": ["vpc"],
+      "properties": {
+        "cidrBlock": "10.0.3.0/24",
+        "availabilityZone": "us-east-1a"
+      }
+    },
+    {
+      "id": "igw",
+      "type": "aws.internet-gateway",
+      "properties": {
+        "attachedTo": ["vpc"]
+      }
+    },
+    {
+      "id": "eigw",
+      "type": "aws.egress-only-internet-gateway",
+      "properties": {
+        "attachedTo": ["vpc"]
+      }
+    },
+    {
+      "id": "public-rt",
+      "type": "aws.route-table",
+      "properties": {
+        "routes": [
+          {
+            "destination": "0.0.0.0/0",
+            "gateway": "igw"
+          },
+          {
+            "destination": "::/0",
+            "gateway": "igw"
+          }
+        ],
+        "associations": ["public"]
+      }
+    },
+    {
+      "id": "private-rt",
+      "type": "aws.route-table",
+      "properties": {
+        "routes": [
+          {
+            "destination": "::/0",
+            "gateway": "eigw"
+          }
+        ],
+        "associations": ["private", "legacy"]
+      }
+    },
+    {
+      "id": "web",
+      "type": "aws.ec2",
+      "placement": ["public"],
+      "properties": {
+        "endpoint": "public",
+        "permissions": []
+      }
+    },
+    {
+      "id": "worker",
+      "type": "aws.ec2",
+      "placement": ["private"],
+      "properties": {
+        "endpoint": "private",
+        "permissions": [
+          {
+            "resource": "bucket",
+            "access": "read"
+          }
+        ]
+      }
+    },
+    {
+      "id": "batch",
+      "type": "aws.ec2",
+      "placement": ["legacy"],
+      "properties": {
+        "endpoint": "private",
+        "permissions": [
+          {
+            "resource": "bucket",
+            "access": "read"
+          }
+        ]
+      }
+    },
+    {
+      "id": "bucket",
+      "type": "aws.s3",
+      "properties": {
+        "publicAccess": false
+      }
+    },
+    {
+      "id": "web-sg",
+      "type": "aws.security-group",
+      "properties": {
+        "rules": [
+          {
+            "direction": "inbound",
+            "peer": "::/0",
+            "ports": ["https"]
+          },
+          {
+            "direction": "outbound",
+            "peer": "any"
+          }
+        ],
+        "attachedTo": ["web"]
+      }
+    },
+    {
+      "id": "worker-sg",
+      "type": "aws.security-group",
+      "properties": {
+        "rules": [
+          {
+            "direction": "outbound",
+            "peer": "any"
+          }
+        ],
+        "attachedTo": ["worker", "batch"]
+      }
+    }
+  ],
+  "intents": [
+    {
+      "id": "users-web",
+      "from": "users",
+      "to": "web",
+      "port": "https"
+    },
+    {
+      "id": "worker-bucket",
+      "from": "worker",
+      "to": "bucket",
+      "action": "read"
+    },
+    {
+      "id": "batch-bucket",
+      "from": "batch",
+      "to": "bucket",
+      "action": "read"
+    },
+    {
+      "id": "users-worker",
+      "from": "users",
+      "to": "worker",
+      "port": "https"
+    }
+  ]
+}
