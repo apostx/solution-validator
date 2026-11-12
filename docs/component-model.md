@@ -52,7 +52,7 @@ const parsed = parseSolution(json, registry);
 
 | Trait | What the engine evaluates | Key parameters / properties |
 |---|---|---|
-| `zone` | A network area that contains components. Members can reach each other at the routing level, subject to filters. | parent zone (through placement); address space (detailed level) |
+| `zone` | A network area that contains components. Members can reach each other at the routing level, subject to filters. | parent zone (through placement); address space (detailed level); failure domain |
 | `gateway` | Connects a zone to another zone or to an external network. | direction: `both` or `outbound-only`; what it connects |
 | `router` | Decides which gateway traffic leaving a zone uses. | routes: destination → gateway; the zones it serves |
 | `traffic-filter` | Allows or denies traffic by source, destination and port. | stateful or stateless; attaches to `component`, `zone` or `self` (traffic passing through it); what it is attached to; rules; default policy |
@@ -61,6 +61,7 @@ const parsed = parseSolution(json, registry);
 | `principal` | Has an identity that can be granted access. | grants: resource + access level |
 | `access-controlled` | Requires a grant, a resource policy or a public setting before others can use it. | public access; logical resource policy |
 | `group` | A set of equivalent instances. | members or size; zones spanned |
+| `redundancy` | Whether a component survives the loss of one failure domain on its own. | managed by the provider; one instance or spread over its placements |
 
 ### How an intent is verified
 
@@ -140,8 +141,10 @@ The table below checks whether the proposed vocabulary covers the components the
 | NoSQL database | DynamoDB | Cosmos DB | Database server | `endpoint` + `access-controlled` |
 | Object storage | S3 | Blob Storage | File / object server | `endpoint` + `access-controlled` |
 | Workload identity | IAM role | Managed identity | Service account | grants on `principal` |
+| Failure domain | Availability zone (on a subnet) | Availability zone | Data center, rack | `zone` (`failureDomain`) |
+| Provider-managed redundancy | S3, DynamoDB, Lambda | Blob Storage (ZRS), Cosmos DB | — | `redundancy` (`managed`) |
 
-Every row maps onto the nine traits. No row needs provider-specific engine code.
+Every row maps onto the traits. No row needs provider-specific engine code.
 
 ## 7. Limits
 

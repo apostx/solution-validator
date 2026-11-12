@@ -332,6 +332,14 @@ These details implement the decisions above. They are not product decisions; ope
 - **New AWS types** use existing traits only: CloudFront and the Application Load Balancer are forwarders (a CloudFront origin with origin access control and an ALB target are authorized by their routes), EC2 is like a single instance of an Auto Scaling group, and RDS is a placed data store reached on database ports. Database credentials are not modeled, so RDS has no access control.
 - **Known simplifications:** an internal ALB invoking a Lambda function needs an internet route in this model, because Lambda is reached at the provider; RDS accepts both database ports regardless of `engine`.
 
+### Implementation notes (Iteration 8)
+
+- **Trait vocabulary 4** adds `zone.failureDomain` and the `redundancy` trait (`managed`, `spread`), so packs say where failure domains are and which services the provider makes redundant (Q22).
+- **The `availability` analysis** runs at both levels. It lists the failure domains of every running component, warns about single points of failure on the paths of passing intents (their ends and the gateways the access check routed them through), and about zones that reach the internet through an outbound-only gateway in another failure domain.
+- **The `redundant` requirement** checks that every selected component is `managed` or `redundant`, so tasks can ask for high availability without naming a provider.
+- **What it does not claim:** failover, health checks, capacity and recovery times are not modeled. An intent depends on its two ends and the gateways it passes; chains of intents are not followed.
+- **AWS pack 0.5.0** binds a subnet's `availabilityZone` as its failure domain, marks the regional services as managed, and makes EC2 a single instance and RDS a single instance unless `multiAz` is set.
+
 ## 11. Out of scope for the first version
 
 - Scoring, weighting and complexity metrics (consumers build these; see [§7](#7-requirements-metadata-and-facts))
@@ -359,10 +367,11 @@ These details implement the decisions above. They are not product decisions; ope
 | Q12 | Shape of the metadata and facts query. | Decided (initial) | §7 |
 | Q13 | Build tool: tsup's README now says it is no longer actively maintained and recommends tsdown. tsup 9 works, with TypeScript 6. Proposal: switch to tsdown when the build needs more than tsup offers, or before TypeScript 6 stops being supported. | Proposed | §10 |
 | Q14 | SPDX license identifier in `package.json`. `AGPL-3.0-only` is implemented. `AGPL-3.0-or-later` would let users apply later AGPL versions. To confirm before the first npm release. | Proposed | §10 |
-| Q15 | How traffic filters and routers are attached: the filter or router lists what it applies to (`traffic-filter.targets`, `router.zones`), keeping all network wiring in the network traits; this matches how AWS associates network ACLs and route tables. | Decided (initial) | [formats.md](formats.md#trait-parameters-vocabulary-2) |
-| Q16 | Filter rule vocabulary: `direction`, `peer` (`any`, `internet` or the id of a component, zone or filter), optional `ports` and `effect`; rules in order, first match decides, then the default policy; stateless filters also check the return traffic. | Decided (initial) | [formats.md](formats.md#trait-parameters-vocabulary-2) |
+| Q15 | How traffic filters and routers are attached: the filter or router lists what it applies to (`traffic-filter.targets`, `router.zones`), keeping all network wiring in the network traits; this matches how AWS associates network ACLs and route tables. | Decided (initial) | [formats.md](formats.md#trait-parameters-vocabulary-4) |
+| Q16 | Filter rule vocabulary: `direction`, `peer` (`any`, `internet` or the id of a component, zone or filter), optional `ports` and `effect`; rules in order, first match decides, then the default policy; stateless filters also check the return traffic. | Decided (initial) | [formats.md](formats.md#trait-parameters-vocabulary-4) |
 | Q18 | Address family for the detailed level: IPv4 only for now; IPv6 can follow as its own step. | Decided (initial) | §6 |
 | Q19 | Return traffic through stateless filters at the detailed level uses the ephemeral ports 1024–65535; a rule must cover the whole range. | Decided (initial) | [formats.md](formats.md#detailed-level) |
 | Q20 | Matching address ranges when an address is unknown (parties outside every zone, or a range that covers part of a zone): `undecidable`, never a guess; route choice for internet traffic is `undecidable` when a more specific public route leads elsewhere. | Decided (initial) | [formats.md](formats.md#detailed-level) |
-| Q21 | Private access to provider services (VPC endpoints): a gateway lists the services it reaches (`gateway.services`), and a route whose destination is such a service sends that traffic through it, without the internet. | Decided (initial) | [formats.md](formats.md#trait-parameters-vocabulary-3) |
+| Q21 | Private access to provider services (VPC endpoints): a gateway lists the services it reaches (`gateway.services`), and a route whose destination is such a service sends that traffic through it, without the internet. | Decided (initial) | [formats.md](formats.md#trait-parameters-vocabulary-4) |
+| Q22 | Availability: zones name their failure domain (`zone.failureDomain`); types say whether the provider makes them redundant (`redundancy.managed`) or run one instance whatever their placement (`redundancy.spread: false`). A component is redundant in two or more failure domains; findings are warnings, and the library does not score them. | Decided (initial) | [formats.md](formats.md#availability) |
 | Q17 | Groups and multiple placements: an intent through a group or a component in several zones passes only if every member or placement passes. | Decided (initial) | [formats.md](formats.md#access-checks-logical-level) |
