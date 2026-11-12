@@ -9,11 +9,11 @@
         "name": "solution-validator",
         "version": "<version>"
       },
-      "vocabulary": 3,
+      "vocabulary": 4,
       "packs": [
         {
           "id": "aws",
-          "version": "0.4.0"
+          "version": "0.5.0"
         },
         {
           "id": "core",
@@ -25,7 +25,8 @@
         "analyses": [
           "model-validity",
           "connection-validity",
-          "access"
+          "access",
+          "availability"
         ],
         "assumptions": "strict"
       },
@@ -412,6 +413,56 @@
               "message": "Intent web-app-metrics cannot be decided: an address range in a traffic filter or route cannot be matched with the addresses given."
             }
           ]
+        },
+        {
+          "id": "availability",
+          "components": [
+            {
+              "component": "app",
+              "availability": "undecidable",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "PROPERTY_UNSET",
+                  "params": {
+                    "component": "app-subnet",
+                    "property": "availabilityZone"
+                  },
+                  "message": "app-subnet does not set availabilityZone."
+                }
+              ]
+            },
+            {
+              "component": "igw",
+              "availability": "managed",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "MANAGED_SERVICE",
+                  "params": {
+                    "component": "igw"
+                  },
+                  "message": "The provider runs igw across failure domains."
+                }
+              ]
+            },
+            {
+              "component": "web",
+              "availability": "undecidable",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "PROPERTY_UNSET",
+                  "params": {
+                    "component": "web-subnet",
+                    "property": "availabilityZone"
+                  },
+                  "message": "web-subnet does not set availabilityZone."
+                }
+              ]
+            }
+          ],
+          "findings": []
         }
       ]
     },
@@ -420,11 +471,11 @@
         "name": "solution-validator",
         "version": "<version>"
       },
-      "vocabulary": 3,
+      "vocabulary": 4,
       "packs": [
         {
           "id": "aws",
-          "version": "0.4.0"
+          "version": "0.5.0"
         },
         {
           "id": "core",
@@ -436,7 +487,8 @@
         "analyses": [
           "model-validity",
           "connection-validity",
-          "access"
+          "access",
+          "availability"
         ],
         "assumptions": "pack-defaults"
       },
@@ -823,6 +875,56 @@
               "message": "Intent web-app-metrics cannot be decided: an address range in a traffic filter or route cannot be matched with the addresses given."
             }
           ]
+        },
+        {
+          "id": "availability",
+          "components": [
+            {
+              "component": "app",
+              "availability": "undecidable",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "PROPERTY_UNSET",
+                  "params": {
+                    "component": "app-subnet",
+                    "property": "availabilityZone"
+                  },
+                  "message": "app-subnet does not set availabilityZone."
+                }
+              ]
+            },
+            {
+              "component": "igw",
+              "availability": "managed",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "MANAGED_SERVICE",
+                  "params": {
+                    "component": "igw"
+                  },
+                  "message": "The provider runs igw across failure domains."
+                }
+              ]
+            },
+            {
+              "component": "web",
+              "availability": "undecidable",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "PROPERTY_UNSET",
+                  "params": {
+                    "component": "web-subnet",
+                    "property": "availabilityZone"
+                  },
+                  "message": "web-subnet does not set availabilityZone."
+                }
+              ]
+            }
+          ],
+          "findings": []
         }
       ]
     },
@@ -831,11 +933,11 @@
         "name": "solution-validator",
         "version": "<version>"
       },
-      "vocabulary": 3,
+      "vocabulary": 4,
       "packs": [
         {
           "id": "aws",
-          "version": "0.4.0"
+          "version": "0.5.0"
         },
         {
           "id": "core",
@@ -848,7 +950,8 @@
           "model-validity",
           "connection-validity",
           "access",
-          "address-plan"
+          "address-plan",
+          "availability"
         ],
         "assumptions": "strict"
       },
@@ -1353,6 +1456,56 @@
               "message": "Route 10.0.5.0/24 of rt lies within 10.0.0.0/16, the address space of vpc; the local route takes that traffic."
             }
           ]
+        },
+        {
+          "id": "availability",
+          "components": [
+            {
+              "component": "app",
+              "availability": "undecidable",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "PROPERTY_UNSET",
+                  "params": {
+                    "component": "app-subnet",
+                    "property": "availabilityZone"
+                  },
+                  "message": "app-subnet does not set availabilityZone."
+                }
+              ]
+            },
+            {
+              "component": "igw",
+              "availability": "managed",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "MANAGED_SERVICE",
+                  "params": {
+                    "component": "igw"
+                  },
+                  "message": "The provider runs igw across failure domains."
+                }
+              ]
+            },
+            {
+              "component": "web",
+              "availability": "undecidable",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "PROPERTY_UNSET",
+                  "params": {
+                    "component": "web-subnet",
+                    "property": "availabilityZone"
+                  },
+                  "message": "web-subnet does not set availabilityZone."
+                }
+              ]
+            }
+          ],
+          "findings": []
         }
       ]
     }

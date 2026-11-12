@@ -84,7 +84,7 @@ describe("analyze", () => {
     expect(result.packs).toEqual([{ id: "core", version: "0.2.0" }]);
     expect(result.options).toEqual({
       level: "logical",
-      analyses: ["model-validity", "connection-validity", "access"],
+      analyses: ["model-validity", "connection-validity", "access", "availability"],
       assumptions: "strict",
     });
   });
@@ -110,6 +110,7 @@ describe("analyze", () => {
       "connection-validity",
       "access",
       "address-plan",
+      "availability",
     ]);
   });
 });

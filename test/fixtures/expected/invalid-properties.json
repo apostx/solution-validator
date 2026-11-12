@@ -9,11 +9,11 @@
         "name": "solution-validator",
         "version": "<version>"
       },
-      "vocabulary": 3,
+      "vocabulary": 4,
       "packs": [
         {
           "id": "aws",
-          "version": "0.4.0"
+          "version": "0.5.0"
         },
         {
           "id": "core",
@@ -25,7 +25,8 @@
         "analyses": [
           "model-validity",
           "connection-validity",
-          "access"
+          "access",
+          "availability"
         ],
         "assumptions": "strict"
       },
@@ -339,6 +340,54 @@
               "message": "Intent i1: api has no route to fn."
             }
           ]
+        },
+        {
+          "id": "availability",
+          "components": [
+            {
+              "component": "api",
+              "availability": "managed",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "MANAGED_SERVICE",
+                  "params": {
+                    "component": "api"
+                  },
+                  "message": "The provider runs api across failure domains."
+                }
+              ]
+            },
+            {
+              "component": "bucket",
+              "availability": "managed",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "MANAGED_SERVICE",
+                  "params": {
+                    "component": "bucket"
+                  },
+                  "message": "The provider runs bucket across failure domains."
+                }
+              ]
+            },
+            {
+              "component": "fn",
+              "availability": "managed",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "MANAGED_SERVICE",
+                  "params": {
+                    "component": "fn"
+                  },
+                  "message": "The provider runs fn across failure domains."
+                }
+              ]
+            }
+          ],
+          "findings": []
         }
       ]
     },
@@ -347,11 +396,11 @@
         "name": "solution-validator",
         "version": "<version>"
       },
-      "vocabulary": 3,
+      "vocabulary": 4,
       "packs": [
         {
           "id": "aws",
-          "version": "0.4.0"
+          "version": "0.5.0"
         },
         {
           "id": "core",
@@ -363,7 +412,8 @@
         "analyses": [
           "model-validity",
           "connection-validity",
-          "access"
+          "access",
+          "availability"
         ],
         "assumptions": "pack-defaults"
       },
@@ -677,6 +727,54 @@
               "message": "Intent i1: api has no route to fn."
             }
           ]
+        },
+        {
+          "id": "availability",
+          "components": [
+            {
+              "component": "api",
+              "availability": "managed",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "MANAGED_SERVICE",
+                  "params": {
+                    "component": "api"
+                  },
+                  "message": "The provider runs api across failure domains."
+                }
+              ]
+            },
+            {
+              "component": "bucket",
+              "availability": "managed",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "MANAGED_SERVICE",
+                  "params": {
+                    "component": "bucket"
+                  },
+                  "message": "The provider runs bucket across failure domains."
+                }
+              ]
+            },
+            {
+              "component": "fn",
+              "availability": "managed",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "MANAGED_SERVICE",
+                  "params": {
+                    "component": "fn"
+                  },
+                  "message": "The provider runs fn across failure domains."
+                }
+              ]
+            }
+          ],
+          "findings": []
         }
       ]
     },
@@ -685,11 +783,11 @@
         "name": "solution-validator",
         "version": "<version>"
       },
-      "vocabulary": 3,
+      "vocabulary": 4,
       "packs": [
         {
           "id": "aws",
-          "version": "0.4.0"
+          "version": "0.5.0"
         },
         {
           "id": "core",
@@ -702,7 +800,8 @@
           "model-validity",
           "connection-validity",
           "access",
-          "address-plan"
+          "address-plan",
+          "availability"
         ],
         "assumptions": "strict"
       },
@@ -1020,6 +1119,54 @@
         {
           "id": "address-plan",
           "zones": [],
+          "findings": []
+        },
+        {
+          "id": "availability",
+          "components": [
+            {
+              "component": "api",
+              "availability": "managed",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "MANAGED_SERVICE",
+                  "params": {
+                    "component": "api"
+                  },
+                  "message": "The provider runs api across failure domains."
+                }
+              ]
+            },
+            {
+              "component": "bucket",
+              "availability": "managed",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "MANAGED_SERVICE",
+                  "params": {
+                    "component": "bucket"
+                  },
+                  "message": "The provider runs bucket across failure domains."
+                }
+              ]
+            },
+            {
+              "component": "fn",
+              "availability": "managed",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "MANAGED_SERVICE",
+                  "params": {
+                    "component": "fn"
+                  },
+                  "message": "The provider runs fn across failure domains."
+                }
+              ]
+            }
+          ],
           "findings": []
         }
       ]

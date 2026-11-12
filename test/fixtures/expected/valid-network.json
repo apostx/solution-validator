@@ -9,11 +9,11 @@
         "name": "solution-validator",
         "version": "<version>"
       },
-      "vocabulary": 3,
+      "vocabulary": 4,
       "packs": [
         {
           "id": "aws",
-          "version": "0.4.0"
+          "version": "0.5.0"
         },
         {
           "id": "core",
@@ -25,7 +25,8 @@
         "analyses": [
           "model-validity",
           "connection-validity",
-          "access"
+          "access",
+          "availability"
         ],
         "assumptions": "strict"
       },
@@ -783,6 +784,113 @@
               "message": "web is directly accessible from the internet."
             }
           ]
+        },
+        {
+          "id": "availability",
+          "components": [
+            {
+              "component": "app",
+              "availability": "undecidable",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "PROPERTY_UNSET",
+                  "params": {
+                    "component": "private-a",
+                    "property": "availabilityZone"
+                  },
+                  "message": "private-a does not set availabilityZone."
+                }
+              ]
+            },
+            {
+              "component": "batch",
+              "availability": "managed",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "MANAGED_SERVICE",
+                  "params": {
+                    "component": "batch"
+                  },
+                  "message": "The provider runs batch across failure domains."
+                }
+              ]
+            },
+            {
+              "component": "igw",
+              "availability": "managed",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "MANAGED_SERVICE",
+                  "params": {
+                    "component": "igw"
+                  },
+                  "message": "The provider runs igw across failure domains."
+                }
+              ]
+            },
+            {
+              "component": "nat",
+              "availability": "undecidable",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "PROPERTY_UNSET",
+                  "params": {
+                    "component": "public-a",
+                    "property": "availabilityZone"
+                  },
+                  "message": "public-a does not set availabilityZone."
+                }
+              ]
+            },
+            {
+              "component": "orders-table",
+              "availability": "managed",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "MANAGED_SERVICE",
+                  "params": {
+                    "component": "orders-table"
+                  },
+                  "message": "The provider runs orders-table across failure domains."
+                }
+              ]
+            },
+            {
+              "component": "web",
+              "availability": "undecidable",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "PROPERTY_UNSET",
+                  "params": {
+                    "component": "public-a",
+                    "property": "availabilityZone"
+                  },
+                  "message": "public-a does not set availabilityZone."
+                }
+              ]
+            },
+            {
+              "component": "worker",
+              "availability": "managed",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "MANAGED_SERVICE",
+                  "params": {
+                    "component": "worker"
+                  },
+                  "message": "The provider runs worker across failure domains."
+                }
+              ]
+            }
+          ],
+          "findings": []
         }
       ]
     },
@@ -791,11 +899,11 @@
         "name": "solution-validator",
         "version": "<version>"
       },
-      "vocabulary": 3,
+      "vocabulary": 4,
       "packs": [
         {
           "id": "aws",
-          "version": "0.4.0"
+          "version": "0.5.0"
         },
         {
           "id": "core",
@@ -807,7 +915,8 @@
         "analyses": [
           "model-validity",
           "connection-validity",
-          "access"
+          "access",
+          "availability"
         ],
         "assumptions": "pack-defaults"
       },
@@ -1565,6 +1674,113 @@
               "message": "web is directly accessible from the internet."
             }
           ]
+        },
+        {
+          "id": "availability",
+          "components": [
+            {
+              "component": "app",
+              "availability": "undecidable",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "PROPERTY_UNSET",
+                  "params": {
+                    "component": "private-a",
+                    "property": "availabilityZone"
+                  },
+                  "message": "private-a does not set availabilityZone."
+                }
+              ]
+            },
+            {
+              "component": "batch",
+              "availability": "managed",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "MANAGED_SERVICE",
+                  "params": {
+                    "component": "batch"
+                  },
+                  "message": "The provider runs batch across failure domains."
+                }
+              ]
+            },
+            {
+              "component": "igw",
+              "availability": "managed",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "MANAGED_SERVICE",
+                  "params": {
+                    "component": "igw"
+                  },
+                  "message": "The provider runs igw across failure domains."
+                }
+              ]
+            },
+            {
+              "component": "nat",
+              "availability": "undecidable",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "PROPERTY_UNSET",
+                  "params": {
+                    "component": "public-a",
+                    "property": "availabilityZone"
+                  },
+                  "message": "public-a does not set availabilityZone."
+                }
+              ]
+            },
+            {
+              "component": "orders-table",
+              "availability": "managed",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "MANAGED_SERVICE",
+                  "params": {
+                    "component": "orders-table"
+                  },
+                  "message": "The provider runs orders-table across failure domains."
+                }
+              ]
+            },
+            {
+              "component": "web",
+              "availability": "undecidable",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "PROPERTY_UNSET",
+                  "params": {
+                    "component": "public-a",
+                    "property": "availabilityZone"
+                  },
+                  "message": "public-a does not set availabilityZone."
+                }
+              ]
+            },
+            {
+              "component": "worker",
+              "availability": "managed",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "MANAGED_SERVICE",
+                  "params": {
+                    "component": "worker"
+                  },
+                  "message": "The provider runs worker across failure domains."
+                }
+              ]
+            }
+          ],
+          "findings": []
         }
       ]
     },
@@ -1573,11 +1789,11 @@
         "name": "solution-validator",
         "version": "<version>"
       },
-      "vocabulary": 3,
+      "vocabulary": 4,
       "packs": [
         {
           "id": "aws",
-          "version": "0.4.0"
+          "version": "0.5.0"
         },
         {
           "id": "core",
@@ -1590,7 +1806,8 @@
           "model-validity",
           "connection-validity",
           "access",
-          "address-plan"
+          "address-plan",
+          "availability"
         ],
         "assumptions": "strict"
       },
@@ -2374,6 +2591,113 @@
               "zone": "vpc",
               "space": "10.0.0.0/16",
               "size": 65536
+            }
+          ],
+          "findings": []
+        },
+        {
+          "id": "availability",
+          "components": [
+            {
+              "component": "app",
+              "availability": "undecidable",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "PROPERTY_UNSET",
+                  "params": {
+                    "component": "private-a",
+                    "property": "availabilityZone"
+                  },
+                  "message": "private-a does not set availabilityZone."
+                }
+              ]
+            },
+            {
+              "component": "batch",
+              "availability": "managed",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "MANAGED_SERVICE",
+                  "params": {
+                    "component": "batch"
+                  },
+                  "message": "The provider runs batch across failure domains."
+                }
+              ]
+            },
+            {
+              "component": "igw",
+              "availability": "managed",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "MANAGED_SERVICE",
+                  "params": {
+                    "component": "igw"
+                  },
+                  "message": "The provider runs igw across failure domains."
+                }
+              ]
+            },
+            {
+              "component": "nat",
+              "availability": "undecidable",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "PROPERTY_UNSET",
+                  "params": {
+                    "component": "public-a",
+                    "property": "availabilityZone"
+                  },
+                  "message": "public-a does not set availabilityZone."
+                }
+              ]
+            },
+            {
+              "component": "orders-table",
+              "availability": "managed",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "MANAGED_SERVICE",
+                  "params": {
+                    "component": "orders-table"
+                  },
+                  "message": "The provider runs orders-table across failure domains."
+                }
+              ]
+            },
+            {
+              "component": "web",
+              "availability": "undecidable",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "PROPERTY_UNSET",
+                  "params": {
+                    "component": "public-a",
+                    "property": "availabilityZone"
+                  },
+                  "message": "public-a does not set availabilityZone."
+                }
+              ]
+            },
+            {
+              "component": "worker",
+              "availability": "managed",
+              "domains": [],
+              "evidence": [
+                {
+                  "code": "MANAGED_SERVICE",
+                  "params": {
+                    "component": "worker"
+                  },
+                  "message": "The provider runs worker across failure domains."
+                }
+              ]
             }
           ],
           "findings": []

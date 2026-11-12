@@ -6,12 +6,14 @@
       "category": "edge",
       "traits": [
         "endpoint",
-        "forwarder"
+        "forwarder",
+        "redundancy"
       ],
       "meta": {},
       "incoming": 1,
       "outgoing": 1,
-      "exposure": "exposed"
+      "exposure": "exposed",
+      "availability": "managed"
     },
     {
       "id": "orders-fn",
@@ -20,14 +22,16 @@
       "traits": [
         "access-controlled",
         "endpoint",
-        "principal"
+        "principal",
+        "redundancy"
       ],
       "meta": {
         "points": 2
       },
       "incoming": 1,
       "outgoing": 2,
-      "exposure": "not-exposed"
+      "exposure": "not-exposed",
+      "availability": "managed"
     },
     {
       "id": "orders-table",
@@ -35,12 +39,14 @@
       "category": "data-store",
       "traits": [
         "access-controlled",
-        "endpoint"
+        "endpoint",
+        "redundancy"
       ],
       "meta": {},
       "incoming": 1,
       "outgoing": 0,
-      "exposure": "not-exposed"
+      "exposure": "not-exposed",
+      "availability": "managed"
     },
     {
       "id": "uploads",
@@ -48,12 +54,14 @@
       "category": "data-store",
       "traits": [
         "access-controlled",
-        "endpoint"
+        "endpoint",
+        "redundancy"
       ],
       "meta": {},
       "incoming": 1,
       "outgoing": 0,
-      "exposure": "not-exposed"
+      "exposure": "not-exposed",
+      "availability": "managed"
     },
     {
       "id": "users",
